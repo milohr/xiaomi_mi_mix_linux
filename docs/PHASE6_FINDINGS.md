@@ -37,8 +37,23 @@ Hardware facts found by testing, where the stock tree is wrong or silent:
 - **Chromium/QtWebEngine on the Adreno 530 faults** (`gpu fault ... WRITE PERMISSION`) with
   every GPU flag combination tried; web views render on the CPU (device r8,
   `environment.d`). Phosh/KWin GL is fine.
-- **Suspend**: only `s2idle` is offered (no PSCI SYSTEM_SUSPEND); CPU idle (PSCI) was not
-  built. Kernel r20 adds PM debug and the PSCI idle driver, held off with `cpuidle.off=1`.
+- **Suspend works (kernel r22)**: s2idle only (no PSCI SYSTEM_SUSPEND); wakes on the RTC
+  alarm and on the Power key (`pm8941_pwrkey`); suspend 0.40 s, resume 0.58 s; display,
+  Wi-Fi and battery come back. Two kernel bugs were behind the hangs:
+  - **PCIe0's GDSC was powered off under a live link** (patch 0016). The qcom PCIe driver
+    keeps the link of a controller with an active device up, but genpd turned the GDSC off in
+    the noirq phase; the phone reset at once. `pm_test=platform` passed only with the Wi-Fi
+    device removed. The PCIe GDSCs are now `PWRSTS_RET_ON`, as on newer Qualcomm SoCs.
+  - **mdp5 lost its hwpipe after a resume** (patch 0015). The plane state saved at suspend
+    still named DMA0, so the resume commit kept it without assigning it in the global state;
+    every later plane disable hit `WARN_ON` in `mdp5_pipe_release()` (-EINVAL): the screen
+    could not be turned off (blank but lit) and `msm_kms_pm_prepare` refused suspend.
+  - Crash logs do not survive a reset on this phone: ramoops (lk2nd's region sits inside the
+    HDMI splash area 0xb1c00000 and `zap` clears it; a DT node at 0x92900000 stays empty after
+    even a clean reboot), so DDR is not retained. Stages were bisected with `pm_test` instead.
+  - CPU idle (PSCI) is still held off with `cpuidle.off=1`; the next step for battery life.
+  - Harmless: `qcom-wled` warns "Unbalanced enable for IRQ" once per boot (the bootloader
+    leaves WLED on, the driver's brightness starts at 0, so the OVP IRQ is enabled twice).
 
 ## The real display driver and the rest of the day (2026-10-18, kernel r5–r10)
 

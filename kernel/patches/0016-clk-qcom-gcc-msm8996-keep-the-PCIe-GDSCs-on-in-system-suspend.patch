@@ -1,0 +1,44 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] clk: qcom: gcc-msm8996: keep the PCIe GDSCs on in system suspend
+
+The qcom PCIe driver keeps the link of a controller with an active device
+up across system suspend (qcom_pcie_suspend_noirq). genpd still powers off
+the controller's GDSC in the noirq phase once its devices are suspended,
+which takes the link and the device down underneath the driver. On the
+Mi MIX (QCA6174 Wi-Fi on PCIe0) every s2idle attempt, and pm_test at the
+platform level, resets the phone; without the Wi-Fi device it passes.
+
+Mark the PCIe GDSCs PWRSTS_RET_ON, as done for other Qualcomm SoCs, so
+genpd leaves them on and the hardware handles retention.
+
+---
+diff --git a/drivers/clk/qcom/gcc-msm8996.c b/drivers/clk/qcom/gcc-msm8996.c
+--- a/drivers/clk/qcom/gcc-msm8996.c
++++ b/drivers/clk/qcom/gcc-msm8996.c
+@@ -3239,7 +3239,7 @@
+ 	.pd = {
+ 		.name = "pcie0",
+ 	},
+-	.pwrsts = PWRSTS_OFF_ON,
++	.pwrsts = PWRSTS_RET_ON,
+ };
+ 
+ static struct gdsc pcie1_gdsc = {
+@@ -3247,7 +3247,7 @@
+ 	.pd = {
+ 		.name = "pcie1",
+ 	},
+-	.pwrsts = PWRSTS_OFF_ON,
++	.pwrsts = PWRSTS_RET_ON,
+ };
+ 
+ static struct gdsc pcie2_gdsc = {
+@@ -3255,7 +3255,7 @@
+ 	.pd = {
+ 		.name = "pcie2",
+ 	},
+-	.pwrsts = PWRSTS_OFF_ON,
++	.pwrsts = PWRSTS_RET_ON,
+ };
+ 
+ static struct gdsc ufs_gdsc = {

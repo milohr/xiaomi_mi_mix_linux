@@ -1,0 +1,98 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] drm/msm/mdp5: drop stale hwpipes from a resumed plane state
+
+drm_atomic_helper_suspend() saves the plane states, then commits a state
+that disables the planes; mdp5_plane_atomic_check() releases their hwpipes
+from the global state. At resume the saved plane states still name those
+hwpipes, so the check keeps them without assigning them again, and the
+global state no longer records them. The next commit that disables the
+plane (DPMS off, the next suspend) hits the WARN_ON in mdp5_pipe_release()
+and fails with -EINVAL: the screen cannot be turned off and
+msm_kms_pm_prepare() refuses every later suspend.
+
+Before using a plane state's hwpipes, drop any that differ from the current
+plane state's and are not assigned to the plane in this atomic state, so
+they are assigned again.
+
+---
+diff --git a/drivers/gpu/drm/msm/disp/mdp5/mdp5_pipe.c b/drivers/gpu/drm/msm/disp/mdp5/mdp5_pipe.c
+--- a/drivers/gpu/drm/msm/disp/mdp5/mdp5_pipe.c
++++ b/drivers/gpu/drm/msm/disp/mdp5/mdp5_pipe.c
+@@ -151,6 +151,22 @@
+ 	return 0;
+ }
+ 
++/*
++ * Returns 1 if the new global state records @hwpipe as used by @plane, 0 if
++ * not, or a negative error code.
++ */
++int mdp5_pipe_owned(struct drm_atomic_state *s, struct drm_plane *plane,
++		    struct mdp5_hw_pipe *hwpipe)
++{
++	struct mdp5_global_state *state;
++
++	state = mdp5_get_global_state(s);
++	if (IS_ERR(state))
++		return PTR_ERR(state);
++
++	return state->hwpipe.hwpipe_to_plane[hwpipe->idx] == plane;
++}
++
+ struct mdp5_hw_pipe *mdp5_pipe_init(struct drm_device *dev,
+ 		enum mdp5_pipe pipe,
+ 		uint32_t reg_offset, uint32_t caps)
+diff --git a/drivers/gpu/drm/msm/disp/mdp5/mdp5_pipe.h b/drivers/gpu/drm/msm/disp/mdp5/mdp5_pipe.h
+--- a/drivers/gpu/drm/msm/disp/mdp5/mdp5_pipe.h
++++ b/drivers/gpu/drm/msm/disp/mdp5/mdp5_pipe.h
+@@ -38,6 +38,8 @@
+ 		     struct mdp5_hw_pipe **hwpipe,
+ 		     struct mdp5_hw_pipe **r_hwpipe);
+ int mdp5_pipe_release(struct drm_atomic_state *s, struct mdp5_hw_pipe *hwpipe);
++int mdp5_pipe_owned(struct drm_atomic_state *s, struct drm_plane *plane,
++		    struct mdp5_hw_pipe *hwpipe);
+ 
+ struct mdp5_hw_pipe *mdp5_pipe_init(struct drm_device *dev,
+ 		enum mdp5_pipe pipe,
+diff --git a/drivers/gpu/drm/msm/disp/mdp5/mdp5_plane.c b/drivers/gpu/drm/msm/disp/mdp5/mdp5_plane.c
+--- a/drivers/gpu/drm/msm/disp/mdp5/mdp5_plane.c
++++ b/drivers/gpu/drm/msm/disp/mdp5/mdp5_plane.c
+@@ -164,6 +164,7 @@
+ 	struct mdp5_plane_state *mdp5_state = to_mdp5_plane_state(state);
+ 	struct drm_plane *plane = state->plane;
+ 	struct drm_plane_state *old_state = plane->state;
++	struct mdp5_plane_state *old_mdp5_state = to_mdp5_plane_state(old_state);
+ 	struct mdp5_cfg *config = mdp5_cfg_get_config(get_kms(plane)->cfg);
+ 	bool new_hwpipe = false;
+ 	bool need_right_hwpipe = false;
+@@ -176,6 +177,31 @@
+ 	DBG("%s: check (%d -> %d)", plane->name,
+ 			plane_enabled(old_state), plane_enabled(state));
+ 
++	/*
++	 * A new plane state is normally duplicated from the current one and
++	 * names the same hwpipes. The state saved at suspend and committed
++	 * again at resume names the hwpipes the plane had before the suspend
++	 * commit released them. Drop such stale hwpipes, unless this atomic
++	 * state already assigned them, so they are assigned again instead of
++	 * being released twice later.
++	 */
++	if (mdp5_state->hwpipe && mdp5_state->hwpipe != old_mdp5_state->hwpipe) {
++		ret = mdp5_pipe_owned(state->state, plane, mdp5_state->hwpipe);
++		if (ret < 0)
++			return ret;
++		if (!ret)
++			mdp5_state->hwpipe = NULL;
++	}
++
++	if (mdp5_state->r_hwpipe &&
++	    mdp5_state->r_hwpipe != old_mdp5_state->r_hwpipe) {
++		ret = mdp5_pipe_owned(state->state, plane, mdp5_state->r_hwpipe);
++		if (ret < 0)
++			return ret;
++		if (!ret)
++			mdp5_state->r_hwpipe = NULL;
++	}
++
+ 	max_width = config->hw->lm.max_width << 16;
+ 	max_height = config->hw->lm.max_height << 16;
+ 

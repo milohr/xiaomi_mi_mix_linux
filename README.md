@@ -2,7 +2,7 @@
 
 Target: **original Xiaomi Mi MIX (`lithium`)**, Qualcomm MSM8996 Pro (Snapdragon 821).
 **postmarketOS (Alpine) with a mainline Linux 6.19 kernel runs on the phone**, booted by
-lk2nd from the `boot` partition, with Phosh or Sxmo as the user interface.
+lk2nd from the `boot` partition, with Plasma Mobile as the user interface.
 This repository is independent of the MediaTek Redmi `flare` project.
 
 ## Status (2026-10-18)
@@ -17,13 +17,13 @@ This repository is independent of the MediaTek Redmi `flare` project.
 | Wi-Fi | ✅ | QCA6174 hw3.2 on PCIe, ath10k, lithium board file; 2.4 and 5 GHz |
 | Battery / charging | ✅ | PMI8996 fuel gauge + SMB charger, up to 3.2 A; input follows the USB-C current advertisement; no Quick Charge yet |
 | Headphones | ✅ | ADSP + WCD9335 over SLIMbus; UCM Speaker/Headphones, chosen by hand (no jack detection yet) |
-| UI | ✅ | Plasma Mobile and Phosh (GPU-accelerated), Sxmo (dwm) |
+| UI | ✅ | Plasma Mobile (GPU-accelerated) with the KDE mobile apps |
 | Speaker | ✅ | TFA9891 (stock DT says TFA9890) on quaternary MI2S; tfa989x TFA9891 support added |
-| GPU (Adreno 530) | ✅ | lithium's signed zap shader; GPU_GX supplied from PMI8994 S2; Phosh renders on the GPU |
+| GPU (Adreno 530) | ✅ | lithium's signed zap shader; GPU_GX supplied from PMI8994 S2; Plasma Mobile (KWin) renders on the GPU |
 | Bluetooth | ✅ | QCA6174 (Rome 3.2) on BLSP1 UART2; address from persist; A2DP audio (AAC) to headphones |
 | Microphones | 🔧 | codec capture path present, untested |
 | USB host / OTG | ✅ | automatic via TUSB320L (INT on TLMM 63): devices and unpowered docks get host + 5 V; powered docks only charge (no USB-PD) |
-| Suspend | ❌ | hangs; disabled for now (staged test plan in `artifacts/p8`) |
+| Suspend | ✅ | s2idle; wakes on Power key and RTC; CPU idle states not enabled yet |
 | Earpiece (piezo, LM48560) | ❌ | no mainline driver |
 | Modem / calls | ❌ | out of scope for now |
 
@@ -36,8 +36,9 @@ Details: [Phase 6 findings](docs/PHASE6_FINDINGS.md) (current), [handoff](docs/H
   device tree (0001), touch (0002), display + panel driver (0003), Wi-Fi (0004),
   battery/charger (0005), audio codec (0006), apq8096 MI2S clocks (0007),
   fuel-gauge current sign (0008), GPU (0009), TFA9891 driver (0010), speaker (0011),
-  automatic USB host mode (0012), OTG VBUS guard (0013), Bluetooth (0014). Every board value is traced to lithium's stock device
-  tree.
+  automatic USB host mode (0012), OTG VBUS guard (0013), Bluetooth (0014), mdp5 resume
+  fix (0015), PCIe power domain kept on in suspend (0016). Every board value is traced to
+  lithium's stock device tree.
 - **Packages**: [`packaging/pmaports/`](packaging/pmaports) — `linux-postmarketos-qcom-msm8996`,
   `device-xiaomi-lithium` (deviceinfo, Sxmo profile, UCM, WirePlumber rule) and
   `firmware-xiaomi-lithium`, built from a tarball of the owner's stock firmware made by
