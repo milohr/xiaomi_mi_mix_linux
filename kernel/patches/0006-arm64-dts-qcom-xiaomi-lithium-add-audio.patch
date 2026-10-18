@@ -54,7 +54,7 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
  	disp_vddr: disp-vddr-regulator {
  		compatible = "regulator-fixed";
  		regulator-name = "disp_vddr";
-@@ -309,6 +337,14 @@
+@@ -312,6 +340,14 @@
  	};
  
  	/* Stock gpio@c800: output high, VIN0 (VPH), low strength. */
@@ -69,7 +69,7 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
  	rome_enable_default: rome-enable-state {
  		pins = "gpio9";
  		function = PMIC_GPIO_FUNC_NORMAL;
-@@ -537,3 +573,86 @@
+@@ -540,3 +576,86 @@
  	phys = <&hsusb_phy1>;
  	phy-names = "usb2-phy";
  };

@@ -32,7 +32,7 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
  	disp_vddr: disp-vddr-regulator {
  		compatible = "regulator-fixed";
  		regulator-name = "disp_vddr";
-@@ -390,6 +404,15 @@
+@@ -393,6 +407,15 @@
  };
  
  &pmi8994_gpios {
@@ -48,7 +48,7 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
  	/* Stock gpio@c100: output, no pull, VIN2. TFA9891 reset is active high: low runs the amp. */
  	speaker_amp_reset: speaker-amp-reset-state {
  		pins = "gpio2";
-@@ -603,10 +626,18 @@
+@@ -606,10 +629,18 @@
   * switching is not described yet.
   */
  &usb3_dwc3 {

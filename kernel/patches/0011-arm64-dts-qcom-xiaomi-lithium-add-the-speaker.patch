@@ -33,7 +33,7 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
  /* Stock i2c@75ba000 (BLSP2 QUP6) at 400 kHz. */
  &blsp2_i2c6 {
  	clock-frequency = <400000>;
-@@ -373,6 +389,17 @@
+@@ -376,6 +392,17 @@
  	status = "okay";
  };
  
@@ -51,7 +51,7 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
  &pm8994_resin {
  	linux,code = <KEY_VOLUMEDOWN>;
  
-@@ -499,6 +526,14 @@
+@@ -502,6 +529,14 @@
  		bias-pull-down;
  	};
  
@@ -66,7 +66,7 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
  	mdss_vddr_default: mdss-vddr-default-state {
  		pins = "gpio40";
  		function = "gpio";
-@@ -624,6 +659,14 @@
+@@ -627,6 +662,14 @@
  	};
  };
  
@@ -81,7 +81,7 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
  &q6asmdai {
  	dai@0 { reg = <MSM_FRONTEND_DAI_MULTIMEDIA1>; };
  };
-@@ -655,6 +698,13 @@
+@@ -658,6 +701,13 @@
  		platform { sound-dai = <&q6routing>; };
  		codec { sound-dai = <&wcd9335 AIF1_CAP>; };
  	};

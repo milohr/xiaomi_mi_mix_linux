@@ -16,9 +16,9 @@ This repository is independent of the MediaTek Redmi `flare` project.
 | Touch | ✅ | FocalTech FT8716 (edt-ft5x06) |
 | Wi-Fi | ✅ | QCA6174 hw3.2 on PCIe, ath10k, lithium board file; 2.4 and 5 GHz |
 | Battery / charging | ✅ | PMI8996 fuel gauge + SMB charger; charge current capped at 1 A for now |
-| Headphones | ✅ | ADSP + WCD9335 over SLIMbus, ALSA UCM profile, PipeWire |
-| UI | ✅ | Phosh (GPU-accelerated) and Sxmo (dwm) |
-| Speaker | 🔧 | amp is a TFA9891 (stock DT says TFA9890); needs driver support |
+| Headphones | ✅ | ADSP + WCD9335 over SLIMbus; UCM Speaker/Headphones, chosen by hand (no jack detection yet) |
+| UI | ✅ | Plasma Mobile and Phosh (GPU-accelerated), Sxmo (dwm) |
+| Speaker | ✅ | TFA9891 (stock DT says TFA9890) on quaternary MI2S; tfa989x TFA9891 support added |
 | GPU (Adreno 530) | ✅ | lithium's signed zap shader; GPU_GX supplied from PMI8994 S2; Phosh renders on the GPU |
 | Bluetooth | 🔧 | QCA6174 on UART; patch drafted, untested |
 | Microphones | 🔧 | codec capture path present, untested |
@@ -35,7 +35,8 @@ Details: [Phase 6 findings](docs/PHASE6_FINDINGS.md) (current), [handoff](docs/H
 - **Kernel**: pinned msm8996 mainline tree plus the patches in [`kernel/patches/`](kernel/patches):
   device tree (0001), touch (0002), display + panel driver (0003), Wi-Fi (0004),
   battery/charger (0005), audio codec (0006), apq8096 MI2S clocks (0007),
-  fuel-gauge current sign (0008), GPU (0009). Every board value is traced to lithium's stock device
+  fuel-gauge current sign (0008), GPU (0009), TFA9891 driver (0010), speaker (0011),
+  USB host mode (0012). Every board value is traced to lithium's stock device
   tree.
 - **Packages**: [`packaging/pmaports/`](packaging/pmaports) — `linux-postmarketos-qcom-msm8996`,
   `device-xiaomi-lithium` (deviceinfo, Sxmo profile, UCM, WirePlumber rule) and

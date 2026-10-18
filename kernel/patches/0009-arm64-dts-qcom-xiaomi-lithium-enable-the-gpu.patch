@@ -10,7 +10,7 @@ supply the GDSC stays off and the msm DRM device fails to bind.
 diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
 --- a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
 +++ b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
-@@ -656,3 +656,31 @@
+@@ -659,3 +659,31 @@
  		codec { sound-dai = <&wcd9335 AIF1_CAP>; };
  	};
  };

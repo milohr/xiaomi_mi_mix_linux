@@ -802,7 +802,7 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
  	chosen {
  		stdout-path = "serial0:115200n8";
  
-@@ -161,6 +178,51 @@
+@@ -161,6 +178,54 @@
  	status = "okay";
  };
  
@@ -828,8 +828,11 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
 +		reg = <0>;
 +
 +		vddio-supply = <&vreg_l14a_1p8>;
++		/*
++		 * Stock also lists disp_en (TLMM 47) and a backlight enable (TLMM 48),
++		 * but those pins are BLSP1 I2C3 (speaker/earpiece amps): not panel lines.
++		 */
 +		reset-gpios = <&tlmm 8 GPIO_ACTIVE_LOW>;
-+		enable-gpios = <&tlmm 47 GPIO_ACTIVE_HIGH>;
 +		backlight = <&pmi8994_wled>;
 +
 +		port {
@@ -854,7 +857,7 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
  &mdp_smmu {
  	/*
  	 * The bootloader's splash is still scanned out through this SMMU when
-@@ -189,6 +251,16 @@
+@@ -189,6 +254,16 @@
  	status = "okay";
  };
  
@@ -871,7 +874,7 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
  &rpm_requests {
  	regulators-0 {
  		compatible = "qcom,rpm-pm8994-regulators";
-@@ -201,6 +273,13 @@
+@@ -201,6 +276,13 @@
  			regulator-always-on;
  		};
  
@@ -885,7 +888,7 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
  		vreg_l12a_1p8: l12 {
  			regulator-name = "vreg_l12a_1p8";
  			regulator-min-microvolt = <1800000>;
-@@ -247,6 +326,42 @@
+@@ -247,6 +329,42 @@
  };
  
  &tlmm {
