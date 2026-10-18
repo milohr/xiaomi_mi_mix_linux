@@ -3,7 +3,7 @@ maintainer="Yassine Oudjana (Tooniis) <y.oudjana@protonmail.com>"
 _flavor="postmarketos-qcom-msm8996"
 pkgname=linux-$_flavor
 pkgver=6.19.5
-pkgrel=1
+pkgrel=2
 pkgdesc="Kernel close to mainline with extra patches for Qualcomm MSM8996 devices"
 arch="aarch64"
 _carch="arm64"
@@ -64,5 +64,5 @@ package() {
 sha512sums="
 dd30dd113ad9f0b4ab3771ea655de2becce7ddaf5066d2f860b7bb1eb78573137313191d9da740b152348f9f89894ace2bb94fb195e340f7b6dabedeebbc929f  linux-v6.19.5-msm8996.tar.gz
 6a1e3a18fb454378ef5569a6951426d118144985c9028e663f46d28cde6784723296601d3756176045e22d706a9195938804c6a82f02fcf548e18d2e66c35b27  config-postmarketos-qcom-msm8996.aarch64
-ca2169c616cbc5543d9fbc79aabad836dca83ee71e654ea38e7c8c974b75035fc7a4840489e88245184c40adc6bcda4198da86c260eec294b84083d5f012db79  0001-arm64-dts-qcom-add-xiaomi-mi-mix.patch
+67f3f038a66c685d317f7ea614ae72cff14910b3fabf230941c011622c8c5b23574cd0093e72ba1bd8414da28b66f47cc94d45542d36a301c117c4479ee294fa  0001-arm64-dts-qcom-add-xiaomi-mi-mix.patch
 "

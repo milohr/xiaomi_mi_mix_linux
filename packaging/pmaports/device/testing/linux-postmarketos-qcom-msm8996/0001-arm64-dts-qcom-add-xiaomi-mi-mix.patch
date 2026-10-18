@@ -10,8 +10,8 @@ power and volume keys, and the memory the bootloader and firmware keep.
 ---
  Documentation/devicetree/bindings/arm/qcom.yaml    |   1 +
  arch/arm64/boot/dts/qcom/Makefile                  |   1 +
- .../boot/dts/qcom/msm8996pro-xiaomi-lithium.dts    | 197 +++++++++++++++++++++
- 3 files changed, 199 insertions(+)
+ .../boot/dts/qcom/msm8996pro-xiaomi-lithium.dts    | 209 +++++++++++++++++++++
+ 3 files changed, 211 insertions(+)
 diff --git a/Documentation/devicetree/bindings/arm/qcom.yaml b/Documentation/devicetree/bindings/arm/qcom.yaml
 index fcb2b2926..e6b10f50d 100644
 --- a/Documentation/devicetree/bindings/arm/qcom.yaml
@@ -41,7 +41,7 @@ new file mode 100644
 index 000000000..8f6e2700d
 --- /dev/null
 +++ b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
-@@ -0,0 +1,197 @@
+@@ -0,0 +1,209 @@
 +// SPDX-License-Identifier: BSD-3-Clause
 +/*
 + * Copyright (c) 2026 Xiaomi Mi MIX Linux port contributors
@@ -141,6 +141,18 @@ index 000000000..8f6e2700d
 +	vdda-phy-dpdm-supply = <&vreg_l24a_3p075>;
 +
 +	status = "okay";
++};
++
++&mdp_smmu {
++	/*
++	 * The bootloader's splash is still scanned out through this SMMU when
++	 * Linux starts: resetting it hangs the SoC (P5, 2026-10-18: the console
++	 * stops right after this SMMU probes, then a reset). As on scorpio, keep
++	 * its boot state and keep its power domain on for simple-framebuffer.
++	 */
++	qcom,no-smr-check;
++	qcom,skip-init;
++	/delete-property/ power-domains;
 +};
 +
 +&pm8994_gpios {

@@ -69,7 +69,7 @@ Status: **built and audited 2026-10-18; package lint pending** ([PHASE4_FINDINGS
 
 ## P5 — First recoverable native boot
 
-Status: **pending**. Dependencies: P1, P4.
+Status: **gate met 2026-10-18** ([PHASE5_FINDINGS.md](PHASE5_FINDINGS.md)); UFS link open. Dependencies: P1, P4.
 
 1. Present exact image hashes, boot method, expected behavior and recovery steps before changing device state.
 2. Prefer a validated temporary boot path; keep internal filesystems unmounted or read-only initially.

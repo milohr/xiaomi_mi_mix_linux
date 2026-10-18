@@ -1,4 +1,4 @@
-# Session handoff — P5 next (awaiting the user's go for Step A)
+# Session handoff — P5 done (debug shell over USB); P6 next: UFS
 
 ## Current state
 
@@ -29,6 +29,17 @@ the stock map needs. `scripts/build_lithium_dtb.sh` builds it (`622ba9fa…`,
 reproducible), runs the full schema check, and checks it against the stock DTB
 (39/39). **Correction:** revision 1 sent the console to 0x7570000, which
 lithium's stock disables as a console. Phase completion does not authorize flashing.
+
+## Phase 5 completed (2026-10-18)
+
+Linux boots from RAM through lk2nd (in recovery) to the pmOS debug shell over USB
+(telnet 172.16.42.1), console on screen via simplefb. The first boot hung at 1.47 s
+right after the MDP SMMU probed; the fix is scorpio's `&mdp_smmu` block
+(`qcom,no-smr-check`, `qcom,skip-init`, no power-domains), now in the DTS and patch
+0001 (kernel package r2; booted as `p5b-boot.img` = p5 with the DTB swapped by
+`scripts/swap_bootimg_dtb.py`). UFS does not link up yet (dl_err storm, no /dev/sd*),
+which is P6's first job. MIUI restores stock recovery whenever Android boots; a long
+Power press resets instead of powering off. Everything: [PHASE5_FINDINGS.md](PHASE5_FINDINGS.md).
 
 ## Phase 4 completed (2026-10-18), lint pending
 

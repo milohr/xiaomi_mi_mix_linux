@@ -1,7 +1,6 @@
 # P5 — first native boot: review packet
 
-Status: **draft for review. Nothing here is authorized yet and no device write
-has been made.** Each step marked ⚠ needs the user's explicit go at the time it
+Status: **run 2026-10-18** (results: [PHASE5_FINDINGS.md](PHASE5_FINDINGS.md); the image that booted is `p5b-boot.img`, `77505d98…`). Original review text below. Each step marked ⚠ needs the user's explicit go at the time it
 runs. The images below are built and audited (P4, 2026-10-18,
 [PHASE4_FINDINGS.md](PHASE4_FINDINGS.md)).
 
