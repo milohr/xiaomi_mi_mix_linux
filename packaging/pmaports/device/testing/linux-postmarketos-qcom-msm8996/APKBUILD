@@ -3,7 +3,7 @@ maintainer="Yassine Oudjana (Tooniis) <y.oudjana@protonmail.com>"
 _flavor="postmarketos-qcom-msm8996"
 pkgname=linux-$_flavor
 pkgver=6.19.5
-pkgrel=12
+pkgrel=13
 pkgdesc="Kernel close to mainline with extra patches for Qualcomm MSM8996 devices"
 arch="aarch64"
 _carch="arm64"
@@ -40,6 +40,7 @@ source="
 	0006-arm64-dts-qcom-xiaomi-lithium-add-audio.patch
 	0007-ASoC-qcom-apq8096-clock-quaternary-MI2S.patch
 	0008-power-supply-qcom_fg-report-charging-current-as-positive.patch
+	0009-arm64-dts-qcom-xiaomi-lithium-enable-the-gpu.patch
 "
 builddir="$srcdir/linux-$_tag"
 
@@ -79,4 +80,5 @@ bb0279dab9846e001e29c163eea523948ad33ddc18e09ca2f99408b39b4e749cfc7d4e695c5b0737
 385ecfdf46e33bf8f2aca846eaf485c599a4af03451a98d32b933d7d2aac3cf0903924b3c17ee459a8d2c9dc664fc4121c2414c5a11152b62eeb05e544becf78  0006-arm64-dts-qcom-xiaomi-lithium-add-audio.patch
 8002688c7b1fee29bf9ccf5076d544260a38617a281859cdda75d186bd5da08c9c1d436698748bbd5e51dc4e9994599e87d79ade6eae72cc564083a0525594e6  0007-ASoC-qcom-apq8096-clock-quaternary-MI2S.patch
 ceb830da42f486f094d14d98dc61cdb15fcb2dc03ec4b25ea5ed7be98be34ef62f8f9c207d47ac2e839cc91e95ebd733aff4e7d4bd1efa0e64f726765941a87a  0008-power-supply-qcom_fg-report-charging-current-as-positive.patch
+8f723be649a88e7b2c1f688ccc6562db3f4788bbb695eca4d006489f7912d233e43132f350cbbe70f8286c92f94ba8ad67c098b89986376cc7a90a36b64ac5ab  0009-arm64-dts-qcom-xiaomi-lithium-enable-the-gpu.patch
 "

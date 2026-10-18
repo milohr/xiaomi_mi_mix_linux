@@ -1,0 +1,44 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] arm64: dts: qcom: xiaomi-lithium: enable the GPU
+
+Enable the Adreno 530 with lithium's own stock-signed zap shader and supply
+the GPU_GX power domain from PMI8994 S2 (stock regulator@1700, pmi8994_s2,
+400 mV to 1.065 V, which feeds the stock gfx_corner CPR). Without the
+supply the GDSC stays off and the msm DRM device fails to bind.
+
+---
+diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+--- a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
++++ b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+@@ -656,3 +656,31 @@
+ 		codec { sound-dai = <&wcd9335 AIF1_CAP>; };
+ 	};
+ };
++
++/* Adreno 530 (MSM8996 Pro); the zap shader is lithium's own stock-signed one. */
++&adreno_smmu {
++	status = "okay";
++};
++
++&gpu {
++	status = "okay";
++};
++
++&gpu_zap_shader {
++	firmware-name = "qcom/msm8996/lithium/a530_zap.mbn";
++};
++
++/* GPU_GX power domain supply: stock gfx_corner CPR runs on pmi8994_s2. */
++&mmcc {
++	vdd-gfx-supply = <&vdd_gfx>;
++};
++
++&pmi8994_spmi_regulators {
++	/* Stock regulator@1700 (pmi8994_s2): 400 mV to 1.065 V. */
++	vdd_gfx: s2 {
++		regulator-name = "vdd_gfx";
++		regulator-min-microvolt = <400000>;
++		regulator-max-microvolt = <1065000>;
++		regulator-enable-ramp-delay = <500>;
++	};
++};
