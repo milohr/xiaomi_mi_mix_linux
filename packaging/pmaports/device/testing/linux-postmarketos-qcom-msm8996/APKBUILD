@@ -3,7 +3,7 @@ maintainer="Yassine Oudjana (Tooniis) <y.oudjana@protonmail.com>"
 _flavor="postmarketos-qcom-msm8996"
 pkgname=linux-$_flavor
 pkgver=6.19.5
-pkgrel=13
+pkgrel=14
 pkgdesc="Kernel close to mainline with extra patches for Qualcomm MSM8996 devices"
 arch="aarch64"
 _carch="arm64"
@@ -41,6 +41,9 @@ source="
 	0007-ASoC-qcom-apq8096-clock-quaternary-MI2S.patch
 	0008-power-supply-qcom_fg-report-charging-current-as-positive.patch
 	0009-arm64-dts-qcom-xiaomi-lithium-enable-the-gpu.patch
+	0010-ASoC-codecs-tfa989x-add-TFA9891-support.patch
+	0011-arm64-dts-qcom-xiaomi-lithium-add-the-speaker.patch
+	0012-arm64-dts-qcom-xiaomi-lithium-usb-host-mode.patch
 "
 builddir="$srcdir/linux-$_tag"
 
@@ -81,4 +84,7 @@ bb0279dab9846e001e29c163eea523948ad33ddc18e09ca2f99408b39b4e749cfc7d4e695c5b0737
 8002688c7b1fee29bf9ccf5076d544260a38617a281859cdda75d186bd5da08c9c1d436698748bbd5e51dc4e9994599e87d79ade6eae72cc564083a0525594e6  0007-ASoC-qcom-apq8096-clock-quaternary-MI2S.patch
 ceb830da42f486f094d14d98dc61cdb15fcb2dc03ec4b25ea5ed7be98be34ef62f8f9c207d47ac2e839cc91e95ebd733aff4e7d4bd1efa0e64f726765941a87a  0008-power-supply-qcom_fg-report-charging-current-as-positive.patch
 8f723be649a88e7b2c1f688ccc6562db3f4788bbb695eca4d006489f7912d233e43132f350cbbe70f8286c92f94ba8ad67c098b89986376cc7a90a36b64ac5ab  0009-arm64-dts-qcom-xiaomi-lithium-enable-the-gpu.patch
+5801807435982930e4f12de888a9d7c71307ba3e9f121b99b3e73606d11dfa51f5a26ffa13f9861b31a24026cf114e4547b227316074410eb4e71e73157908a8  0010-ASoC-codecs-tfa989x-add-TFA9891-support.patch
+0212137f3e4250f6cb8a1df710be9d055a7c77cfeb7c87ab9a2d46add8f1e44006a254d6c808a97e84c8261d4d40eeab34a2c228505000acafcb97e2b2c5fe2f  0011-arm64-dts-qcom-xiaomi-lithium-add-the-speaker.patch
+3c2eddc5c67946b798a3330a1364d12de05c6b704044bacd85a5eab0f390ac40f74b3489b0d60caa7b3f9802206a4658354b496e0192f8545296a4169a870de1  0012-arm64-dts-qcom-xiaomi-lithium-usb-host-mode.patch
 "

@@ -1,0 +1,97 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] arm64: dts: qcom: xiaomi-lithium: add the speaker
+
+Add the speaker amplifier on BLSP1 I2C3 at 0x34: the stock device tree
+names it tfa9890, the chip reports a TFA9891 (revision 0x92). It is fed by
+quaternary MI2S (SCK/WS gpio58/59, SD0 gpio60, DSP clock master) and its
+reset (PMI8994 GPIO 2, active high) is held low; all values from stock.
+
+---
+diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+--- a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
++++ b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+@@ -203,6 +203,22 @@
+ 	status = "okay";
+ };
+ 
++/* Stock i2c@7577000 (BLSP1 QUP3) at 400 kHz: speaker amp; the LM48560 piezo amp at 0x6f has no driver. */
++&blsp1_i2c3 {
++	clock-frequency = <400000>;
++	status = "okay";
++
++	/* Stock tfa98xx@34 (named tfa9890; the chip reports TFA9891, rev 0x92), quaternary MI2S, reset on PMI8994 GPIO 2. */
++	speaker_amp: audio-codec@34 {
++		compatible = "nxp,tfa9891";
++		reg = <0x34>;
++		#sound-dai-cells = <0>;
++		sound-name-prefix = "Speaker";
++		pinctrl-0 = <&speaker_amp_reset &quat_mi2s_default>;
++		pinctrl-names = "default";
++	};
++};
++
+ /* Stock i2c@75ba000 (BLSP2 QUP6) at 400 kHz. */
+ &blsp2_i2c6 {
+ 	clock-frequency = <400000>;
+@@ -373,6 +389,17 @@
+ 	status = "okay";
+ };
+ 
++&pmi8994_gpios {
++	/* Stock gpio@c100: output, no pull, VIN2. TFA9891 reset is active high: low runs the amp. */
++	speaker_amp_reset: speaker-amp-reset-state {
++		pins = "gpio2";
++		function = PMIC_GPIO_FUNC_NORMAL;
++		output-low;
++		bias-disable;
++		power-source = <2>;
++	};
++};
++
+ &pm8994_resin {
+ 	linux,code = <KEY_VOLUMEDOWN>;
+ 
+@@ -499,6 +526,14 @@
+ 		bias-pull-down;
+ 	};
+ 
++	/* Stock quat_mi2s{,_sd0}_active: SCK/WS gpio58/59, SD0 (speaker data) gpio60. */
++	quat_mi2s_default: quat-mi2s-default-state {
++		pins = "gpio58", "gpio59", "gpio60";
++		function = "qua_mi2s";
++		drive-strength = <8>;
++		bias-disable;
++	};
++
+ 	mdss_vddr_default: mdss-vddr-default-state {
+ 		pins = "gpio40";
+ 		function = "gpio";
+@@ -624,6 +659,14 @@
+ 	};
+ };
+ 
++&q6afedai {
++	/* Stock msm-dai-q6-mi2s-quat: rx-lines 0x1 = SD0. */
++	dai@22 {
++		reg = <QUATERNARY_MI2S_RX>;
++		qcom,sd-lines = <0>;
++	};
++};
++
+ &q6asmdai {
+ 	dai@0 { reg = <MSM_FRONTEND_DAI_MULTIMEDIA1>; };
+ };
+@@ -655,6 +698,13 @@
+ 		platform { sound-dai = <&q6routing>; };
+ 		codec { sound-dai = <&wcd9335 AIF1_CAP>; };
+ 	};
++
++	speaker-dai-link {
++		link-name = "Speaker";
++		cpu { sound-dai = <&q6afedai QUATERNARY_MI2S_RX>; };
++		platform { sound-dai = <&q6routing>; };
++		codec { sound-dai = <&speaker_amp>; };
++	};
+ };
+ 
+ /* Adreno 530 (MSM8996 Pro); the zap shader is lithium's own stock-signed one. */

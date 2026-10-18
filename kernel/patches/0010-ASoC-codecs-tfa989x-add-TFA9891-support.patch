@@ -1,0 +1,67 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] ASoC: codecs: tfa989x: add TFA9891 support
+
+The TFA9891 (revision 0x92) is used e.g. in the Xiaomi Mi MIX, whose stock
+device tree calls it tfa9890. Add its revision and the chip-specific
+register init from NXP's tfa9891_specific() (generated code version 18.0);
+the existing DSP bypass then runs it like the other supported chips.
+
+---
+diff --git a/Documentation/devicetree/bindings/sound/nxp,tfa989x.yaml b/Documentation/devicetree/bindings/sound/nxp,tfa989x.yaml
+--- a/Documentation/devicetree/bindings/sound/nxp,tfa989x.yaml
++++ b/Documentation/devicetree/bindings/sound/nxp,tfa989x.yaml
+@@ -16,6 +16,7 @@
+   compatible:
+     enum:
+       - nxp,tfa9890
++      - nxp,tfa9891
+       - nxp,tfa9895
+       - nxp,tfa9897
+ 
+diff --git a/sound/soc/codecs/tfa989x.c b/sound/soc/codecs/tfa989x.c
+--- a/sound/soc/codecs/tfa989x.c
++++ b/sound/soc/codecs/tfa989x.c
+@@ -48,6 +48,7 @@
+ #define TFA989X_CURRENTSENSE4		0x49
+ 
+ #define TFA9890_REVISION		0x80
++#define TFA9891_REVISION		0x92
+ #define TFA9895_REVISION		0x12
+ #define TFA9897_REVISION		0x97
+ 
+@@ -216,6 +217,27 @@
+ 	.init	= tfa9890_init,
+ };
+ 
++/* NXP tfa9891_specific(), generated code version 18.0 (tfa9891_init.c). */
++static const struct reg_sequence tfa9891_reg_init[] = {
++	{ TFA989X_SYS_CTRL, 0x025d },
++	{ 0x10, 0x0018 },
++	{ 0x22, 0x0003 },
++	{ 0x25, 0x0001 },
++	{ TFA989X_CURRENTSENSE1, 0x0000 },
++	{ 0x55, 0x3ffb },
++};
++
++static int tfa9891_init(struct regmap *regmap)
++{
++	return regmap_multi_reg_write(regmap, tfa9891_reg_init,
++				      ARRAY_SIZE(tfa9891_reg_init));
++}
++
++static const struct tfa989x_rev tfa9891_rev = {
++	.rev	= TFA9891_REVISION,
++	.init	= tfa9891_init,
++};
++
+ static const struct reg_sequence tfa9895_reg_init[] = {
+ 	/* some other registers must be set for optimal amplifier behaviour */
+ 	{ TFA989X_BAT_PROT, 0x13ab },
+@@ -405,6 +427,7 @@
+ 
+ static const struct of_device_id tfa989x_of_match[] = {
+ 	{ .compatible = "nxp,tfa9890", .data = &tfa9890_rev },
++	{ .compatible = "nxp,tfa9891", .data = &tfa9891_rev },
+ 	{ .compatible = "nxp,tfa9895", .data = &tfa9895_rev },
+ 	{ .compatible = "nxp,tfa9897", .data = &tfa9897_rev },
+ 	{ }
