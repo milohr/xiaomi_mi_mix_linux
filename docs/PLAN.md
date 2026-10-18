@@ -42,7 +42,7 @@ Status: **complete**. Dependencies: P0; P1 before live experiments.
 
 ## P3 — Hardware map and minimal DTS
 
-Status: **in_progress**. Dependencies: P1, P2.
+Status: **complete** (offline gate; see PHASE3_FINDINGS.md). Dependencies: P1, P2.
 
 1. Extract DTB and panel evidence offline; retain source locations and hashes.
 2. Map DRAM, reserved-memory, firmware carveouts, PSCI, interrupt controller, clocks, regulators, USB and storage.

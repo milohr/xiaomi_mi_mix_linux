@@ -3,7 +3,7 @@
   "updated": "2026-10-17",
   "device": "xiaomi-lithium",
   "phase": "P3",
-  "status": "in_progress",
+  "status": "complete",
   "live_observations": {
     "soc_id": {
       "value": 305,
@@ -21,13 +21,26 @@
       "source": "/sys/devices/soc0/machine"
     },
     "board_id": {
-      "value": [38, 0],
+      "value": [
+        38,
+        0
+      ],
       "status": "observed",
       "source": "/proc/device-tree/qcom,board-id"
     },
     "pmic_id": {
-      "value": [131081, 65555, 0, 0],
-      "hex": ["0x20009", "0x10013", "0x0", "0x0"],
+      "value": [
+        131081,
+        65555,
+        0,
+        0
+      ],
+      "hex": [
+        "0x20009",
+        "0x10013",
+        "0x0",
+        "0x0"
+      ],
       "status": "observed",
       "source": "/proc/device-tree/qcom,pmic-id"
     },
@@ -39,8 +52,14 @@
     },
     "dram": {
       "value": [
-        {"base": "0x80000000", "size": "0x80000000"},
-        {"base": "0x100000000", "size": "0x7e550000"}
+        {
+          "base": "0x80000000",
+          "size": "0x80000000"
+        },
+        {
+          "base": "0x100000000",
+          "size": "0x7e550000"
+        }
       ],
       "status": "observed",
       "source": "/proc/device-tree/memory/reg",
@@ -51,47 +70,277 @@
     "msm8996_v3": {
       "artifact": "artifacts/stock/audit/boot.img.dtb-4",
       "sha256": "211d7e0022c937bc18117415f5015ed5518c3eb82b56630de10049ecdd5dba66",
-      "msm_id": [246, 196608],
-      "board_id": [38, 0]
+      "msm_id": [
+        246,
+        196608
+      ],
+      "board_id": [
+        38,
+        0
+      ]
     },
     "msm8996_pro": {
       "artifact": "artifacts/stock/audit/boot.img.dtb-5",
       "sha256": "a2968fa1b189c5e73bbd89a578575ce7cf0a42f2bc31968265260b362f49ce01",
-      "msm_id": [305, 65536],
-      "board_id": [38, 0]
+      "msm_id": [
+        305,
+        65536
+      ],
+      "board_id": [
+        38,
+        0
+      ]
     }
   },
   "reserved_memory": [
-    {"name": "dfps_data_mem", "base": "0x83400000", "size": "0x1000", "status": "observed_live"},
-    {"name": "cont_splash_mem", "base": "0x83401000", "size": "0x23ff000", "status": "observed_live"},
-    {"name": "removed_regions", "base": "0x85800000", "size": "0x4400000", "status": "observed_live"},
-    {"name": "modem_region", "base": "0x89c00000", "size": "0x6200000", "status": "observed_live"},
-    {"name": "peripheral_region", "base": "0x8fe00000", "size": "0x2b00000", "status": "observed_live"},
-    {"name": "cont_splash_mem_hdmi", "base": "0xb1c00000", "size": "0x23ff000", "status": "observed_live"},
-    {"name": "ocimem_log", "base": "0xb4000000", "size": "0x100000", "status": "observed_live"},
-    {"name": "adsp_region", "base": null, "size": null, "status": "dynamic_live"},
-    {"name": "qseecom_region", "base": null, "size": null, "status": "dynamic_live"},
-    {"name": "secure_region", "base": null, "size": null, "status": "dynamic_live"}
+    {
+      "name": "dfps_data_mem",
+      "base": "0x83400000",
+      "size": "0x1000",
+      "status": "observed_live"
+    },
+    {
+      "name": "cont_splash_mem",
+      "base": "0x83401000",
+      "size": "0x23ff000",
+      "status": "observed_live"
+    },
+    {
+      "name": "removed_regions",
+      "base": "0x85800000",
+      "size": "0x4400000",
+      "status": "observed_live"
+    },
+    {
+      "name": "modem_region",
+      "base": "0x89c00000",
+      "size": "0x6200000",
+      "status": "observed_live"
+    },
+    {
+      "name": "peripheral_region",
+      "base": "0x8fe00000",
+      "size": "0x2b00000",
+      "status": "observed_live"
+    },
+    {
+      "name": "cont_splash_mem_hdmi",
+      "base": "0xb1c00000",
+      "size": "0x23ff000",
+      "status": "observed_live"
+    },
+    {
+      "name": "ocimem_log",
+      "base": "0xb4000000",
+      "size": "0x100000",
+      "status": "observed_live"
+    },
+    {
+      "name": "adsp_region",
+      "base": null,
+      "size": null,
+      "status": "dynamic_live"
+    },
+    {
+      "name": "qseecom_region",
+      "base": null,
+      "size": null,
+      "status": "dynamic_live"
+    },
+    {
+      "name": "secure_region",
+      "base": null,
+      "size": null,
+      "status": "dynamic_live"
+    }
   ],
   "initial_dts_decisions": {
     "soc_description": "msm8996pro.dtsi",
     "reason": "The running target reports SoC ID 305, revision 1.1, and MSM8996pro.",
     "bootloader_supplied_dram": true,
     "enable_uart": true,
-    "uart_evidence": "Downstream msm8996-xiaomi-common.dtsi enables BLSP1 UART2 and stock bootargs select ttyHSL0 at 115200n8.",
+    "uart_evidence": "Stock lithium DTB enables serial@075b0000 (gpio4/5) and disables the 0x7570000 lsuart; see console_uart.correction.",
     "enable_simple_framebuffer": false,
-    "framebuffer_reason": "The splash reservation is proven, but active scanout size, stride, format, and retained clock/power requirements are not yet proven.",
+    "framebuffer_reason": "Not hard-coded: lk2nd cont-splash measures the live scan-out and inserts simple-framebuffer at boot with lk2nd.pass-simplefb (docs/DISPLAY.md). Verify at P5.",
     "enable_display": false,
     "enable_touch": false,
     "enable_modem": false,
-    "enable_audio": false
+    "enable_audio": false,
+    "xiaomi_common_dtsi": "Not included: it enables NFC, IR, Type-C, modem, audio, GPU with sibling GPIOs."
   },
   "unknowns": [
-    "exact mainline-safe firmware carveout overrides",
-    "active framebuffer byte layout and stride",
-    "whether BLSP1 UART2 is externally observable on this unit",
-    "minimum USB gadget nodes and Type-C/extcon requirements",
-    "lithium-specific UFS regulator configuration",
-    "mainline-compatible Sharp FTE716 panel driver"
-  ]
+    "whether the console UART pads (gpio4/5) are externally reachable on this unit",
+    "TUSB320L address actually populated and its interrupt line",
+    "Xiaomi PIL carveout layout on lithium (needed only for remoteprocs, P7)",
+    "simple-framebuffer values produced by lk2nd on lithium (P5)",
+    "presence of dome/hall/camera keys on lithium",
+    "mainline-compatible panel driver (display track, P6)"
+  ],
+  "evidence_tooling": {
+    "decompile": "pinned kernel dtc -I dtb -O dts -s artifacts/stock/audit/boot.img.dtb-5",
+    "phandle_resolver": "scripts/dtb_supplies.py",
+    "built_vs_stock_check": "scripts/verify_lithium_dtb.py (39 checks; negative control with mutated DTB fails 3)"
+  },
+  "reserved_memory_policy": {
+    "decision": "Keep the mainline msm8996.dtsi carveouts (0x85800000-0x91700000, contiguous, all inside the stock removed/modem/peripheral regions) and add only what mainline lacks.",
+    "added": [
+      {
+        "base": "0x91700000",
+        "size": "0x1200000",
+        "reason": "tail of stock peripheral_region (0x8fe00000+0x2b00000) not covered by mainline carveouts"
+      },
+      {
+        "base": "0x83400000",
+        "size": "0x1000",
+        "reason": "stock dfps_data_mem"
+      },
+      {
+        "base": "0x83401000",
+        "size": "0x23ff000",
+        "reason": "stock cont_splash_mem, live scan-out"
+      },
+      {
+        "base": "0xb1c00000",
+        "size": "0x23ff000",
+        "reason": "stock cont_splash_mem_hdmi"
+      },
+      {
+        "base": "0xb4000000",
+        "size": "0x100000",
+        "reason": "stock ocimem_log"
+      }
+    ],
+    "not_added": {
+      "rmtfs": "stock qcom,rmtfs_sharedmem has no fixed address (reg <0 0x200000>); mainline dynamic rmtfs kept",
+      "ramoops": "lk2nd (WITH_LK2ND_RAMOOPS) inserts its own ramoops node"
+    },
+    "deferred_to_P7": "The Xiaomi MSM8996 PIL layout (mpss 0x89c00000, adsp 0x8fe00000 ... venus ending 0x92900000) fits lithium's stock envelopes exactly, but is only needed when remoteprocs are enabled.",
+    "verified": "every stock static reservation covered; every built static reservation inside a stock one"
+  },
+  "regulators": [
+    {
+      "rail": "smpa4",
+      "microvolt": 1800000,
+      "stock_node": "/soc/qcom,rpm-smd/rpm-regulator-smpa4",
+      "consumers": [
+        "ufshc vccq2"
+      ],
+      "status": "observed_stock_dtb",
+      "always_on": "project safety choice: shared 1.8 V I/O rail; stock does not mark it always-on"
+    },
+    {
+      "rail": "ldoa12",
+      "microvolt": 1800000,
+      "stock_node": "/soc/qcom,rpm-smd/rpm-regulator-ldoa12",
+      "consumers": [
+        "ufsphy vdda-pll",
+        "qusb vdda18 -> mainline vdda-pll",
+        "ssphy core"
+      ],
+      "status": "observed_stock_dtb"
+    },
+    {
+      "rail": "ldoa20",
+      "microvolt": 2950000,
+      "stock_node": "/soc/qcom,rpm-smd/rpm-regulator-ldoa20",
+      "consumers": [
+        "ufshc vcc"
+      ],
+      "status": "observed_stock_dtb"
+    },
+    {
+      "rail": "ldoa24",
+      "microvolt": 3075000,
+      "stock_node": "/soc/qcom,rpm-smd/rpm-regulator-ldoa24",
+      "consumers": [
+        "qusb vdda33 -> mainline vdda-phy-dpdm"
+      ],
+      "status": "observed_stock_dtb"
+    },
+    {
+      "rail": "ldoa25",
+      "microvolt": 1200000,
+      "stock_node": "/soc/qcom,rpm-smd/rpm-regulator-ldoa25",
+      "consumers": [
+        "ufshc vccq",
+        "ufsphy vddp-ref-clk (not in mainline binding; rail already on via vccq)"
+      ],
+      "status": "observed_stock_dtb"
+    },
+    {
+      "rail": "ldoa28",
+      "microvolt": 925000,
+      "stock_node": "/soc/qcom,rpm-smd/rpm-regulator-ldoa28",
+      "consumers": [
+        "ufsphy vdda-phy",
+        "ssphy vdd"
+      ],
+      "status": "observed_stock_dtb"
+    }
+  ],
+  "not_described_rails": {
+    "pm8994_l14, pmi8994 lab/ibb, tlmm gpio40 vddr": "display rails left untouched so the bootloader splash survives",
+    "qusb vdd": "stock uses pm8994_s2_corner (VDD_CX corner); mainline has no regulator for it, left unset as on upstream Xiaomi boards (dtbs_check warning shared with scorpio)"
+  },
+  "storage": {
+    "controller": "ufshc@624000 + ufsphy@627000",
+    "stock_status": "ok",
+    "max_microamp": {
+      "vcc": 600000,
+      "vccq": 450000,
+      "vccq2": 450000
+    },
+    "vdd_hba": "stock gdsc_ufs; mainline uses the SoC power-domain",
+    "status": "observed_stock_dtb"
+  },
+  "usb": {
+    "controller": "ssusb@6a00000 (dwc3), HS PHY qusb@7411000, SS PHY ssphy@7410000 enabled in stock",
+    "typec": "ti,tusb320l declared at 0x47 and 0x67 on i2c@75b7000 (mainline blsp2_i2c3) without interrupts; mainline binding needs one -> not described",
+    "first_boot_choice": "dr_mode peripheral, maximum-speed high-speed, HS PHY only, qcom,select-utmi-as-pipe-clk (bring-up choice, not a hardware claim)"
+  },
+  "console_uart": {
+    "address": "0x75b0000 (mainline blsp2_uart2, downstream serial@075b0000 msm-lsuart, status ok)",
+    "pins": "gpio4/gpio5, function blsp_uart8, bias-disable, 2 mA (stock uart_console_active) = mainline blsp2_uart2_2pins_default",
+    "correction": "serial@07570000 (BLSP1 UART2) is DISABLED as an lsuart in lithium stock; 0x7570000 is the high-speed UART (uart@07570000). The first DTS build pointed stdout there.",
+    "external_access": "unknown"
+  },
+  "keys": {
+    "power": {
+      "source": "PM8994 PON pon_1",
+      "linux_code": 116,
+      "status": "observed_stock_dtb"
+    },
+    "volume_down": {
+      "source": "PM8994 PON resin pon_2",
+      "linux_code": 114,
+      "status": "observed_stock_dtb"
+    },
+    "volume_up": {
+      "source": "PM8994 GPIO 2",
+      "active_low": true,
+      "pull": "30 uA up",
+      "vin": "VIN2 = S4 1.8 V",
+      "debounce_ms": 15,
+      "linux_code": 115,
+      "status": "observed_stock_dtb"
+    },
+    "not_described": "stock gpio_keys also lists dome (TLMM 34), cam_snapshot (PM8994 GPIO 4) and hall_key0 (TLMM 124); shared Xiaomi include, physical presence on lithium unverified"
+  },
+  "tlmm_claimed": [
+    "gpio4",
+    "gpio5"
+  ],
+  "tlmm_left_untouched": {
+    "display": [
+      8,
+      10,
+      40,
+      47,
+      48
+    ],
+    "touch": [
+      89,
+      125
+    ]
+  }
 }

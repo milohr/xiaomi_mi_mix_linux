@@ -10,23 +10,56 @@
   },
   "output": {
     "relative_path": "artifacts/build/kernel-phase3/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dtb",
-    "size": 64405,
-    "sha256": "74fae8d5515899757bd937fc8dc13f1b22bbbcf1388b182a42815ef7a4ef371b"
+    "size": 66199,
+    "sha256": "622ba9fa4316dc7086cfd2891cb37d7f2d57c88d7ead02e3aacfb2384faf4abf",
+    "reproduced": "identical hash on a second build"
   },
   "validation": {
     "dtb_compile": "passed",
-    "schema": "passed",
-    "schema_scope": "Documentation/devicetree/bindings/arm/qcom.yaml",
-    "dtschema_version": "2026.9",
+    "schema": "full CHECK_DTBS, dtschema 2026.9: no warning beyond those the upstream msm8996pro-xiaomi-scorpio board also produces (inherited SoC/PMIC includes; list in docs/PHASE3_FINDINGS.md)",
+    "stock_evidence_check": "scripts/verify_lithium_dtb.py: 39/39 against boot.img.dtb-5; mutated-DTB negative control fails 3",
+    "patch_applies_to_pinned_tree": "git apply --cached --check on a temporary index of 1aed438c",
     "hardware_boot_tested": false
   },
   "decoded_identity": {
     "model": "Xiaomi Mi MIX",
-    "compatible": ["xiaomi,lithium", "qcom,msm8996pro", "qcom,msm8996"],
-    "msm_id": [305, 65536],
-    "board_id": [38, 0],
-    "pmic_id": [131081, 65555, 0, 0],
-    "stdout_path": "serial0:115200n8"
+    "compatible": [
+      "xiaomi,lithium",
+      "qcom,msm8996pro",
+      "qcom,msm8996"
+    ],
+    "msm_id": [
+      305,
+      65536
+    ],
+    "board_id": [
+      38,
+      0
+    ],
+    "pmic_id": [
+      131081,
+      65555,
+      0,
+      0
+    ],
+    "stdout_path": "serial0:115200n8 -> /soc@0/serial@75b0000"
   },
-  "device_write_performed": false
+  "device_write_performed": false,
+  "revision": 2,
+  "supersedes": {
+    "sha256": "74fae8d5515899757bd937fc8dc13f1b22bbbcf1388b182a42815ef7a4ef371b",
+    "size": 64405,
+    "reason": "revision 1 put the console on the 0x7570000 high-speed UART, which lithium stock disables as a console, and described nothing beyond identity"
+  },
+  "kernel_config": {
+    "fragment": "kernel/lithium.config",
+    "checker": "scripts/check_kernel_config.py",
+    "pmaports_config": {
+      "path": "device/testing/linux-postmarketos-qcom-msm8996/config-postmarketos-qcom-msm8996.aarch64",
+      "pmaports_commit": "dfb010f5b9885d185d089b6e1e493030062f9756",
+      "sha512_matches_APKBUILD": true,
+      "result": "30/30 satisfied (USB_CONFIGFS as module)"
+    },
+    "defconfig_merge": "30/30 satisfied after merge_config.sh + olddefconfig"
+  }
 }

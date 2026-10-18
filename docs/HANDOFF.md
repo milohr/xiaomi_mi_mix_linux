@@ -1,4 +1,4 @@
-# Session handoff — Phase 3 next
+# Session handoff — Phase 4 next
 
 ## Current state
 
@@ -19,10 +19,32 @@ Actual restoration flashing and temporary-image boot have not been tested.
 Physical Fastboot key entry remains untested; the successful Fastboot round trip
 used ADB entry. Do not describe the menu test as a tested firmware restoration.
 
-## Next phase: P3
+## Phase 3 completed (2026-10-17)
 
-Phase 2 is complete. Begin the clean Linux hardware map and minimal original DTS
-against the pinned MSM8996 kernel. Phase completion does not authorize flashing.
+Offline gate passed; see [PHASE3_FINDINGS.md](PHASE3_FINDINGS.md). The DTS no
+longer includes `msm8996-xiaomi-common.dtsi`. It enables the console
+(`blsp2_uart2`, 0x75b0000, gpio4/5), UFS, USB in peripheral mode on the HS PHY,
+six RPM rails at stock voltages, power and volume keys, and the reserved memory
+the stock map needs. `scripts/build_lithium_dtb.sh` builds it (`622ba9fa…`,
+reproducible), runs the full schema check, and checks it against the stock DTB
+(39/39). **Correction:** revision 1 sent the console to 0x7570000, which
+lithium's stock disables as a console. Phase completion does not authorize flashing.
+
+## Next phase: P4
+
+1. Write `device-xiaomi-lithium` (APKBUILD + deviceinfo) following the pinned
+   pmaports conventions. Take boot-image values from the Phase 1/2 audit (v0
+   header, page 4096, kernel 0x8000, ramdisk 0x1000000, second 0xf00000, tags
+   0x100), the screen size 1080x2040, and the DTB
+   `qcom/msm8996pro-xiaomi-lithium.dtb`.
+2. Use the shared `linux-postmarketos-qcom-msm8996` package. Phase 3 showed its
+   config already satisfies `kernel/lithium.config`. The only kernel change is
+   adding the DTB patch.
+3. Kernel command line for the first boot should include `lk2nd.pass-simplefb`
+   (docs/DISPLAY.md). USB networking is the primary console; UART reachability
+   is unknown.
+4. Pinned pmaports checkout from Phase 2 may still be at `/tmp/lithium-p2-pmaports`
+   (tmpfs, not durable); `/tmp` was 95% full on 2026-10-17.
 
 ## Tooling
 
@@ -65,7 +87,7 @@ only read-only ADB `getprop`/sysfs reads. Full status: [DISPLAY.md](DISPLAY.md).
   compatible. It builds and has its own image hash, and it isn't part of the reviewed
   Phase 2 image. Decide at P5 review whether to include it.
 
-**For the Phase 3 owner:** the pinned lk2nd image already contains
+**(Resolved in Phase 3, kept for history.)** The pinned lk2nd image already contains
 cont-splash + `lk2nd.pass-simplefb`, which writes a measured simple-framebuffer
 node into the Linux DTB at boot. So the minimal DTS needs **no** hard-coded
 simplefb. Keep `cont_splash_mem`/`dfps_data_mem` reserved and leave TLMM

@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "updated": "2026-10-17T19:59:09.365235+00:00",
+  "updated": "2026-10-17",
   "target": "xiaomi-lithium",
   "goal": "Native bare-metal Linux with reproducible pmbootstrap packaging",
-  "current_phase": "P3",
+  "current_phase": "P4",
   "observations": [
     {
       "key": "manufacturer",
@@ -147,13 +147,13 @@
     "aspect_ratio": "17:9"
   },
   "unknowns": [
-    "physical memory regions and carveouts",
-    "panel model and variant",
-    "DSI sequence and command state",
-    "framebuffer base/stride/format",
-    "GPIO and PMIC mapping",
     "whether the new lithium lk2nd selector starts on real hardware",
     "whether lk2nd Fastboot can load the first Linux image on lithium",
+    "simple-framebuffer values lk2nd produces on lithium",
+    "whether the gpio4/5 console UART is externally reachable",
+    "populated TUSB320L address and interrupt",
+    "Xiaomi PIL carveout layout on lithium (P7)",
+    "0x23 acceptance by the FTE716 panel and PMI8994/6 LAB/IBB support (P6)",
     "marketed storage SKU; live partition geometry now recorded"
   ],
   "sources": [
@@ -298,7 +298,7 @@
     {
       "id": "P3",
       "title": "Hardware map and minimal DTS",
-      "status": "in_progress",
+      "status": "complete",
       "dependencies": "P1, P2",
       "tasks": [
         "Extract DTB and panel evidence offline; retain source locations and hashes.",
@@ -312,7 +312,10 @@
         "Original lithium DTS patch",
         "Minimal kernel configuration fragment"
       ],
-      "exit_gate": "DTS compiles and applicable dtbs_check passes; every enabled node has traceable hardware evidence."
+      "exit_gate": "DTS compiles and applicable dtbs_check passes; every enabled node has traceable hardware evidence.",
+      "completed_at": "2026-10-17",
+      "completion_evidence": "research/kernel-dtb-build.json",
+      "completion_note": "Offline gate: reproducible DTB, no schema warnings beyond the upstream scorpio baseline, 39/39 stock evidence checks. Simple-framebuffer delegated to lk2nd pass-simplefb (verify at P5). Not boot-tested."
     },
     {
       "id": "P4",
@@ -489,5 +492,6 @@
       "dt-binding and final compatibles"
     ],
     "device_write_performed": false
-  }
+  },
+  "phase3_config_fragment": "kernel/lithium.config"
 }

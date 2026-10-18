@@ -34,12 +34,14 @@ Read-only live DT and sysfs inspection identifies SoC ID 305, revision 1.1,
 the Sharp FTE716 1080p video panel variant on this unit. Physical DRAM banks and
 reserved-memory ranges are recorded in `research/hardware-map.json`.
 
-Framebuffer stride/format and retained clocks, exact external UART access,
-several peripheral power dependencies, and the mainline panel implementation
-remain unknown.
+The stock console UART is `serial@075b0000` on gpio4/5 (not BLSP1 UART2 at
+0x7570000, which stock disables as a console). Its external accessibility,
+the lk2nd-measured framebuffer values, the populated Type-C chip and the
+mainline panel implementation remain unknown. UFS, USB and key wiring are
+mapped in `research/hardware-map.json`.
 
 ## Main constraints
 
 Scorpio shares a platform but its panel, touch, GPIOs and reserved memory must
 not be assumed identical. The project now carries original lithium lk2nd and
-minimal Linux DTS patches; neither has been boot-tested on hardware.
+Phase 3 Linux DTS patches; neither has been boot-tested on hardware.

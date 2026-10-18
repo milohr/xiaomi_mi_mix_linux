@@ -2,8 +2,8 @@
 
 Target: **original Xiaomi Mi MIX (`lithium`)**, Qualcomm MSM8996 family.
 Goal: reproducible native Linux boot, then display, input, storage and networking,
-using pmbootstrap packaging. A lithium lk2nd board selector now builds, but has
-not yet been validated on hardware.
+using pmbootstrap packaging. A lithium lk2nd board selector and Linux DTS now
+build, but have not yet been validated on hardware.
 This repository is independent of the MediaTek Redmi `flare` project.
 
 ## Start here
@@ -39,8 +39,11 @@ source leads and phase gates. It is the machine-readable project inventory.
 Live ADB and Fastboot evidence identifies `lithium`, confirms an unlocked
 bootloader, and establishes matching stock recovery artifacts. Phase 1 is
 complete. Phase 2 pinned the MSM8996 kernel baseline, added a lithium selector
-to lk2nd, and produced a reproducible 372,752-byte image. Hardware validation is
-still pending. Mainline boot has **not** been demonstrated. No flash commands
+to lk2nd, and produced a reproducible 372,752-byte image. Phase 3 is complete
+offline: a lithium DTS (console, UFS, USB peripheral, keys, reserved memory)
+checked against the stock DTB, plus a kernel config fragment; see
+[Phase 3 findings](docs/PHASE3_FINDINGS.md). Phase 4 (packaging) is next.
+Hardware validation is still pending. Mainline boot has **not** been demonstrated. No flash commands
 are automated.
 
 The project patch adds lithium to lk2nd's MSM8996 bundle from verified stock DTB
