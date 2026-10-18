@@ -1,4 +1,4 @@
-# Session handoff — Phase 4 next
+# Session handoff — P5 next (awaiting the user's go for Step A)
 
 ## Current state
 
@@ -30,7 +30,23 @@ reproducible), runs the full schema check, and checks it against the stock DTB
 (39/39). **Correction:** revision 1 sent the console to 0x7570000, which
 lithium's stock disables as a console. Phase completion does not authorize flashing.
 
-## Next phase: P4
+## Phase 4 completed (2026-10-18), lint pending
+
+`scripts/pmb_build.sh` built `device-xiaomi-lithium-1-r0` and the shared
+`linux-postmarketos-qcom-msm8996` 6.19.5-r1 with patch 0001, installed a console
+rootfs and exported to `artifacts/pmb-export` (ignored). `boot.img` (`c2f98e2b…`)
+passes `audit_bootimg.py`; its appended DTB is the Phase 3 DTB byte for byte
+(`622ba9fa…`). `p5-boot.img` (`af734348…`) adds the four P5 debug arguments and
+passes too. The kernel embeds its config (IKCONFIG): 30/30 of `kernel/lithium.config`.
+The initramfs has unudhcpd, telnetd and the debug-shell path. Details and every
+hash: [PHASE4_FINDINGS.md](PHASE4_FINDINGS.md), `research/pmb-build.json`,
+`artifacts/pmb-export/P5_PREP_REPORT.md` (`scripts/p5_prep_check.sh`).
+Open: the package lint. Fixed: the export loop's `cp -L` on `dtbs/` (now `cp -rL`).
+
+**Next: P5.** docs/P5_FIRST_BOOT.md is complete. Its Step A (lk2nd into the
+recovery partition) is the first device write and needs the user's explicit go.
+
+## Phase 4 plan (done, kept for history)
 
 1. Write `device-xiaomi-lithium` (APKBUILD + deviceinfo) following the pinned
    pmaports conventions. Take boot-image values from the Phase 1/2 audit (v0

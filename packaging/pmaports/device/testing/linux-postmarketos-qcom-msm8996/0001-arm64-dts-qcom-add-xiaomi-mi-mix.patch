@@ -1,0 +1,241 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] arm64: dts: qcom: add Xiaomi Mi MIX
+
+Add an initial device tree for the Xiaomi Mi MIX (lithium), an MSM8996 Pro
+board with PMI8996. Enable what a first boot needs, with values taken from
+the device's own stock device tree: the console UART, UFS storage, USB in
+peripheral mode on the high-speed PHY, the RPM regulators they use, the
+power and volume keys, and the memory the bootloader and firmware keep.
+
+---
+ Documentation/devicetree/bindings/arm/qcom.yaml    |   1 +
+ arch/arm64/boot/dts/qcom/Makefile                  |   1 +
+ .../boot/dts/qcom/msm8996pro-xiaomi-lithium.dts    | 197 +++++++++++++++++++++
+ 3 files changed, 199 insertions(+)
+diff --git a/Documentation/devicetree/bindings/arm/qcom.yaml b/Documentation/devicetree/bindings/arm/qcom.yaml
+index fcb2b2926..e6b10f50d 100644
+--- a/Documentation/devicetree/bindings/arm/qcom.yaml
++++ b/Documentation/devicetree/bindings/arm/qcom.yaml
+@@ -252,6 +252,7 @@ properties:
+       - items:
+           - enum:
+               - xiaomi,capricorn
++              - xiaomi,lithium
+               - xiaomi,natrium
+               - xiaomi,scorpio
+           - const: qcom,msm8996pro
+diff --git a/arch/arm64/boot/dts/qcom/Makefile b/arch/arm64/boot/dts/qcom/Makefile
+index 821146b2a..2e0d28859 100644
+--- a/arch/arm64/boot/dts/qcom/Makefile
++++ b/arch/arm64/boot/dts/qcom/Makefile
+@@ -113,6 +113,7 @@ dtb-$(CONFIG_ARCH_QCOM)	+= msm8996-zte-axon7.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= msm8996pro-oneplus3t-s6e3fa3.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= msm8996pro-oneplus3t-s6e3fa5.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= msm8996pro-xiaomi-capricorn.dtb
++dtb-$(CONFIG_ARCH_QCOM)	+= msm8996pro-xiaomi-lithium.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= msm8996pro-xiaomi-natrium.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= msm8996pro-xiaomi-scorpio.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= msm8998-asus-novago-tp370ql.dtb
+diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+new file mode 100644
+index 000000000..8f6e2700d
+--- /dev/null
++++ b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+@@ -0,0 +1,197 @@
++// SPDX-License-Identifier: BSD-3-Clause
++/*
++ * Copyright (c) 2026 Xiaomi Mi MIX Linux port contributors
++ */
++
++/dts-v1/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/input/input.h>
++#include <dt-bindings/pinctrl/qcom,pmic-gpio.h>
++#include "msm8996pro.dtsi"
++#include "pm8994.dtsi"
++#include "pmi8994.dtsi"
++#include "pmi8996.dtsi"
++
++/*
++ * Every value below is traced in research/hardware-map.json to lithium's own
++ * stock DTB (boot.img.dtb-5, the one the live unit selects) or the live DT.
++ */
++
++/ {
++	model = "Xiaomi Mi MIX";
++	compatible = "xiaomi,lithium", "qcom,msm8996pro", "qcom,msm8996";
++	chassis-type = "handset";
++
++	/* Values selected by the stock bootloader on the observed device. */
++	qcom,msm-id = <305 0x10000>;
++	qcom,board-id = <38 0>;
++
++	aliases {
++		serial0 = &blsp2_uart2;
++	};
++
++	chosen {
++		stdout-path = "serial0:115200n8";
++	};
++
++	gpio-keys {
++		compatible = "gpio-keys";
++
++		pinctrl-0 = <&vol_up_n>;
++		pinctrl-names = "default";
++
++		key-volume-up {
++			label = "Volume Up";
++			gpios = <&pm8994_gpios 2 GPIO_ACTIVE_LOW>;
++			linux,code = <KEY_VOLUMEUP>;
++			debounce-interval = <15>;
++			wakeup-source;
++		};
++	};
++
++	reserved-memory {
++		/*
++		 * The SoC carveouts cover 0x85800000-0x91700000, all inside the
++		 * stock removed/modem/peripheral regions. Reserve the rest of the
++		 * stock peripheral region until the PIL layout is mapped.
++		 */
++		memory@91700000 {
++			reg = <0x0 0x91700000 0x0 0x1200000>;
++			no-map;
++		};
++
++		/* Bootloader splash, still scanned out when Linux starts. */
++		memory@83400000 {
++			reg = <0x0 0x83400000 0x0 0x1000>;
++			no-map;
++		};
++
++		cont_splash_mem: memory@83401000 {
++			reg = <0x0 0x83401000 0x0 0x23ff000>;
++			no-map;
++		};
++
++		memory@b1c00000 {
++			reg = <0x0 0xb1c00000 0x0 0x23ff000>;
++			no-map;
++		};
++
++		memory@b4000000 {
++			reg = <0x0 0xb4000000 0x0 0x100000>;
++			no-map;
++		};
++	};
++};
++
++/* Stock console UART: serial@75b0000 on gpio4/gpio5, ttyHSL0. */
++&blsp2_uart2 {
++	pinctrl-0 = <&blsp2_uart2_2pins_default>;
++	pinctrl-names = "default";
++
++	status = "okay";
++};
++
++&hsusb_phy1 {
++	vdda-pll-supply = <&vreg_l12a_1p8>;
++	vdda-phy-dpdm-supply = <&vreg_l24a_3p075>;
++
++	status = "okay";
++};
++
++&pm8994_gpios {
++	vol_up_n: vol-up-n-state {
++		pins = "gpio2";
++		function = PMIC_GPIO_FUNC_NORMAL;
++		input-enable;
++		bias-pull-up;
++		power-source = <PM8994_GPIO_S4>;
++	};
++};
++
++&pm8994_resin {
++	linux,code = <KEY_VOLUMEDOWN>;
++
++	status = "okay";
++};
++
++&rpm_requests {
++	regulators-0 {
++		compatible = "qcom,rpm-pm8994-regulators";
++
++		/* Shared 1.8 V I/O rail; kept on, as on other MSM8996 boards. */
++		vreg_s4a_1p8: s4 {
++			regulator-name = "vreg_s4a_1p8";
++			regulator-min-microvolt = <1800000>;
++			regulator-max-microvolt = <1800000>;
++			regulator-always-on;
++		};
++
++		vreg_l12a_1p8: l12 {
++			regulator-name = "vreg_l12a_1p8";
++			regulator-min-microvolt = <1800000>;
++			regulator-max-microvolt = <1800000>;
++		};
++
++		vreg_l20a_2p95: l20 {
++			regulator-name = "vreg_l20a_2p95";
++			regulator-min-microvolt = <2950000>;
++			regulator-max-microvolt = <2950000>;
++		};
++
++		vreg_l24a_3p075: l24 {
++			regulator-name = "vreg_l24a_3p075";
++			regulator-min-microvolt = <3075000>;
++			regulator-max-microvolt = <3075000>;
++		};
++
++		vreg_l25a_1p2: l25 {
++			regulator-name = "vreg_l25a_1p2";
++			regulator-min-microvolt = <1200000>;
++			regulator-max-microvolt = <1200000>;
++		};
++
++		vreg_l28a_0p925: l28 {
++			regulator-name = "vreg_l28a_0p925";
++			regulator-min-microvolt = <925000>;
++			regulator-max-microvolt = <925000>;
++		};
++	};
++};
++
++&ufshc {
++	vcc-supply = <&vreg_l20a_2p95>;
++	vccq-supply = <&vreg_l25a_1p2>;
++	vccq2-supply = <&vreg_s4a_1p8>;
++
++	vcc-max-microamp = <600000>;
++	vccq-max-microamp = <450000>;
++	vccq2-max-microamp = <450000>;
++
++	status = "okay";
++};
++
++&ufsphy {
++	vdda-phy-supply = <&vreg_l28a_0p925>;
++	vdda-pll-supply = <&vreg_l12a_1p8>;
++
++	status = "okay";
++};
++
++&usb3 {
++	qcom,select-utmi-as-pipe-clk;
++
++	status = "okay";
++};
++
++/*
++ * First-boot USB networking: fixed peripheral role on the high-speed PHY.
++ * The TUSB320L Type-C controller has no interrupt in the stock DTB, so role
++ * switching is not described yet.
++ */
++&usb3_dwc3 {
++	dr_mode = "peripheral";
++	maximum-speed = "high-speed";
++	phys = <&hsusb_phy1>;
++	phy-names = "usb2-phy";
++};

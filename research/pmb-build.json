@@ -1,0 +1,64 @@
+{
+  "phase": "P4",
+  "date": "2026-10-18",
+  "pmbootstrap": "7d23010a125ca7386fec4e390d14128b6c24d266",
+  "pmaports": "dfb010f5b9885d185d089b6e1e493030062f9756",
+  "packages": {
+    "device-xiaomi-lithium": "1-r0",
+    "linux-postmarketos-qcom-msm8996": "6.19.5-r1"
+  },
+  "ui": "console",
+  "p5_cmdline_appended": [
+    "lk2nd.pass-ramoops=zap",
+    "console=tty0",
+    "clk_ignore_unused",
+    "pd_ignore_unused"
+  ],
+  "dtb_matches_phase3": true,
+  "checks": {
+    "audit_bootimg": "pass",
+    "p5_audit": "pass",
+    "kernel_config_lithium": "30/30",
+    "initramfs_debug_shell": "pass",
+    "package_lint": "pending"
+  },
+  "export_dir": "artifacts/pmb-export (ignored)",
+  "files": {
+    "boot.img": {
+      "bytes": 23908352,
+      "sha256": "c2f98e2b1727540e6c48378a38a576176a3b092cafb872c77de3b4b90b351272"
+    },
+    "p5-boot.img": {
+      "bytes": 23908352,
+      "sha256": "af734348a19c1970d17a1c0432a923e1071132fbb6eeb304d500b8a7aa62a9c5"
+    },
+    "xiaomi-lithium.img": {
+      "bytes": 1328545792,
+      "sha256": "a120e324f1de4317f167c0e599cd98aa71eeb24ebcd7814bdbdb2f962a96e210"
+    },
+    "dtbs/msm8996pro-xiaomi-lithium.dtb": {
+      "bytes": 66199,
+      "sha256": "622ba9fa4316dc7086cfd2891cb37d7f2d57c88d7ead02e3aacfb2384faf4abf"
+    },
+    "vmlinuz": {
+      "bytes": 11263869,
+      "sha256": "4aa7d9c5baf76b03922a3897195340c0cf3257a7f004875a8d6866ed6d08cef4"
+    },
+    "initramfs": {
+      "bytes": 12569253,
+      "sha256": "05938d8a86ea94fe45b6adf0e44bf886dcc65cb3063538b45336380e11593062"
+    },
+    "linux-postmarketos-qcom-msm8996-6.19.5-r1.apk": {
+      "bytes": 26679079,
+      "sha256": "4acdee5429d51fec08f03bd5e1cba9d8247ccf6ee01a33bc9da7431fada67e73"
+    },
+    "device-xiaomi-lithium-1-r0.apk": {
+      "bytes": 2277,
+      "sha256": "ddd9f0c3ddb603b926b62cd300bdec7d8c78f20ec860889efb555e6f9946eb87"
+    },
+    "kernel.config": {
+      "bytes": 235508,
+      "sha256": "3927e47a59a258fef28586c5931e251e849a0bebfdcbcccf2c4e82fbf4981c72"
+    }
+  }
+}

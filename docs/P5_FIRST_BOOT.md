@@ -2,8 +2,8 @@
 
 Status: **draft for review. Nothing here is authorized yet and no device write
 has been made.** Each step marked ⚠ needs the user's explicit go at the time it
-runs. Image hashes marked _pending_ are filled in once the P4 build is exported
-and audited (`artifacts/pmb-export`).
+runs. The images below are built and audited (P4, 2026-10-18,
+[PHASE4_FINDINGS.md](PHASE4_FINDINGS.md)).
 
 The plan follows [BOOT_PATH.md](BOOT_PATH.md): lk2nd goes into the **recovery**
 partition, Android's **boot** partition is never written, and Linux runs from
@@ -25,7 +25,7 @@ labels; with no pmOS partitions present it mounts nothing.
 | Image | Size | SHA-256 | Role |
 |---|---|---|---|
 | `artifacts/build/lk2nd-gcc/build-lk2nd-msm8996/lk2nd.img` | 372,752 | `b845d9b612bc08e457b9aa89b23850620e3284467fde4deef999955dac19444d` | P2-reviewed lk2nd, goes into recovery |
-| `artifacts/pmb-export/p5-boot.img` | _pending_ | _pending_ | Linux, booted from RAM only |
+| `artifacts/pmb-export/p5-boot.img` | 23,908,352 | `af734348a19c1970d17a1c0432a923e1071132fbb6eeb304d500b8a7aa62a9c5` | Linux, booted from RAM only (from `boot.img` `c2f98e2b…`, docs/PHASE4_FINDINGS.md) |
 | `artifacts/stock/audit/recovery.img` | 29,406,542 | `1c22cdc539f975333dfda9fbeda568dc2e84b01d00120f2d9d7872af70e09abd` | stock recovery, for Step R |
 | `artifacts/stock/audit/boot.img` | — | `fe99b14be190522ab185726c6ae62317f68c5bb6c7e0cd4a2af318d861978f17` | stock boot; only if boot were ever written (it is not) |
 

@@ -56,7 +56,7 @@ Status: **complete** (offline gate; see PHASE3_FINDINGS.md). Dependencies: P1, P
 
 ## P4 — Reproducible pmbootstrap packages
 
-Status: **pending**. Dependencies: P2, P3.
+Status: **built and audited 2026-10-18; package lint pending** ([PHASE4_FINDINGS.md](PHASE4_FINDINGS.md)). Dependencies: P2, P3.
 
 1. Use pinned pmaports conventions to generate device-xiaomi-lithium/APKBUILD and deviceinfo.
 2. Prefer the verified shared MSM8996 kernel package; create a separate kernel package only if justified.
