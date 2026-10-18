@@ -26,6 +26,19 @@ mkdir -p "$PMAPORTS/$DPKG"
 cp "$OVERLAY/$DPKG/"* "$PMAPORTS/$DPKG/"
 cp "$OVERLAY/$KPKG/"* "$PMAPORTS/$KPKG/"
 
+# The firmware package only when its locally built tarball exists
+# (scripts/make-firmware-tarball.sh; the blobs are never committed).
+FPKG=device/testing/firmware-xiaomi-lithium
+rm -rf "${PMAPORTS:?}/$FPKG"
+if ls "$OVERLAY/$FPKG/"*.tar.gz >/dev/null 2>&1; then
+	mkdir -p "$PMAPORTS/$FPKG"
+	cp "$OVERLAY/$FPKG/APKBUILD" "$OVERLAY/$FPKG/"*.tar.gz "$PMAPORTS/$FPKG/"
+	set -- "$PMAPORTS/$FPKG"
+else
+	echo "note: no firmware tarball in $OVERLAY/$FPKG; firmware-xiaomi-lithium not staged" >&2
+	set --
+fi
+
 python3 -I "$PROJECT_ROOT/scripts/verify_apkbuild_checksums.py" \
-	"$PMAPORTS/$DPKG" "$PMAPORTS/$KPKG"
+	"$PMAPORTS/$DPKG" "$PMAPORTS/$KPKG" "$@"
 git -C "$PMAPORTS" status --short

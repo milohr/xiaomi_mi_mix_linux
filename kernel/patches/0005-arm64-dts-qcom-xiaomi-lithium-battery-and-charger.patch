@@ -1,0 +1,49 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] arm64: dts: qcom: xiaomi-lithium: enable the fuel gauge and charger
+
+Enable the PMI8996 fuel gauge and SMB charger with a simple-battery node
+from the stock battery profile (4400 mAh, 4.4 V, 3.4 V cutoff). The charge
+current is limited to 1 A until both are verified on the device; stock
+allows 3.2 A.
+
+---
+diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+--- a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
++++ b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+@@ -36,6 +36,19 @@
+ 	};
+ 
+ 	/*
++	 * Stock battery profiles (stock-dtb5.dts:229-257): ATL 4400 mAh, 4.4 V
++	 * max, 3.4 V cutoff. Stock charges at up to 3.2 A; kept at 1 A until the
++	 * fuel gauge and charger are verified on the device.
++	 */
++	battery: battery {
++		compatible = "simple-battery";
++		charge-full-design-microamp-hours = <4400000>;
++		constant-charge-current-max-microamp = <1000000>;
++		voltage-max-design-microvolt = <4400000>;
++		voltage-min-design-microvolt = <3400000>;
++	};
++
++	/*
+ 	 * Stock disp_vddr_vreg1_6: the panel's VDDR, switched by TLMM 40, on from
+ 	 * the bootloader. Nothing in mainline consumes it yet (stock hangs it on
+ 	 * the DSI controller as vddr-supply), so keep it always on.
+@@ -152,6 +165,16 @@
+ 	};
+ };
+ 
++&pmi8996_fg {
++	monitored-battery = <&battery>;
++	status = "okay";
++};
++
++&pmi8996_smbchg {
++	monitored-battery = <&battery>;
++	status = "okay";
++};
++
+ /* Stock i2c@75ba000 (BLSP2 QUP6) at 400 kHz. */
+ &blsp2_i2c6 {
+ 	clock-frequency = <400000>;

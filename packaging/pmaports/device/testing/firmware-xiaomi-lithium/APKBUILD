@@ -1,0 +1,29 @@
+# Firmware extracted locally from the user's own Xiaomi Mi MIX stock image.
+# The source tarball is built by scripts/make-firmware-tarball.sh and never committed.
+maintainer="Camilo Higuita <milo.h@aol.com>"
+pkgname=firmware-xiaomi-lithium
+pkgver=20261018
+pkgrel=0
+pkgdesc="Device-specific firmware for Xiaomi Mi MIX"
+url="https://github.com/milohr/xiaomi_mi_mix_linux"
+arch="aarch64"
+license="proprietary"
+options="!strip !check !archcheck !tracedeps pmb:cross-native"
+depends="
+	linux-firmware-ath10k
+	linux-firmware-qca
+	linux-firmware-qcom
+	"
+
+_archive="firmware-lithium-$pkgver"
+source="$_archive.tar.gz"
+
+package() {
+	cd "$srcdir/$_archive"
+	mkdir -p "$pkgdir/lib/firmware"
+	cp -a firmware/. "$pkgdir/lib/firmware/"
+}
+
+sha512sums="
+cba48754408711fa861316347dbcb4c8d39dadf67c62acfa6f3004e08f18bb4ba7591eafe15995025f88c445bcc394fcbfa5319f2753eb203c81b011394a078f  firmware-lithium-20261018.tar.gz
+"

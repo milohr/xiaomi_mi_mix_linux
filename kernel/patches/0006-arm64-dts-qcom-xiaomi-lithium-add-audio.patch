@@ -1,0 +1,229 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] arm64: dts: qcom: xiaomi-lithium: add audio
+
+Enable the ADSP with lithium's firmware, the WCD9335 codec on SLIMbus
+(headphones and microphones) and the NXP TFA9890 speaker amplifier on BLSP1
+I2C3, fed by quaternary MI2S (SCK/WS gpio58/59, SD0 gpio60), with its reset on
+PMI8994 GPIO 2 held low. Codec, amplifier, port and pin values are from the
+stock device tree; the WCD9335 supply layout follows msm8996-xiaomi-common.
+The LM48560 piezo earpiece amplifier has no mainline driver and stays off.
+
+---
+diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+--- a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
++++ b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+@@ -12,6 +12,9 @@
+ #include <dt-bindings/input/input.h>
+ #include <dt-bindings/interrupt-controller/irq.h>
+ #include <dt-bindings/pinctrl/qcom,pmic-gpio.h>
++#include <dt-bindings/sound/qcom,q6afe.h>
++#include <dt-bindings/sound/qcom,q6asm.h>
++#include <dt-bindings/sound/qcom,wcd9335.h>
+ #include "msm8996pro.dtsi"
+ #include "pm8994.dtsi"
+ #include "pmi8994.dtsi"
+@@ -84,6 +87,31 @@
+ 		pinctrl-names = "default";
+ 	};
+ 
++	vph_pwr: vph-pwr-regulator {
++		compatible = "regulator-fixed";
++		regulator-name = "vph_pwr";
++		regulator-min-microvolt = <3600000>;
++		regulator-max-microvolt = <3600000>;
++		regulator-always-on;
++	};
++
++	vph_pwr_bbyp: vph-pwr-bbyp-regulator {
++		compatible = "regulator-fixed";
++		regulator-name = "vph_pwr_bbyp";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		regulator-always-on;
++	};
++
++	divclk1_cdc: divclk1 {
++		compatible = "gpio-gate-clock";
++		clocks = <&rpmcc RPM_SMD_DIV_CLK1>;
++		#clock-cells = <0>;
++		enable-gpios = <&pm8994_gpios 15 GPIO_ACTIVE_HIGH>;
++		pinctrl-0 = <&divclk1_default>;
++		pinctrl-names = "default";
++	};
++
+ 	disp_vddr: disp-vddr-regulator {
+ 		compatible = "regulator-fixed";
+ 		regulator-name = "disp_vddr";
+@@ -175,6 +203,22 @@
+ 	status = "okay";
+ };
+ 
++/* Stock i2c@7577000 (BLSP1 QUP3) at 400 kHz: speaker amp; the LM48560 piezo amp at 0x6f has no driver. */
++&blsp1_i2c3 {
++	clock-frequency = <400000>;
++	status = "okay";
++
++	/* Stock tfa98xx@34: NXP TFA9890 on quaternary MI2S, reset on PMI8994 GPIO 2. */
++	speaker_amp: audio-codec@34 {
++		compatible = "nxp,tfa9890";
++		reg = <0x34>;
++		#sound-dai-cells = <0>;
++		sound-name-prefix = "Speaker";
++		pinctrl-0 = <&speaker_amp_reset &quat_mi2s_default>;
++		pinctrl-names = "default";
++	};
++};
++
+ /* Stock i2c@75ba000 (BLSP2 QUP6) at 400 kHz. */
+ &blsp2_i2c6 {
+ 	clock-frequency = <400000>;
+@@ -309,6 +353,14 @@
+ 	};
+ 
+ 	/* Stock gpio@c800: output high, VIN0 (VPH), low strength. */
++	divclk1_default: divclk1-state {
++		pins = "gpio15";
++		function = PMIC_GPIO_FUNC_FUNC1;
++		bias-disable;
++		power-source = <PM8994_GPIO_S4>;
++		qcom,drive-strength = <PMIC_GPIO_STRENGTH_LOW>;
++	};
++
+ 	rome_enable_default: rome-enable-state {
+ 		pins = "gpio9";
+ 		function = PMIC_GPIO_FUNC_NORMAL;
+@@ -337,6 +389,17 @@
+ 	status = "okay";
+ };
+ 
++&pmi8994_gpios {
++	/* Stock gpio@c100: output, no pull, VIN2. TFA9890 reset is active high: low runs the amp. */
++	speaker_amp_reset: speaker-amp-reset-state {
++		pins = "gpio2";
++		function = PMIC_GPIO_FUNC_NORMAL;
++		output-low;
++		bias-disable;
++		power-source = <2>;
++	};
++};
++
+ &pm8994_resin {
+ 	linux,code = <KEY_VOLUMEDOWN>;
+ 
+@@ -463,6 +526,14 @@
+ 		bias-pull-down;
+ 	};
+ 
++	/* Stock quat_mi2s{,_sd0}_active: SCK/WS gpio58/59, SD0 (speaker data) gpio60. */
++	quat_mi2s_default: quat-mi2s-default-state {
++		pins = "gpio58", "gpio59", "gpio60";
++		function = "qua_mi2s";
++		drive-strength = <8>;
++		bias-disable;
++	};
++
+ 	mdss_vddr_default: mdss-vddr-default-state {
+ 		pins = "gpio40";
+ 		function = "gpio";
+@@ -537,3 +608,101 @@
+ 	phys = <&hsusb_phy1>;
+ 	phy-names = "usb2-phy";
+ };
++
++
++/*
++ * WCD9335 audio path. The stock-only LM48560 piezo earpiece and the TFA9890
++ * speaker routing are intentionally left disabled until their DAI topology is
++ * verified; this exposes codec playback/capture first.
++ */
++&adsp_pil {
++	firmware-name = "qcom/msm8996/lithium/adsp.mbn";
++	status = "okay";
++};
++
++&slim_msm {
++	status = "okay";
++
++	slim@1 {
++		reg = <1>;
++		#address-cells = <2>;
++		#size-cells = <0>;
++
++		tasha_ifd: tas-ifd@0,0 {
++			compatible = "slim217,1a0";
++			reg = <0 0>;
++		};
++
++		wcd9335: codec@1,0 {
++			compatible = "slim217,1a0";
++			reg = <1 0>;
++			clock-names = "mclk", "slimbus";
++			clocks = <&divclk1_cdc>, <&rpmcc RPM_SMD_BB_CLK1>;
++			interrupt-parent = <&tlmm>;
++			interrupts = <54 IRQ_TYPE_LEVEL_HIGH>, <53 IRQ_TYPE_LEVEL_HIGH>;
++			interrupt-names = "intr1", "intr2";
++			interrupt-controller;
++			#interrupt-cells = <1>;
++			pinctrl-0 = <&cdc_reset_active &wcd_intr_default>;
++			pinctrl-names = "default";
++			reset-gpios = <&tlmm 64 GPIO_ACTIVE_LOW>;
++			slim-ifc-dev = <&tasha_ifd>;
++			#sound-dai-cells = <1>;
++			vdd-buck-supply = <&vreg_s4a_1p8>;
++			vdd-buck-sido-supply = <&vreg_s4a_1p8>;
++			vdd-rx-supply = <&vreg_s4a_1p8>;
++			vdd-tx-supply = <&vreg_s4a_1p8>;
++			vdd-vbat-supply = <&vph_pwr>;
++			vdd-micbias-supply = <&vph_pwr_bbyp>;
++			vdd-io-supply = <&vreg_s4a_1p8>;
++		};
++	};
++};
++
++&q6afedai {
++	/* Stock msm-dai-q6-mi2s-quat: rx-lines 0x1 = SD0. */
++	dai@22 {
++		reg = <QUATERNARY_MI2S_RX>;
++		qcom,sd-lines = <0>;
++	};
++};
++
++&q6asmdai {
++	dai@0 { reg = <MSM_FRONTEND_DAI_MULTIMEDIA1>; };
++};
++
++&sound {
++	compatible = "qcom,apq8096-sndcard";
++	model = "lithium";
++	audio-routing = "RX_BIAS", "MCLK",
++			"AMIC1", "MIC BIAS4",
++			"AMIC2", "MIC BIAS2",
++			"AMIC3", "MIC BIAS4",
++			"AMIC4", "MIC BIAS1";
++
++	mm1-dai-link {
++		link-name = "MultiMedia1";
++		cpu { sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA1>; };
++	};
++
++	wcd-aif1-pb-dai-link {
++		link-name = "AIF1_PB";
++		cpu { sound-dai = <&q6afedai SLIMBUS_4_RX>; };
++		platform { sound-dai = <&q6routing>; };
++		codec { sound-dai = <&wcd9335 AIF1_PB>; };
++	};
++
++	wcd-aif1-cap-dai-link {
++		link-name = "AIF1_CAP";
++		cpu { sound-dai = <&q6afedai SLIMBUS_0_TX>; };
++		platform { sound-dai = <&q6routing>; };
++		codec { sound-dai = <&wcd9335 AIF1_CAP>; };
++	};
++
++	speaker-dai-link {
++		link-name = "Speaker";
++		cpu { sound-dai = <&q6afedai QUATERNARY_MI2S_RX>; };
++		platform { sound-dai = <&q6routing>; };
++		codec { sound-dai = <&speaker_amp>; };
++	};
++};
