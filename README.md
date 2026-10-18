@@ -15,14 +15,14 @@ This repository is independent of the MediaTek Redmi `flare` project.
 | Display | ✅ | msm DRM + own FTE716 panel driver; brightness (PMI8994 WLED), screen off/on |
 | Touch | ✅ | FocalTech FT8716 (edt-ft5x06) |
 | Wi-Fi | ✅ | QCA6174 hw3.2 on PCIe, ath10k, lithium board file; 2.4 and 5 GHz |
-| Battery / charging | ✅ | PMI8996 fuel gauge + SMB charger; charge current capped at 1 A for now |
+| Battery / charging | ✅ | PMI8996 fuel gauge + SMB charger, up to 3.2 A; input follows the USB-C current advertisement; no Quick Charge yet |
 | Headphones | ✅ | ADSP + WCD9335 over SLIMbus; UCM Speaker/Headphones, chosen by hand (no jack detection yet) |
 | UI | ✅ | Plasma Mobile and Phosh (GPU-accelerated), Sxmo (dwm) |
 | Speaker | ✅ | TFA9891 (stock DT says TFA9890) on quaternary MI2S; tfa989x TFA9891 support added |
 | GPU (Adreno 530) | ✅ | lithium's signed zap shader; GPU_GX supplied from PMI8994 S2; Phosh renders on the GPU |
 | Bluetooth | 🔧 | QCA6174 on UART; patch drafted, untested |
 | Microphones | 🔧 | codec capture path present, untested |
-| USB host / OTG | ✅ | automatic via TUSB320L (INT on TLMM 63): devices without own power get host + 5 V; self-powered docks need a dock rule (next) |
+| USB host / OTG | ✅ | automatic via TUSB320L (INT on TLMM 63): devices and unpowered docks get host + 5 V; powered docks only charge (no USB-PD) |
 | Suspend | ❌ | hangs; disabled for now (staged test plan in `artifacts/p8`) |
 | Earpiece (piezo, LM48560) | ❌ | no mainline driver |
 | Modem / calls | ❌ | out of scope for now |

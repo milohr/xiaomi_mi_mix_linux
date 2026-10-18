@@ -1,0 +1,3 @@
+# Type-C current advertisement -> charger input limit: see /usr/libexec/lithium-usb-current.
+ACTION=="change", SUBSYSTEM=="typec", KERNEL=="port0", TAG+="systemd", ENV{SYSTEMD_WANTS}+="lithium-usb-current.service"
+ACTION=="change", SUBSYSTEM=="power_supply", KERNEL=="qcom-smbchg-usb", TAG+="systemd", ENV{SYSTEMD_WANTS}+="lithium-usb-current.service"

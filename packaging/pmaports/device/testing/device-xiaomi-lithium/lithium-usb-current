@@ -1,0 +1,26 @@
+#!/bin/sh
+# Xiaomi Mi MIX (lithium): let the charger draw what a USB-C source advertises.
+#
+# The TUSB320L reads the source's Type-C current advertisement (Rp: default,
+# 1.5 A or 3.0 A) into the typec port; the PMI8996 charger only knows the
+# BC1.2 type (SDP/DCP/CDP). Raise the input current limit to the advertised
+# value; never lower what the charger chose. Run on Type-C and USB power
+# supply changes (udev).
+set -u
+
+MODE=/sys/class/typec/port0/power_operation_mode
+ICL=/sys/class/power_supply/qcom-smbchg-usb/input_current_limit
+
+[ -r "$MODE" ] && [ -w "$ICL" ] || exit 0
+grep -q "\[sink\]" /sys/class/typec/port0/power_role 2>/dev/null || exit 0
+
+case "$(cat "$MODE")" in
+3.0A) want=3000000 ;;
+1.5A) want=1500000 ;;
+*) exit 0 ;;
+esac
+
+have=$(cat "$ICL")
+[ "$have" -lt "$want" ] || exit 0
+echo "$want" > "$ICL"
+logger -t lithium-usb-current "Type-C source advertises $(cat "$MODE"): input limit ${have} -> $(cat "$ICL") uA"
