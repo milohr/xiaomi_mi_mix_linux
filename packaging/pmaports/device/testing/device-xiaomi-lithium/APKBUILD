@@ -3,7 +3,7 @@ maintainer="Camilo Higuita <milo.h@aol.com>"
 pkgname=device-xiaomi-lithium
 pkgdesc="Xiaomi Mi MIX"
 pkgver=1
-pkgrel=9
+pkgrel=10
 url="https://postmarketos.org"
 license="MIT"
 arch="aarch64"
@@ -63,7 +63,7 @@ package() {
 }
 
 sha512sums="
-58823b9adb54403cd10f4e4c5fc1cfa13cf5cc0a045b574fd4174396ba1e7a989f77c8210caa115e69cbc57a7f7affaa98ea33fa4f9f6428dcb54556f6571b7a  deviceinfo
+237ef597bfbc905ea6f094ce890713d27a1e6069bb4c70e932c93ba4c616956171caba74b242a49eac7cb1da2177a71ad8db93fe8fb40898435a869e12297a03  deviceinfo
 4f5b807dc6f9e73df6d805444851fc7ec59f723b424ce91c953330b6fc95695e0333158dd9aa33969614b4481147202439e8addcaf6e4090e2a9e3f520c9695d  sxmo-deviceprofile.sh
 3b035e3f5896b99d70b272bd5cfd0d709c2fed81e57a95000bc1162ce5aad88d3781dd810a0375d9f69fe1b0c6988520c06aa8f224ddb73afaee54e03ea3fd51  ucm-lithium.conf
 96453d9af9a4eed949f4950536180aaa26f470bbb26272728ab205aecb1c62a2f848ec637b30eac8da5d48b6cc690a51df6847ecff8c878b40629195ac4a0965  ucm-HiFi.conf
