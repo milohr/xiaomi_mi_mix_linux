@@ -2,13 +2,13 @@
 set -eu
 
 # bc for kernel prepare, unpacked rootless (see docs/DISPLAY.md).
-PATH="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)/artifacts/toolchain/bc/usr/bin:$PATH"
+PATH="$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)/artifacts/toolchain/bc/usr/bin:$PATH"
 export PATH
 
 : "${KERNEL_SRC:?set KERNEL_SRC to the patched MSM8996 kernel checkout}"
 
 PINNED_COMMIT=1aed438cb5f49d7a61593f764d4a82f83b14114f
-PROJECT_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+PROJECT_ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 OUT=${KERNEL_OUT:-"$PROJECT_ROOT/artifacts/build/kernel-phase3"}
 TARGET=qcom/msm8996pro-xiaomi-lithium.dtb
 

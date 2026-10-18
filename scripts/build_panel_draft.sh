@@ -3,7 +3,7 @@
 # Offline only. Produces no image and touches no device.
 set -eu
 
-PROJECT_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+PROJECT_ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 KERNEL_SRC=${KERNEL_SRC:-"$PROJECT_ROOT/sources/linux-msm8996"}
 LMDPDG=${LMDPDG:-"$PROJECT_ROOT/sources/lmdpdg"}
 PYTHON=${LMDPDG_PYTHON:-"$PROJECT_ROOT/artifacts/toolchain/venv-lmdpdg/bin/python"}

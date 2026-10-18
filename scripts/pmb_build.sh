@@ -5,7 +5,7 @@
 # phone. Outputs are copied to artifacts/pmb-export and audited.
 set -eu
 
-PROJECT_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+PROJECT_ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 PMB="$PROJECT_ROOT/sources/pmbootstrap/pmbootstrap.py"
 WORK=${PMB_WORK:-"$HOME/.local/var/pmbootstrap-lithium"}
 CFG="$WORK.cfg"

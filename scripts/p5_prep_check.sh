@@ -2,7 +2,7 @@
 # Offline P5 image audit. Never accesses a device or modifies build inputs.
 set -u
 
-ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 EXPORT="$ROOT/artifacts/pmb-export"
 BOOT="$EXPORT/boot.img"
 P5="$EXPORT/p5-boot.img"

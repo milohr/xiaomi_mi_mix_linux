@@ -3,7 +3,7 @@
 # Offline; touches only sources/pmaports. Usage: stage_pmaports.sh
 set -eu
 
-PROJECT_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+PROJECT_ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 PMAPORTS=${PMAPORTS:-"$PROJECT_ROOT/sources/pmaports"}
 OVERLAY="$PROJECT_ROOT/packaging/pmaports"
 KPKG=device/testing/linux-postmarketos-qcom-msm8996

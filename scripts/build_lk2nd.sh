@@ -5,7 +5,7 @@ set -eu
 : "${TOOLCHAIN_PREFIX:?set TOOLCHAIN_PREFIX, including the arm-none-eabi- suffix}"
 : "${DTC_DIR:?set DTC_DIR to the directory containing dtc}"
 
-PROJECT_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+PROJECT_ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 OUT=${LK2ND_OUT:-"$PROJECT_ROOT/artifacts/build/lk2nd-gcc"}
 
 test "$(git -C "$LK2ND_SRC" rev-parse HEAD)" = \
