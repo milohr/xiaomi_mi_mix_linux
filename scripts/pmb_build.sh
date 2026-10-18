@@ -44,6 +44,17 @@ EOF
 
 pmb() { python3 "$PMB" -c "$CFG" "$@"; }
 
+# --kernel: rebuild only the kernel package (no image, no install) and copy it out.
+if [ "${1:-}" = --kernel ]; then
+	pmb build --force linux-postmarketos-qcom-msm8996
+	mkdir -p "$PROJECT_ROOT/artifacts/kernel-build"
+	cp "$WORK"/packages/*/aarch64/linux-postmarketos-qcom-msm8996-*.apk \
+		"$PROJECT_ROOT/artifacts/kernel-build/"
+	cp "$WORK/log.txt" "$PROJECT_ROOT/artifacts/kernel-build/pmbootstrap.log"
+	(cd "$PROJECT_ROOT/artifacts/kernel-build" && sha256sum ./*.apk)
+	exit 0
+fi
+
 pmb build --force linux-postmarketos-qcom-msm8996 device-xiaomi-lithium
 pmb install
 rm -rf "$EXPORT"
