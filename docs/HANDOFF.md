@@ -111,3 +111,16 @@ reset gpio89 active low, L14 1.8 V always-on). Mainline `edt-ft5x06` supports
 `scripts/verify_touch_dtb.py` 14/14 against stock. Test it as its own change
 after the first P5 boot. Details, evidence and the stale stock `interrupts` trap:
 docs/TOUCH.md.
+
+## P5 review packet (drafted 2026-10-18, not authorized)
+
+docs/P5_FIRST_BOOT.md: exact commands, expected behaviour, failure table and
+restore for the first boot (lk2nd into recovery, Linux from RAM, stock
+recovery back). Read from the pinned sources, now checked out at `sources/lk2nd`
+(8b46487c, ignored). Key findings: both volume keys at power-on = EDL; lk2nd
+maps boot's first 512 KiB as its own partition even from recovery, so never
+flash in lk2nd; the first boot ends in the pmOS debug shell (telnet
+172.16.42.1) because no pmOS partition exists. `scripts/make_p5_bootimg.py`
+appends `lk2nd.pass-ramoops=zap console=tty0 clk_ignore_unused pd_ignore_unused`
+to the audited boot.img; image hashes are filled in after the P4 export.
+
