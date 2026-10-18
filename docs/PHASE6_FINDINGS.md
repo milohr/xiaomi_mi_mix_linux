@@ -53,6 +53,35 @@ when done).
 
 Verified on U9: the gadget started at 6.67 s, inside the old failure window, and works.
 
+## The screen: simple-framebuffer kept alive (2026-10-18)
+
+After boot the kernel text vanished and the panel stayed lit but black; writes to `/dev/fb0`
+showed nothing. Two causes, found one after the other on the installed system:
+
+1. **The MDSS power domain was switched off** (`pm_genpd_summary`: `mdss off-0`): nothing
+   claimed it, so genpd powered it down despite `pd_ignore_unused`. Fix: the DTS gets a
+   `/chosen/framebuffer` node (`simple-framebuffer`, status disabled) that lk2nd fills in and
+   enables instead of creating its own; it carries `power-domains = <&mmcc MDSS_GDSC>` and the
+   MDSS AHB/AXI/MDP/VSYNC clocks. Result: domain on, but the screen turned **solid blue**.
+2. **Blue is the MDP's underflow colour**: the controller ran but could not fetch. The
+   interconnect summary showed `mas_mdp_p0` at zero bandwidth: the `qnoc` providers had
+   reached `sync_state` and dropped the bootloader's votes. Fix: `&mdss { status = "okay"; }`
+   with the `msm` module blacklisted (`/etc/modprobe.d/lithium-no-msm.conf`, now in
+   `device-xiaomi-lithium` r1). The unbound MDSS node holds `mmcc` and `qnoc` `sync_state`
+   pending (dmesg: `sync_state() pending due to 900000.display-subsystem`), so the bandwidth
+   stays at the bootloader's level.
+
+Verified (`p6fb2-boot.img`, written behind lk2nd in `boot`): kernel text stays, then the
+`lithium login:` prompt on the panel. Both fixes are in patch 0001 (kernel r4). This lasts until
+a real panel driver replaces simplefb; then the blacklist goes.
+
+Testing without keys: `systemctl reboot --reboot-argument=bootloader` lands in **stock**
+fastboot (the stock bootloader handles that reason before lk2nd); `--reboot-argument=recovery`
+reaches the lk2nd copy in `recovery`, which boots the kernel from `boot`. Volume Up at lk2nd's
+logo only pauses it. So DTB experiments went straight into `boot` (offset 512 KiB, lk2nd left
+alone) with the verified full-partition backup `artifacts/p6/boot-partition-current.img`
+(`271bbe6a…`) ready for `fastboot flash boot` from stock fastboot.
+
 ## Procedure lessons
 
 - `scripts/swap_bootimg_dtb.py` made each DTS experiment a 2-minute build instead of a 2-hour

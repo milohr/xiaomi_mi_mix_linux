@@ -3,7 +3,7 @@ maintainer="Camilo Higuita <milo.h@aol.com>"
 pkgname=device-xiaomi-lithium
 pkgdesc="Xiaomi Mi MIX"
 pkgver=1
-pkgrel=0
+pkgrel=1
 url="https://postmarketos.org"
 license="MIT"
 arch="aarch64"
@@ -15,7 +15,10 @@ depends="
 	soc-qcom-msm8996
 	"
 makedepends="devicepkg-dev"
-source="deviceinfo"
+source="
+	deviceinfo
+	lithium-no-msm.conf
+	"
 
 build() {
 	devicepkg_build $startdir $pkgname
@@ -23,8 +26,11 @@ build() {
 
 package() {
 	devicepkg_package $startdir $pkgname
+	install -Dm644 "$srcdir"/lithium-no-msm.conf \
+		"$pkgdir"/etc/modprobe.d/lithium-no-msm.conf
 }
 
 sha512sums="
 68df689a2ec3ce199874032c42f8979ce5b61264c2cbebff95db68f814f37e727c81ede1065516773bb815ab87b1d748edc9b25bd9ebb4cec0914319c964133d  deviceinfo
+466d51ca60075d55ea4aa7484001d8581d77ee0910cf8bcea11fe77cb9edbefbe7f8c1fdcdc19e12af35b6098b962ae650160798dfa79cfbae5b53fbdc87f1df  lithium-no-msm.conf
 "

@@ -3,7 +3,7 @@ maintainer="Yassine Oudjana (Tooniis) <y.oudjana@protonmail.com>"
 _flavor="postmarketos-qcom-msm8996"
 pkgname=linux-$_flavor
 pkgver=6.19.5
-pkgrel=3
+pkgrel=4
 pkgdesc="Kernel close to mainline with extra patches for Qualcomm MSM8996 devices"
 arch="aarch64"
 _carch="arm64"
@@ -65,6 +65,6 @@ package() {
 sha512sums="
 dd30dd113ad9f0b4ab3771ea655de2becce7ddaf5066d2f860b7bb1eb78573137313191d9da740b152348f9f89894ace2bb94fb195e340f7b6dabedeebbc929f  linux-v6.19.5-msm8996.tar.gz
 7c1b4f859908c304ece8c298b4efb917ad5698f65155a4a8e853d814c96318877a080fef4abd9917733ef399f2e8b2fb2f96719b89919001b54c7ddee8786109  config-postmarketos-qcom-msm8996.aarch64
-25762a47f7c6ff2608696409f21dd206279e4d598a11caf1780eecd9a2e9b92aa17486350c751e894cc6439dc3da8604a54a6a690e64ee1429c03956961218d3  0001-arm64-dts-qcom-add-xiaomi-mi-mix.patch
-42a7afee53c85f8c89cd9bb839defa1451846fefdb3e5e1b7293c256c9c1a699c29364a24e8dde37152b4ac470f90209568bb17316073c691cd660a546b6c589  0002-arm64-dts-qcom-xiaomi-lithium-add-touchscreen.patch
+fecdd8e883254aa47703256d0e3f69b6d60128e59d86489c64766cf02b5b6361e1b38fd5e52e8ab63afb573402e10b25bb99faace84790c6ca7e518d74c6c6ed  0001-arm64-dts-qcom-add-xiaomi-mi-mix.patch
+439d1ec6ee9751139ad967a48e4cf6385cbda7f461327423e08916b3dc574887b5113f395728acd20480b533f6cca2fa6bc1ee5e7e5a1f2f38e3cf17ce80746c  0002-arm64-dts-qcom-xiaomi-lithium-add-touchscreen.patch
 "
