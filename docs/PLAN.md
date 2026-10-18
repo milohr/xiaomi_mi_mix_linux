@@ -80,6 +80,12 @@ Status: **gate met 2026-10-18** ([PHASE5_FINDINGS.md](PHASE5_FINDINGS.md)); UFS 
 
 **Exit gate:** Native Linux reaches a diagnostic shell and the tested recovery path restores normal operation.
 
+## Distribution decision (the user, 2026-10-18)
+
+**postmarketOS** (Alpine edge, pmbootstrap + pmaports, as pinned in `research/source-lock.json`)
+is the distribution for this port: the device package, the shared MSM8996 kernel package and the
+rootfs images come from it, and the first installed system is its `console` UI on `userdata`.
+
 ## P6 — Display, input and essential power
 
 Status: **in progress** ([PHASE6_FINDINGS.md](PHASE6_FINDINGS.md)): storage and USB work (2026-10-18); panel draft (docs/DISPLAY.md) and touch device tree (docs/TOUCH.md, patch 0002) ready offline. Dependencies: P5.
