@@ -118,7 +118,13 @@ root-only on stock MIUI (`artifacts/p6/pull-firmware.log`, 34 readable files).
 1. Full package build (kernel r3: the config additions, the touch patch, and the proper USB
    fix `0004`/`0005` from `artifacts/p6/`, so the sixth clock can leave the DTS); then
    `apk upgrade` on the phone instead of RAM boots.
-2. Copy `persist` (`sda12`) read-only; fix the GPT backup header; set the time.
+2. ~~Copy `persist`~~ done 2026-10-18: `sda12` (32 MiB) read over ssh into the ignored
+   `artifacts/persist/persist-sda12.img`, sha256 `8595e02f…4e25a32`, same on both sides.
+   Time: set from the laptop (`date -s`), but the PMIC RTC rejects writes (`RTC_SET_TIME`:
+   No such device; the RTC belongs to the secure world), so every cold boot starts at the RTC's
+   1970 count until `systemd-timesyncd` (enabled) reaches a time server. That and the GPT fix
+   (`sgdisk -e`; no `sgdisk`/`parted` installed, the kernel says "Alternate GPT is invalid, using
+   primary GPT") wait for internet on the phone over USB (laptop NAT).
 3. Touch (patch 0002, `artifacts/p6/touch-test.sh`), power (`artifacts/p6/lithium-power.dtsi`),
    display (`artifacts/p6/display-plan.md`).
 4. Before any `apk upgrade` of the kernel on the phone: check how pmOS's `boot-deploy` writes
