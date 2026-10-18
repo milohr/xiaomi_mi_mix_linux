@@ -20,7 +20,7 @@ This repository is independent of the MediaTek Redmi `flare` project.
 | UI | ✅ | Plasma Mobile and Phosh (GPU-accelerated), Sxmo (dwm) |
 | Speaker | ✅ | TFA9891 (stock DT says TFA9890) on quaternary MI2S; tfa989x TFA9891 support added |
 | GPU (Adreno 530) | ✅ | lithium's signed zap shader; GPU_GX supplied from PMI8994 S2; Phosh renders on the GPU |
-| Bluetooth | 🔧 | QCA6174 on UART; patch drafted, untested |
+| Bluetooth | ✅ | QCA6174 (Rome 3.2) on BLSP1 UART2; address from persist; A2DP audio (AAC) to headphones |
 | Microphones | 🔧 | codec capture path present, untested |
 | USB host / OTG | ✅ | automatic via TUSB320L (INT on TLMM 63): devices and unpowered docks get host + 5 V; powered docks only charge (no USB-PD) |
 | Suspend | ❌ | hangs; disabled for now (staged test plan in `artifacts/p8`) |
@@ -36,7 +36,7 @@ Details: [Phase 6 findings](docs/PHASE6_FINDINGS.md) (current), [handoff](docs/H
   device tree (0001), touch (0002), display + panel driver (0003), Wi-Fi (0004),
   battery/charger (0005), audio codec (0006), apq8096 MI2S clocks (0007),
   fuel-gauge current sign (0008), GPU (0009), TFA9891 driver (0010), speaker (0011),
-  automatic USB host mode (0012). Every board value is traced to lithium's stock device
+  automatic USB host mode (0012), OTG VBUS guard (0013), Bluetooth (0014). Every board value is traced to lithium's stock device
   tree.
 - **Packages**: [`packaging/pmaports/`](packaging/pmaports) — `linux-postmarketos-qcom-msm8996`,
   `device-xiaomi-lithium` (deviceinfo, Sxmo profile, UCM, WirePlumber rule) and

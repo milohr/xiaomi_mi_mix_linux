@@ -3,7 +3,7 @@ maintainer="Camilo Higuita <milo.h@aol.com>"
 pkgname=device-xiaomi-lithium
 pkgdesc="Xiaomi Mi MIX"
 pkgver=1
-pkgrel=8
+pkgrel=9
 url="https://postmarketos.org"
 license="MIT"
 arch="aarch64"
@@ -12,6 +12,7 @@ depends="
 	linux-postmarketos-qcom-msm8996
 	mkbootimg
 	postmarketos-base
+	bluez-btmgmt
 	linux-firmware-ath10k
 	soc-qcom-msm8996
 	"
@@ -26,6 +27,9 @@ source="
 	lithium-usb-current.service
 	90-lithium-usb-current.rules
 	environment-webengine.conf
+	lithium-bt-address
+	lithium-bt-address.service
+	91-lithium-bt-address.rules
 	"
 
 build() {
@@ -50,6 +54,12 @@ package() {
 		"$pkgdir"/usr/lib/udev/rules.d/90-lithium-usb-current.rules
 	install -Dm644 "$srcdir"/environment-webengine.conf \
 		"$pkgdir"/usr/lib/environment.d/50-lithium-webengine.conf
+	install -Dm755 "$srcdir"/lithium-bt-address \
+		"$pkgdir"/usr/libexec/lithium-bt-address
+	install -Dm644 "$srcdir"/lithium-bt-address.service \
+		"$pkgdir"/usr/lib/systemd/system/lithium-bt-address.service
+	install -Dm644 "$srcdir"/91-lithium-bt-address.rules \
+		"$pkgdir"/usr/lib/udev/rules.d/91-lithium-bt-address.rules
 }
 
 sha512sums="
@@ -62,4 +72,7 @@ sha512sums="
 5f4b0b699e9a9bad29a9187c5b5dc6639d330128b7a996f6369218dfcee54e3e9138e0df38e38b8a1641adf6255856806234af3984658cdf98827d9a17ade79b  lithium-usb-current.service
 72e6ff76730b47b9bfe9f2ae6fc99c247bb9f14202c7207d1025b45ef6c44c4aa11e0ef9aef2a8914770e7d9343a9ab529e9bdf82ef187d5c2c3894ef46fe70e  90-lithium-usb-current.rules
 602d1da90f1961f45ebab574c76e1931acde9d04497a3307acc517986a1ec7eda7a0efc7a96f60317fba012496e8a4a9163474726838a6daf292d310f89987f7  environment-webengine.conf
+32fc5cf5fe23c5e6babda9eeac9da4d529433f8ed42033a77892676ebcdcceea55abc4babb11c231580b54770d45219a6ae28f45adc7bac9c7f3270aa85bf466  lithium-bt-address
+4df4a7ae5282014daf36598db69971d3577ee72b3189a2be85a6ba852cda4e441697e7fd9088a8a8ab997d52e0b0649b4b81a2c8462ffdff8aa93a75efbf3f24  lithium-bt-address.service
+7670ea39761911544bd409b6546b96db54cd42cb820b98ee897b975265413165026b4456d8b3221fbaf32d5b73071ce8c6fd778efe3caf3cdc6442bb3a325b3c  91-lithium-bt-address.rules
 "

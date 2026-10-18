@@ -1,0 +1,93 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] arm64: dts: qcom: xiaomi-lithium: enable Bluetooth
+
+Enable the QCA6174 Bluetooth (stock bt_qca6174) on BLSP1 UART2
+(gpio41-44, RTS/CTS) with its enable on PM8994 GPIO 19 and the 32 kHz
+sleep clock from PM8994 GPIO 18, laid out as on msm8996-oneplus. Alias the
+UART as serial1: without it, it took port 0 and became the console, and the
+QCA driver could not open it. Verified: Rome 3.2 (0x00440302) loads its
+rampatch and NVM, scans BR/EDR and LE, and plays A2DP (AAC).
+
+---
+diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+--- a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
++++ b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+@@ -36,6 +36,7 @@
+ 
+ 	aliases {
+ 		serial0 = &blsp2_uart2;
++		serial1 = &blsp1_uart2;	/* Bluetooth; keeps it off ttyMSM0, the console */
+ 	};
+ 
+ 	/*
+@@ -126,6 +127,16 @@
+ 		pinctrl-names = "default";
+ 	};
+ 
++	/* 32 kHz sleep clock for the QCA6174 Bluetooth: PM8994 GPIO 18 special function (stock gpio@d100). */
++	divclk4: divclk4 {
++		compatible = "fixed-clock";
++		#clock-cells = <0>;
++		clock-frequency = <32768>;
++		clock-output-names = "divclk4";
++		pinctrl-0 = <&divclk4_default>;
++		pinctrl-names = "default";
++	};
++
+ 	disp_vddr: disp-vddr-regulator {
+ 		compatible = "regulator-fixed";
+ 		regulator-name = "disp_vddr";
+@@ -217,6 +228,28 @@
+ 	status = "okay";
+ };
+ 
++/*
++ * QCA6174 Bluetooth (stock bt_qca6174) on the high-speed UART at 0x7570000
++ * (BLSP1 UART2, gpio41-44 with RTS/CTS); enable is PM8994 GPIO 19. Its rails
++ * are the Wi-Fi ones, kept on by patch 0004. Layout as on msm8996-oneplus.
++ */
++&blsp1_uart2 {
++	label = "BT-UART";
++	uart-has-rtscts;
++	pinctrl-0 = <&blsp1_uart2_default>;
++	pinctrl-1 = <&blsp1_uart2_sleep>;
++	pinctrl-names = "default", "sleep";
++	status = "okay";
++
++	bluetooth {
++		compatible = "qcom,qca6174-bt";
++		clocks = <&divclk4>;
++		enable-gpios = <&pm8994_gpios 19 GPIO_ACTIVE_HIGH>;
++		pinctrl-0 = <&bt_enable_default>;
++		pinctrl-names = "default";
++	};
++};
++
+ /* Stock i2c@7577000 (BLSP1 QUP3) at 400 kHz: speaker amp; the LM48560 piezo amp at 0x6f has no driver. */
+ &blsp1_i2c3 {
+ 	clock-frequency = <400000>;
+@@ -404,6 +437,24 @@
+ 		bias-disable;
+ 	};
+ 
++	/* Stock gpio@d200 (PM8994 GPIO 19): Bluetooth enable, off until the driver powers it. */
++	bt_enable_default: bt-enable-state {
++		pins = "gpio19";
++		function = PMIC_GPIO_FUNC_NORMAL;
++		output-low;
++		bias-pull-down;
++		power-source = <PM8994_GPIO_S4>;
++		qcom,drive-strength = <PMIC_GPIO_STRENGTH_LOW>;
++	};
++
++	/* Stock gpio@d100 (PM8994 GPIO 18): output, special function 3, VIN2: the 32 kHz clock. */
++	divclk4_default: divclk4-state {
++		pins = "gpio18";
++		function = PMIC_GPIO_FUNC_FUNC2;
++		bias-disable;
++		power-source = <PM8994_GPIO_S4>;
++	};
++
+ 	/* Stock gpio@c800: output high, VIN0 (VPH), low strength. */
+ 	divclk1_default: divclk1-state {
+ 		pins = "gpio15";

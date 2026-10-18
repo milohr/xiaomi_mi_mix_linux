@@ -1,0 +1,24 @@
+#!/bin/sh
+# Xiaomi Mi MIX (lithium): give the QCA6174 Bluetooth controller its own
+# public address. The controller has none of its own, so the kernel keeps it
+# unconfigured until one is set. Stock keeps it in persist:/wlan_bt/bt.mac,
+# six bytes in reversed (little-endian) order. persist is mounted read-only.
+set -eu
+
+DEV=/dev/disk/by-partlabel/persist
+[ -b "$DEV" ] || exit 0
+
+dir=$(mktemp -d)
+trap 'umount "$dir" 2>/dev/null; rmdir "$dir"' EXIT
+mount -o ro,noload "$DEV" "$dir" 2>/dev/null || mount -o ro "$DEV" "$dir"
+[ -r "$dir/wlan_bt/bt.mac" ] || exit 0
+
+addr=$(od -An -tx1 -v "$dir/wlan_bt/bt.mac" |
+	awk '{ for (i = NF; i >= 1; i--) printf "%s%s", toupper($i), (i > 1 ? ":" : "") }')
+case "$addr" in
+??:??:??:??:??:??) ;;
+*) logger -t lithium-bt-address "unexpected bt.mac contents"; exit 1 ;;
+esac
+
+btmgmt --index 0 public-addr "$addr" >/dev/null
+logger -t lithium-bt-address "Bluetooth public address set from persist"

@@ -1,0 +1,2 @@
+# Bluetooth controller appears: give it its address (see /usr/libexec/lithium-bt-address).
+ACTION=="add", SUBSYSTEM=="bluetooth", KERNEL=="hci0", TAG+="systemd", ENV{SYSTEMD_WANTS}+="lithium-bt-address.service"

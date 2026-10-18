@@ -1,0 +1,13 @@
+[Unit]
+Description=Set the Bluetooth address from persist
+Before=bluetooth.service
+After=sys-subsystem-bluetooth-devices-hci0.device
+BindsTo=sys-subsystem-bluetooth-devices-hci0.device
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/libexec/lithium-bt-address
+
+[Install]
+WantedBy=sys-subsystem-bluetooth-devices-hci0.device
