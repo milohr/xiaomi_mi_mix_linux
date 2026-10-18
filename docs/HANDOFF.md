@@ -1,6 +1,17 @@
-# Session handoff — postmarketOS installed and booting by itself; P6 continues (touch, power, display)
+# Session handoff — pmOS with display (msm DRM), touch, Wi-Fi, Phosh; next: battery, audio, GPU, BT
 
-## Current state
+## Current state (2026-10-18 evening)
+
+Kernel r10 + device r4 installed; see the top of `docs/PHASE6_FINDINGS.md`. ssh:
+`user@192.168.1.96` (Wi-Fi) or `user@172.16.42.1` (USB); passwordless sudo on the phone
+and for pmbootstrap on the laptop. Builds: `sh scripts/pmb_build.sh --kernel` (~5 min with
+ccache, ~35 after a config change); install = `apk add` the apks, then write `/boot/boot.img`
+behind lk2nd (`dd … of=/dev/sde36 bs=512K seek=1`, verify both hashes); restore image
+`artifacts/p6/boot-partition-current.img` via stock fastboot. Next: the P9 series
+(`artifacts/p9/series/0005–0010`: power, Bluetooth, USB OTG, GPU, audio, bindings) and the
+local firmware package, one topic per build. Agent briefs: `artifacts/AGENT_BRIEF_P7…P10.md`.
+
+## History
 
 Complete stock V11.0.2.0.OAHMIXM archive obtained from Xiaomi cdnorg endpoint,
 hashed and gzip-validated. Stock boot/recovery extracted and unpacked, matching

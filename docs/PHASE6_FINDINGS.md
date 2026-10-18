@@ -1,9 +1,34 @@
 # Phase 6 findings — storage, USB, the installed system (2026-10-18, in progress)
 
 Status: **postmarketOS is installed on `userdata` and boots by itself at power-on** (lk2nd in
-the boot partition, the kernel after it). Storage and USB networking work; ssh as `user` at
-172.16.42.1. The rest of P6 (display driver, touch, power) follows. Raw logs: `artifacts/p6/` (ignored). Live partition map:
-`research/live-partitions-p6.json`.
+the boot partition, the kernel after it). Working on hardware as of kernel r10 / device r4:
+UFS, USB networking (`user@172.16.42.1`), **the display on the msm DRM driver** with our FTE716
+panel driver (brightness via PMI8994 WLED, screen off/on), **touch** (FT8716, edt-ft5x06),
+**Wi-Fi** (QCA6174 hw3.2 on PCIe0, ath10k, up 19 s after boot, `user@192.168.1.96` on the
+home network), Sxmo (dwm) and **Phosh** (software rendering until the GPU works). Raw logs:
+`artifacts/p6/` (ignored). Live partition map: `research/live-partitions-p6.json`.
+
+## The real display driver and the rest of the day (2026-10-18, kernel r5–r10)
+
+- **Panel** (patch 0003): `panel-xiaomi-lithium-fte716` (lmdpdg tables from stock) on DSI0,
+  supplies/pins/VDDR/WLED from stock. LAB/IBB are left as the bootloader set them (as gemini);
+  `artifacts/p6/labibb-audit.md` now says GO for a `qcom,pmi8994-lab-ibb` + pmi8998 fallback.
+  Found on hardware: WLED OVP uses PMI8994's own table (31000 mV, not WLED4's 31100); the off
+  commands must go in `.disable` (in `.unprepare` the msm DSI host waits for a video-done that
+  never comes, -110); reset/enable are claimed in the bootloader's running state so the
+  picture survives until the first modeset.
+- **Simplefb fallback** stays (patch 0001: framebuffer node holding MDSS GDSC/clocks; the MDSS
+  node keeps interconnect bandwidth until msm binds). The `msm` blacklist and the xrgb8888
+  handover are gone (device r4); an apk-kept `/etc/modprobe.d/lithium-no-msm.conf` from a hand
+  install had to be removed by hand.
+- **Wi-Fi** (patch 0004): PCIe0 with stock WL_EN (PM8994 GPIO8), rome 3.3 V (GPIO9),
+  PERST/WAKE (TLMM 35/37), S3/L30/L28/L12 rails. Board ID is blank (`sub 0000:0000`), so
+  `board-2.bin` has no match and lithium's stock `bdwlan30.bin` serves as `board.bin`
+  (hand-installed; `firmware-xiaomi-lithium` from P9 packages it). r10 drops
+  `FW_LOADER_USER_HELPER_FALLBACK`: each missing optional file had cost 60 s (up at 203 s).
+- **Userspace**: Sxmo needs `~/.cache/sxmo/sxmo.nosuspend` (its suspend hangs the phone with
+  the backlight on); Phosh needs `WLR_RENDERER=pixman` in `/etc/environment` until the GPU
+  works (mesa tries freedreno and phoc does not fall back). Default UI: Phosh (greetd).
 
 ## UFS: the link needed load votes on its rails
 
