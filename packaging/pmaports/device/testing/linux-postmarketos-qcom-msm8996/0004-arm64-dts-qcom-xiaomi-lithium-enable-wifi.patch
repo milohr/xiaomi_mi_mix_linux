@@ -92,7 +92,7 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
  };
  
  &pm8994_resin {
-@@ -269,6 +338,14 @@
+@@ -266,6 +335,14 @@
  		compatible = "qcom,rpm-pm8994-regulators";
  
  		/* Shared 1.8 V I/O rail; kept on, as on other MSM8996 boards. */
@@ -107,7 +107,7 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
  		vreg_s4a_1p8: s4 {
  			regulator-name = "vreg_s4a_1p8";
  			regulator-min-microvolt = <1800000>;
-@@ -325,6 +402,14 @@
+@@ -322,6 +399,14 @@
  			regulator-min-microvolt = <925000>;
  			regulator-max-microvolt = <925000>;
  		};

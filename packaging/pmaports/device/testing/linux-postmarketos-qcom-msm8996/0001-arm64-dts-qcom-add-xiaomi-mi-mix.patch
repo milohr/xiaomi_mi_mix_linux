@@ -167,11 +167,11 @@ index 000000000..8f6e2700d
 +
 +&mdss {
 +	/*
-+	 * No lithium panel driver yet, and the msm module is blacklisted on the
-+	 * rootfs, so this node stays unbound. That keeps the mnoc/bimc
-+	 * interconnect sync_state pending, which keeps the bootloader's bandwidth
-+	 * for the MDP fetch; without it simple-framebuffer showed the MDP's blue
-+	 * underflow colour (P6).
++	 * Bound by the msm DRM driver once it loads. Until then the node is
++	 * still unbound, which keeps the mnoc/bimc interconnect sync_state
++	 * pending and so keeps the bootloader's bandwidth for the
++	 * simple-framebuffer scan-out (without it the MDP showed its blue
++	 * underflow colour, P6).
 +	 */
 +	status = "okay";
 +};

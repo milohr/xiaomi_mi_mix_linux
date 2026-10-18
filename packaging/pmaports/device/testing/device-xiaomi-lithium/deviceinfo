@@ -16,12 +16,10 @@ deviceinfo_screen_width="1080"
 deviceinfo_screen_height="2040"
 deviceinfo_rootfs_image_sector_size="4096"
 
-# lk2nd reads the bootloader splash and passes it as simple-framebuffer, switched
-# to 32-bit XRGB (Xorg cannot drive the packed 24-bit splash); ramoops
-# keeps the last console for `fastboot oem ramoops`. The two *_ignore_unused flags
-# match the P6 image the phone was verified with (clocks/domains of the bootloader
-# display and the USB/UFS race work).
-deviceinfo_kernel_cmdline="lk2nd.pass-simplefb=xrgb8888 lk2nd.pass-ramoops=zap console=tty0 clk_ignore_unused pd_ignore_unused"
+# lk2nd passes the bootloader splash as simple-framebuffer (console until the msm
+# DRM driver takes over); ramoops keeps the last console for `fastboot oem ramoops`.
+# The two *_ignore_unused flags match the P6 image the phone was verified with.
+deviceinfo_kernel_cmdline="lk2nd.pass-simplefb lk2nd.pass-ramoops=zap console=tty0 clk_ignore_unused pd_ignore_unused"
 
 # Bootloader related
 deviceinfo_flash_method="fastboot"
