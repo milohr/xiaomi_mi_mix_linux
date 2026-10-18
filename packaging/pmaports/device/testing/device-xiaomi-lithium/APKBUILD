@@ -3,7 +3,7 @@ maintainer="Camilo Higuita <milo.h@aol.com>"
 pkgname=device-xiaomi-lithium
 pkgdesc="Xiaomi Mi MIX"
 pkgver=1
-pkgrel=1
+pkgrel=2
 url="https://postmarketos.org"
 license="MIT"
 arch="aarch64"
@@ -31,6 +31,6 @@ package() {
 }
 
 sha512sums="
-68df689a2ec3ce199874032c42f8979ce5b61264c2cbebff95db68f814f37e727c81ede1065516773bb815ab87b1d748edc9b25bd9ebb4cec0914319c964133d  deviceinfo
+65d3d5db52d6a897e21889384f40cf8d1965c5a26135d2575d23af9c8171c6857705209c7561839103deee7747aad92d78380c94e6771adef1ecd1e4a6006153  deviceinfo
 466d51ca60075d55ea4aa7484001d8581d77ee0910cf8bcea11fe77cb9edbefbe7f8c1fdcdc19e12af35b6098b962ae650160798dfa79cfbae5b53fbdc87f1df  lithium-no-msm.conf
 "

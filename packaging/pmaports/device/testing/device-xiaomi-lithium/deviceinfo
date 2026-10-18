@@ -16,8 +16,11 @@ deviceinfo_screen_width="1080"
 deviceinfo_screen_height="2040"
 deviceinfo_rootfs_image_sector_size="4096"
 
-# lk2nd reads the bootloader splash and passes it as simple-framebuffer
-deviceinfo_kernel_cmdline="lk2nd.pass-simplefb"
+# lk2nd reads the bootloader splash and passes it as simple-framebuffer; ramoops
+# keeps the last console for `fastboot oem ramoops`. The two *_ignore_unused flags
+# match the P6 image the phone was verified with (clocks/domains of the bootloader
+# display and the USB/UFS race work).
+deviceinfo_kernel_cmdline="lk2nd.pass-simplefb lk2nd.pass-ramoops=zap console=tty0 clk_ignore_unused pd_ignore_unused"
 
 # Bootloader related
 deviceinfo_flash_method="fastboot"
