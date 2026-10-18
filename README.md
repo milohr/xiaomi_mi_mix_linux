@@ -23,7 +23,7 @@ This repository is independent of the MediaTek Redmi `flare` project.
 | Bluetooth | ✅ | QCA6174 (Rome 3.2) on BLSP1 UART2; address from persist; A2DP audio (AAC) to headphones |
 | Microphones | 🔧 | codec capture path present, untested |
 | USB host / OTG | ✅ | automatic via TUSB320L (INT on TLMM 63): devices and unpowered docks get host + 5 V; powered docks only charge (no USB-PD) |
-| Suspend | ✅ | s2idle; wakes on Power key and RTC; CPU idle states not enabled yet |
+| Suspend / CPU idle | ✅ | s2idle, wakes on Power key and RTC; PSCI CPU idle (≈ 80 mA less awake with the screen off) |
 | Earpiece (piezo, LM48560) | ❌ | no mainline driver |
 | Modem / calls | ❌ | out of scope for now |
 
@@ -40,7 +40,7 @@ Details: [Phase 6 findings](docs/PHASE6_FINDINGS.md) (current), [handoff](docs/H
   fix (0015), PCIe power domain kept on in suspend (0016). Every board value is traced to
   lithium's stock device tree.
 - **Packages**: [`packaging/pmaports/`](packaging/pmaports) — `linux-postmarketos-qcom-msm8996`,
-  `device-xiaomi-lithium` (deviceinfo, Sxmo profile, UCM, WirePlumber rule) and
+  `device-xiaomi-lithium` (deviceinfo, UCM, WirePlumber rule, USB-C current, Bluetooth address) and
   `firmware-xiaomi-lithium`, built from a tarball of the owner's stock firmware made by
   [`scripts/make-firmware-tarball.sh`](scripts/make-firmware-tarball.sh). **No proprietary
   blob is committed.**
@@ -68,7 +68,8 @@ Details: [Phase 6 findings](docs/PHASE6_FINDINGS.md) (current), [handoff](docs/H
 
 1. [Device evidence](docs/DEVICE.md) and [phased plan](docs/PLAN.md).
 2. [Handoff](docs/HANDOFF.md) for the current state, build and install commands.
-3. `python3 scripts/preflight.py` and `python3 -m unittest discover -s tests -v`.
+3. `python3 scripts/preflight.py`, `python3 -m unittest discover -s tests -v` and
+   `sh scripts/audit.sh` (static checks of everything we write).
 
 ## Safety
 

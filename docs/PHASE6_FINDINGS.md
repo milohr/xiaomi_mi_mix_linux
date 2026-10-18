@@ -51,7 +51,11 @@ Hardware facts found by testing, where the stock tree is wrong or silent:
   - Crash logs do not survive a reset on this phone: ramoops (lk2nd's region sits inside the
     HDMI splash area 0xb1c00000 and `zap` clears it; a DT node at 0x92900000 stays empty after
     even a clean reboot), so DDR is not retained. Stages were bisected with `pm_test` instead.
-  - CPU idle (PSCI) is still held off with `cpuidle.off=1`; the next step for battery life.
+  - **CPU idle works (device r11)**: PSCI 1.0 firmware in OS-initiated mode ("failed to
+    set PC mode" is harmless with only a per-CPU state); `standalone-power-collapse` is
+    used heavily. Screen off, awake: 172–181 mA with it, 240–278 mA without. Suspend and
+    Wi-Fi under load (≈ 130 Mbit/s) unaffected. Device r11 also drops lk2nd's ramoops
+    (useless here) and the Sxmo profile.
   - Harmless: `qcom-wled` warns "Unbalanced enable for IRQ" once per boot (the bootloader
     leaves WLED on, the driver's brightness starts at 0, so the OVP IRQ is enabled twice).
 

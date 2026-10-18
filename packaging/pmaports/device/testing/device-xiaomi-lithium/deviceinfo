@@ -21,7 +21,7 @@ deviceinfo_rootfs_image_sector_size="4096"
 # The two *_ignore_unused flags match the P6 image the phone was verified with.
 # cpuidle.off=1: the PSCI idle driver is built in but not yet proven on lithium
 # (firmware "failed to set PC mode"); test without it in a separate boot image.
-deviceinfo_kernel_cmdline="lk2nd.pass-simplefb lk2nd.pass-ramoops=zap console=tty0 clk_ignore_unused pd_ignore_unused cpuidle.off=1"
+deviceinfo_kernel_cmdline="lk2nd.pass-simplefb console=tty0 clk_ignore_unused pd_ignore_unused"
 
 # Bootloader related
 deviceinfo_flash_method="fastboot"

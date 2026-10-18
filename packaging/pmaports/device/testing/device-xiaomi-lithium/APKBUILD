@@ -3,7 +3,7 @@ maintainer="Camilo Higuita <milo.h@aol.com>"
 pkgname=device-xiaomi-lithium
 pkgdesc="Xiaomi Mi MIX"
 pkgver=1
-pkgrel=10
+pkgrel=11
 url="https://postmarketos.org"
 license="MIT"
 arch="aarch64"
@@ -19,7 +19,6 @@ depends="
 makedepends="devicepkg-dev"
 source="
 	deviceinfo
-	sxmo-deviceprofile.sh
 	ucm-lithium.conf
 	ucm-HiFi.conf
 	wireplumber-51-lithium-audio.conf
@@ -38,8 +37,6 @@ build() {
 
 package() {
 	devicepkg_package $startdir $pkgname
-	install -Dm755 "$srcdir"/sxmo-deviceprofile.sh \
-		"$pkgdir"/usr/bin/sxmo_deviceprofile_xiaomi,lithium.sh
 	install -Dm644 "$srcdir"/ucm-lithium.conf \
 		"$pkgdir"/usr/share/alsa/ucm2/conf.d/apq8096/lithium.conf
 	install -Dm644 "$srcdir"/ucm-HiFi.conf \
@@ -63,8 +60,7 @@ package() {
 }
 
 sha512sums="
-237ef597bfbc905ea6f094ce890713d27a1e6069bb4c70e932c93ba4c616956171caba74b242a49eac7cb1da2177a71ad8db93fe8fb40898435a869e12297a03  deviceinfo
-4f5b807dc6f9e73df6d805444851fc7ec59f723b424ce91c953330b6fc95695e0333158dd9aa33969614b4481147202439e8addcaf6e4090e2a9e3f520c9695d  sxmo-deviceprofile.sh
+19c7f3c1b36503e04808cddf98c6b041b6f29f8c73ba1f7e75d578da64188df557eea133465fbc9924058beaf21feb8ef7b4885ddf14459d02f0ec7893cc22ed  deviceinfo
 3b035e3f5896b99d70b272bd5cfd0d709c2fed81e57a95000bc1162ce5aad88d3781dd810a0375d9f69fe1b0c6988520c06aa8f224ddb73afaee54e03ea3fd51  ucm-lithium.conf
 96453d9af9a4eed949f4950536180aaa26f470bbb26272728ab205aecb1c62a2f848ec637b30eac8da5d48b6cc690a51df6847ecff8c878b40629195ac4a0965  ucm-HiFi.conf
 19489ba61e5604c39a2772f754ee56d45ac67b6ed48464b81e4a84b3450c213ba8f83d574de53c513ad065c1e4bbf4675b5bba8f8a5758375fa2b9522ae9dd38  wireplumber-51-lithium-audio.conf
