@@ -88,7 +88,7 @@ rootfs images come from it, and the first installed system is its `console` UI o
 
 ## P6 — Display, input and essential power
 
-Status: **in progress** ([PHASE6_FINDINGS.md](PHASE6_FINDINGS.md)): storage and USB work (2026-10-18); panel draft (docs/DISPLAY.md) and touch device tree (docs/TOUCH.md, patch 0002) ready offline. Dependencies: P5.
+Status: **in progress** ([PHASE6_FINDINGS.md](PHASE6_FINDINGS.md)): storage and USB work, postmarketOS installed on userdata and booting by itself (2026-10-18); panel draft (docs/DISPLAY.md) and touch device tree (docs/TOUCH.md, patch 0002) ready offline. Dependencies: P5.
 
 1. Identify actual panel variant and parse complete downstream commands with transport metadata.
 2. Implement panel supply/reset timing and DRM modes; simple framebuffer success does not prove native DSI support.

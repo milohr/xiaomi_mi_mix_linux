@@ -1,7 +1,8 @@
-# Phase 6 findings — storage, USB (2026-10-18, in progress)
+# Phase 6 findings — storage, USB, the installed system (2026-10-18, in progress)
 
-Status: **UFS storage and USB networking work together** (boot U9). The rest of P6 (display
-driver, touch, power) follows. Raw logs: `artifacts/p6/` (ignored). Live partition map:
+Status: **postmarketOS is installed on `userdata` and boots by itself at power-on** (lk2nd in
+the boot partition, the kernel after it). Storage and USB networking work; ssh as `user` at
+172.16.42.1. The rest of P6 (display driver, touch, power) follows. Raw logs: `artifacts/p6/` (ignored). Live partition map:
 `research/live-partitions-p6.json`.
 
 ## UFS: the link needed load votes on its rails
@@ -60,10 +61,65 @@ Verified on U9: the gadget started at 6.67 s, inside the old failure window, and
   decisive evidence without a serial console.
 - The ramoops console holds about 45 s of a verbose boot; filter the events.
 
+## The rootfs install (2026-10-18)
+
+1. **`fastboot flash userdata` through lk2nd stalled**: chunk 1 of 2 (508 MB of the 1.3 GB
+   image, sent as sparse chunks under lk2nd's 512 MiB download limit) showed no progress for
+   16 minutes; lk2nd's own UFS writer gives no feedback. Aborted (`artifacts/p6/rootfs-install.log`).
+2. **The `dd` route worked in 40 s**: boot the kernel with `pmos.debug-shell` on the command
+   line (forces the initramfs shell before it looks at storage, which matters once a partial
+   image is on `userdata`), run `setup_usb_storage_configfs /dev/sda15` on the phone, and the
+   laptop sees a "Linux File-Stor Gadget" disk of exactly 122,758,868,992 bytes;
+   `artifacts/p6/write-rootfs-usbstorage.sh --really` refuses any other disk and runs the `dd`
+   (sudo). Verified by reading the first 16 MiB back (same hash) and `blkid` (GPT on sda15).
+3. First boot into the rootfs: the initramfs finds the image's sub-partitions by UUID,
+   `/` = `loop0p2` (resized to 113.9 GiB), `/boot` = `loop0p1`; systemd, NetworkManager,
+   `unudhcpd`, sshd and an `agetty` on the simplefb console; 346 packages; `sudo` needs the
+   password; no `doas`. `apk info -e` confirms `linux-postmarketos-qcom-msm8996` and
+   `device-xiaomi-lithium`. dmesg: the known P5/P6 lines plus `GPT: Use GNU Parted to correct
+   GPT errors` (the image's backup GPT header is not at the end of the 114 GiB partition;
+   benign, fix with `sgdisk -e` later) and the clock is wrong (RTC present, no time source yet).
+4. **Boot by itself**: from lk2nd's fastboot, `flash lk2nd lk2nd.img` (the first 512 KiB of
+   `boot`, `partition-size:lk2nd` 0x80000) and `flash boot p6u9-boot.img` (the rest,
+   0x3f80000). Power-on now runs the stock bootloader → lk2nd (from `boot`) → the kernel at
+   boot+512 KiB with `lk2nd.pass-simplefb`, no keys. **Android is unbootable** from now on:
+   its `boot` partition holds Linux, its `userdata` the rootfs. Restore path: stock `boot.img`
+   (`fe99b14b…`) and `recovery.img` (`1c22cdc5…`) from `artifacts/stock/audit/` via stock
+   fastboot; `userdata` would need a factory reset. The user accepted erasing Android.
+
+Partition writes in P6: `userdata` (rootfs), `boot` (lk2nd + kernel), `recovery` (lk2nd,
+re-flashed after every Android boot during the session). Nothing on the forbidden list.
+
+## lk2nd traps found on the way
+
+- **Stale boot arguments after warm restarts**: lk2nd prepends `lk2nd` to the command line it
+  receives, and that copy survives warm restarts and even a short power-off; after some
+  dozen restarts the stock arguments were pushed out of the buffer and lk2nd detected the
+  board as `oneplus,oneplus3t` (its fallback for an MSM8996 Pro). Our images still boot
+  (the simplefb handoff comes from the MDP, not from the board match), so it is cosmetic for
+  RAM boots, but anything that relies on `lk2nd:compatible`/`lk2nd:panel` must check for it.
+  A long power-off (battery drained of its RAM, minutes) should clear it; not verified.
+- lk2nd's fastboot has no `reboot recovery`; the menu's "recovery" and "shutdown" both come
+  back to lk2nd while USB power is attached.
+- The initramfs reads the volume keys during boot: Volume Up held = halt and dump logs,
+  Volume Down held = debug shell. Release Volume Up as soon as the lk2nd menu shows.
+- `pkill -f` with a pattern that appears in the caller's own command line kills the caller.
+
+## Firmware from the stock archive (offline)
+
+`artifacts/p6/firmware-extract.md`: from `NON-HLOS.bin` and `BTFM.bin` (read-only, mtools):
+the QCA6174 board file `bdwlan30.bin`, the Rome 3.2 Bluetooth patch/NVM, ADSP and SLPI
+firmware; `persist.img` in the archive is empty, the live `persist` (`sda12`) holds the
+calibration and can be copied read-only from Linux. The phone's `/vendor/firmware` etc. were
+root-only on stock MIUI (`artifacts/p6/pull-firmware.log`, 34 readable files).
+
 ## Next
 
-1. Rootfs on `userdata` (runbook in `artifacts/p6/rootfs-runbook.md` when done; the user has
-   allowed erasing Android), then the first boot into the installed system.
-2. Touch (patch 0002, `artifacts/p6/touch-test.sh`), power (`artifacts/p6/lithium-power.dtsi`),
+1. Full package build (kernel r3: the config additions, the touch patch, and the proper USB
+   fix `0004`/`0005` from `artifacts/p6/`, so the sixth clock can leave the DTS); then
+   `apk upgrade` on the phone instead of RAM boots.
+2. Copy `persist` (`sda12`) read-only; fix the GPT backup header; set the time.
+3. Touch (patch 0002, `artifacts/p6/touch-test.sh`), power (`artifacts/p6/lithium-power.dtsi`),
    display (`artifacts/p6/display-plan.md`).
-3. Full package build (kernel r2 + the P6 config: `artifacts/p6/config-…aarch64.p6`).
+4. Before any `apk upgrade` of the kernel on the phone: check how pmOS's `boot-deploy` writes
+   the boot partition on an lk2nd layout, so it doesn't overwrite lk2nd's first 512 KiB.

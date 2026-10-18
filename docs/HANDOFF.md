@@ -1,4 +1,4 @@
-# Session handoff — P6 in progress: storage and USB work; rootfs next
+# Session handoff — postmarketOS installed and booting by itself; P6 continues (touch, power, display)
 
 ## Current state
 
@@ -38,7 +38,11 @@ reference derives from; nine RAM-only boots bisected it (table in
 [PHASE6_FINDINGS.md](PHASE6_FINDINGS.md)). Fix: the `&usb3` glue holds
 `RPM_SMD_LN_BB_CLK` (DTS + patch 0001; schema warns about the sixth clock). Boot U9 has
 storage (six LUNs, 68 labelled partitions, `research/live-partitions-p6.json`) and the USB
-debug shell. The user allows erasing Android: the rootfs goes on `userdata` next. The helper
+debug shell. **Installed (2026-10-18):** the rootfs is on `userdata` (written over USB mass storage from the
+debug shell, after lk2nd's fastboot flash stalled), lk2nd + the kernel are in `boot`, and the
+phone boots postmarketOS at power-on with no keys; ssh `user@172.16.42.1` (the laptop's key is
+authorized; `sudo` needs the user's password). Android is unbootable (restorable from the stock
+images). Never flash anything from a misdetected lk2nd without checking the target. The helper
 agent's offline work is in `artifacts/p6/` (ufs-audit, rootcause, power dtsi, display plan,
 touch test, ramoops patch, kernel config, flash/restore dry-run scripts, pull list).
 

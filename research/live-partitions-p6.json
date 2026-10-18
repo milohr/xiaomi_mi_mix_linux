@@ -274,5 +274,12 @@
       "device": "/dev/sdc1",
       "bytes": 4149248
     }
+  },
+  "install_2026_10_18": {
+    "rootfs": "artifacts/pmb-export/xiaomi-lithium.img a120e324\u2026 on userdata (sda15) via USB mass storage dd",
+    "boot": "lk2nd b845d9b6\u2026 in the first 512 KiB, p6u9-boot.img 6b0b28d8\u2026 after it",
+    "recovery": "lk2nd b845d9b6\u2026",
+    "android": "unbootable; stock boot.img fe99b14b\u2026, recovery.img 1c22cdc5\u2026 in artifacts/stock/audit for a restore",
+    "ssh": "user@172.16.42.1 over the USB gadget network"
   }
 }
