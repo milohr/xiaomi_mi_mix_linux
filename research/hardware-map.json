@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated": "2026-10-17",
+  "updated": "2026-10-18",
   "device": "xiaomi-lithium",
   "phase": "P3",
   "status": "complete",
@@ -279,7 +279,7 @@
     }
   ],
   "not_described_rails": {
-    "pm8994_l14, pmi8994 lab/ibb, tlmm gpio40 vddr": "display rails left untouched so the bootloader splash survives",
+    "pm8994_l14, pmi8994 lab/ibb, tlmm gpio40 vddr": "display rails left untouched so the bootloader splash survives; patch 0002 describes L14 (1.8 V, always-on) for touch, LAB/IBB stay undescribed",
     "qusb vdd": "stock uses pm8994_s2_corner (VDD_CX corner); mainline has no regulator for it, left unset as on upstream Xiaomi boards (dtbs_check warning shared with scorpio)"
   },
   "storage": {
@@ -341,6 +341,41 @@
     "touch": [
       89,
       125
-    ]
+    ],
+    "touch_note": "claimed by patch 0002 only (gpio125 interrupt, gpio89 reset)"
+  },
+  "touch": {
+    "status": "described in kernel/patches/0002 (not in the P4 image); validated offline 2026-10-18, not booted",
+    "controller": "FocalTech FTE8716 in-cell (stock fw-upgrade-id1 0xe7 = FTE716)",
+    "bus": "i2c@75ba000 (blsp2_i2c6), 400000 Hz, gpio87/88",
+    "address": "0x38",
+    "interrupt": {
+      "tlmm": 125,
+      "trigger": "falling edge",
+      "source": "stock ft5x46_i2c,irq-gpio; downstream driver gpio_to_irq + IRQF_TRIGGER_FALLING"
+    },
+    "interrupt_trap": "stock node 'interrupts = <105 ...>' is stale and unused by the driver (gpio105 is an ADV7533 switch pin)",
+    "reset": {
+      "tlmm": 89,
+      "polarity": "active low",
+      "source": "stock ft5x46_i2c,reset-gpio; driver drives low then high"
+    },
+    "supplies": {
+      "vdd": "pm8994_l14 1.8 V",
+      "vddio": "pm8994_l14 1.8 V",
+      "lab_ibb": "enabled by the downstream driver; left undescribed (no mainline PMI8994 LAB/IBB driver)"
+    },
+    "int_pin_states": {
+      "active": "gpio, bias-pull-up, 16 mA",
+      "suspend": "gpio, bias-disable, 2 mA"
+    },
+    "size": [
+      1080,
+      2040
+    ],
+    "firmware": "in controller flash; Android reflashes only on a version change",
+    "mainline_driver": "edt-ft5x06, compatible focaltech,ft8716",
+    "kernel_config_gap": "pmaports qcom-msm8996 config lacks CONFIG_TOUCHSCREEN_EDT_FT5X06 (kernel/touch.config)",
+    "doc": "docs/TOUCH.md"
   }
 }

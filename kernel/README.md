@@ -7,6 +7,9 @@
 - `lithium.config`: the options this DTS needs; check a config with
   `scripts/check_kernel_config.py`.
 - `panel-draft/`: Phase 6 panel driver draft (display track).
+- `patches/0002-…touchscreen.patch` + `touch.config`: touch track (docs/TOUCH.md),
+  on top of 0001 and not in the P4 image. Build it with `KERNEL_OUT=artifacts/build/kernel-touch`
+  after applying both patches, then run `scripts/verify_touch_dtb.py`.
 
 Document every memory region, GPIO, regulator and panel parameter in
 `research/hardware-map.json` before adding it. Do not transplant Android DTS

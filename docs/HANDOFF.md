@@ -43,8 +43,8 @@ lithium's stock disables as a console. Phase completion does not authorize flash
 3. Kernel command line for the first boot should include `lk2nd.pass-simplefb`
    (docs/DISPLAY.md). USB networking is the primary console; UART reachability
    is unknown.
-4. Pinned pmaports checkout from Phase 2 may still be at `/tmp/lithium-p2-pmaports`
-   (tmpfs, not durable); `/tmp` was 95% full on 2026-10-17.
+4. The pinned pmaports checkout is `sources/pmaports`. The old `/tmp/lithium-p2-*`
+   copies were deleted on 2026-10-17.
 
 ## Tooling
 
@@ -100,3 +100,14 @@ Reconcile them before the next DTB build.
 New ignored host tools: `artifacts/toolchain/lld/bin/ld.lld` (wrapper),
 `artifacts/toolchain/bc/usr/bin/bc`, `artifacts/toolchain/venv-lmdpdg`,
 and `sources/lmdpdg` (pinned). A separate kernel `O=` tree is at `artifacts/build/kernel-panel`.
+
+## Touch track (prepares P6) — 2026-10-18
+
+Touch is described but kept out of the P4 image: `kernel/patches/0002-…touchscreen.patch`
+applies on top of 0001 (FTE8716 at 0x38 on blsp2_i2c6, IRQ gpio125 falling,
+reset gpio89 active low, L14 1.8 V always-on). Mainline `edt-ft5x06` supports
+`focaltech,ft8716`; the shared kernel config lacks `CONFIG_TOUCHSCREEN_EDT_FT5X06`
+(`kernel/touch.config`). Offline: schema check adds no warnings,
+`scripts/verify_touch_dtb.py` 14/14 against stock. Test it as its own change
+after the first P5 boot. Details, evidence and the stale stock `interrupts` trap:
+docs/TOUCH.md.

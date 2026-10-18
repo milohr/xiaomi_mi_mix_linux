@@ -82,7 +82,7 @@ Status: **pending**. Dependencies: P1, P4.
 
 ## P6 — Display, input and essential power
 
-Status: **pending**. Dependencies: P5.
+Status: **pending**, with offline groundwork: panel draft (docs/DISPLAY.md) and touch device tree (docs/TOUCH.md, patch 0002). Dependencies: P5.
 
 1. Identify actual panel variant and parse complete downstream commands with transport metadata.
 2. Implement panel supply/reset timing and DRM modes; simple framebuffer success does not prove native DSI support.
