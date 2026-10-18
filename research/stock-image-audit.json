@@ -1,0 +1,411 @@
+{
+  "audited_at": "2026-10-18T00:38:19.973790+00:00",
+  "archive": "artifacts/stock/lithium-global-V11.0.2.0.tgz",
+  "archive_bytes": 1803158296,
+  "archive_sha256": "713f8f6f4f65fc51cfb206e0606ae5af946a1baf344277c761530c13bb207b7d",
+  "gzip_integrity": "passed",
+  "archive_members": 74,
+  "extracted": [
+    {
+      "name": "flash_all_lock.sh",
+      "member": "lithium_global_images_V11.0.2.0.OAHMIXM_20191023.0000.00_8.0_global/flash_all_lock.sh",
+      "bytes": 4127,
+      "sha256": "629413270126637a11cf7f9ed33b425bc25ff193e2b898dfcc87c1b495b96ecb"
+    },
+    {
+      "name": "misc.txt",
+      "member": "lithium_global_images_V11.0.2.0.OAHMIXM_20191023.0000.00_8.0_global/misc.txt",
+      "bytes": 80,
+      "sha256": "98f657fb38c875d558ccc2bf5a6affb449116d6e173892533681dc7da045a70e"
+    },
+    {
+      "name": "rawprogram2.xml",
+      "member": "lithium_global_images_V11.0.2.0.OAHMIXM_20191023.0000.00_8.0_global/images/rawprogram2.xml",
+      "bytes": 1015,
+      "sha256": "b720fd76181b786eff7e0517d638f18b9a1b8748e27200d52412596d2bb93dbe"
+    },
+    {
+      "name": "boot.img",
+      "member": "lithium_global_images_V11.0.2.0.OAHMIXM_20191023.0000.00_8.0_global/images/boot.img",
+      "bytes": 24646986,
+      "sha256": "fe99b14be190522ab185726c6ae62317f68c5bb6c7e0cd4a2af318d861978f17"
+    },
+    {
+      "name": "rawprogram1.xml",
+      "member": "lithium_global_images_V11.0.2.0.OAHMIXM_20191023.0000.00_8.0_global/images/rawprogram1.xml",
+      "bytes": 1012,
+      "sha256": "5e7f37d3e0f5ea89a465ff1789c0d738c5ae1546ce9ec9acd92375977ca67a25"
+    },
+    {
+      "name": "recovery.img",
+      "member": "lithium_global_images_V11.0.2.0.OAHMIXM_20191023.0000.00_8.0_global/images/recovery.img",
+      "bytes": 29406542,
+      "sha256": "1c22cdc539f975333dfda9fbeda568dc2e84b01d00120f2d9d7872af70e09abd"
+    },
+    {
+      "name": "rawprogram4.xml",
+      "member": "lithium_global_images_V11.0.2.0.OAHMIXM_20191023.0000.00_8.0_global/images/rawprogram4.xml",
+      "bytes": 12405,
+      "sha256": "eddfb7910e77b6783f4b02b133e2a09ed463416bc5d58830114152b1903cdbae"
+    },
+    {
+      "name": "emmc_appsboot.mbn",
+      "member": "lithium_global_images_V11.0.2.0.OAHMIXM_20191023.0000.00_8.0_global/images/emmc_appsboot.mbn",
+      "bytes": 1910176,
+      "sha256": "a9cf47cc2795c3ded98dbc501bb52739de8dc51803e26defcb51c0c461ff2083"
+    },
+    {
+      "name": "rawprogram5.xml",
+      "member": "lithium_global_images_V11.0.2.0.OAHMIXM_20191023.0000.00_8.0_global/images/rawprogram5.xml",
+      "bytes": 2671,
+      "sha256": "5b92d5af0cdb0dd3c419992a549b4ca76cfc7c119787e67a72608bbf61dd1819"
+    },
+    {
+      "name": "rawprogram3.xml",
+      "member": "lithium_global_images_V11.0.2.0.OAHMIXM_20191023.0000.00_8.0_global/images/rawprogram3.xml",
+      "bytes": 2378,
+      "sha256": "5957c33e36fa9cf03fad785c6e48dc53b7cde91cb32188d64685e308d481a32b"
+    },
+    {
+      "name": "rawprogram0.xml",
+      "member": "lithium_global_images_V11.0.2.0.OAHMIXM_20191023.0000.00_8.0_global/images/rawprogram0.xml",
+      "bytes": 4962,
+      "sha256": "7e94cc1f450cb109fe5243c1cb1217e8aca9684322e4f4ea519aa275d2b51cab"
+    },
+    {
+      "name": "flash_all.sh",
+      "member": "lithium_global_images_V11.0.2.0.OAHMIXM_20191023.0000.00_8.0_global/flash_all.sh",
+      "bytes": 4167,
+      "sha256": "219776d2614cb3b76e83d8c87ce29c88799e4bfffe816a07aee743b87e7cacd6"
+    },
+    {
+      "name": "flash_all_except_storage.sh",
+      "member": "lithium_global_images_V11.0.2.0.OAHMIXM_20191023.0000.00_8.0_global/flash_all_except_storage.sh",
+      "bytes": 3916,
+      "sha256": "9f34c53cfc951e0e71c6a042fa516a5fa7bf0b5c569f2953e31c94b5629e55d9"
+    }
+  ],
+  "images": [
+    {
+      "kernel_size": 22170167,
+      "kernel_addr": 2147516416,
+      "ramdisk_size": 2466412,
+      "ramdisk_addr": 2164260864,
+      "second_size": 0,
+      "second_addr": 2163212288,
+      "tags_addr": 2147483904,
+      "page_size": 4096,
+      "header_version": 0,
+      "os_version": 268435754,
+      "kernel_file_offset": 4096,
+      "ramdisk_file_offset": 22175744,
+      "second_file_offset": 24645632,
+      "cmdline": "console=ttyHSL0,115200,n8 androidboot.console=ttyHSL0 androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 cma=32M@0-0xffffffff buildvariant=user",
+      "name": "boot.img",
+      "image_bytes": 24646986,
+      "partition_bytes": 67108864,
+      "fits_partition": true,
+      "kernel_compression": "gzip",
+      "compressed_kernel_bytes": 12649678,
+      "kernel_trailing_bytes": 9520489,
+      "kernel_version_string": "Linux version 3.18.71-perf-g5edcf86 (builder@c5-miui-ota-bd29.bj) (gcc version 4.9.x 20150123 (prerelease) (GCC) ) #1 SMP PREEMPT Wed Oct 23 19:27:12 CST 2019",
+      "appended_dtb_candidates": [
+        {
+          "kernel_offset": 12649678,
+          "image_offset": 12653774,
+          "bytes": 471275,
+          "sha256": "e973508177c7f8bb6c3f15e294b5e7cd4090e8a066ba44ec408cba8e2eb4a05c"
+        },
+        {
+          "kernel_offset": 13120953,
+          "image_offset": 13125049,
+          "bytes": 483560,
+          "sha256": "c257837a987ae0a76c7e90b1a997eb87164ffea024078e3de80e583dd1febff9"
+        },
+        {
+          "kernel_offset": 13604513,
+          "image_offset": 13608609,
+          "bytes": 472083,
+          "sha256": "2b09487f91ac253507fb522311a1778bccc1b0dca42c337b45af1a89b7c4d375"
+        },
+        {
+          "kernel_offset": 14076596,
+          "image_offset": 14080692,
+          "bytes": 476980,
+          "sha256": "87bf3bc9481dcaf3709fb5472a70f901ec93e1b3c2aaaa53a2c4401be23ab8f1"
+        },
+        {
+          "kernel_offset": 14553576,
+          "image_offset": 14557672,
+          "bytes": 468503,
+          "sha256": "211d7e0022c937bc18117415f5015ed5518c3eb82b56630de10049ecdd5dba66"
+        },
+        {
+          "kernel_offset": 15022079,
+          "image_offset": 15026175,
+          "bytes": 464424,
+          "sha256": "a2968fa1b189c5e73bbd89a578575ce7cf0a42f2bc31968265260b362f49ce01"
+        },
+        {
+          "kernel_offset": 15486503,
+          "image_offset": 15490599,
+          "bytes": 484056,
+          "sha256": "69647235c903ce26a7c6b77c4caee7975c848fdd5e9a3fb3be1ed2765a438d4f"
+        },
+        {
+          "kernel_offset": 15970559,
+          "image_offset": 15974655,
+          "bytes": 472389,
+          "sha256": "6e356fe31be93142f23adebbadd6a20eaaa2e76e0581e6df8d9807b60e594531"
+        },
+        {
+          "kernel_offset": 16442948,
+          "image_offset": 16447044,
+          "bytes": 475549,
+          "sha256": "d11decade860c8e0e95c08cb3d6dffa0d559081cdc227d26dd3bdc6b4c05b3f9"
+        },
+        {
+          "kernel_offset": 16918497,
+          "image_offset": 16922593,
+          "bytes": 479628,
+          "sha256": "20d00ce00851d98aa1940bcf41b5a8f786da3455ddffeff45c809e090d63b62a"
+        },
+        {
+          "kernel_offset": 17398125,
+          "image_offset": 17402221,
+          "bytes": 480140,
+          "sha256": "9e65b39180795abf7050aba1a59b4f3be8d9a722057a4a9800ea9d83e7ac9ea9"
+        },
+        {
+          "kernel_offset": 17878265,
+          "image_offset": 17882361,
+          "bytes": 476658,
+          "sha256": "1a93d15ff8f65e0ca90324ad574ac42f9ecbe1c02721f274af44219c001751ba"
+        },
+        {
+          "kernel_offset": 18354923,
+          "image_offset": 18359019,
+          "bytes": 479481,
+          "sha256": "e9e598cae2497a9b2ee3e8df9035eaea5a5f1113ab06828fc5f25aa7e02d054d"
+        },
+        {
+          "kernel_offset": 18834404,
+          "image_offset": 18838500,
+          "bytes": 484072,
+          "sha256": "d49e4690f98692970ab570ce8f57355f1a9828b6470bc942acbc8e175e252964"
+        },
+        {
+          "kernel_offset": 19318476,
+          "image_offset": 19322572,
+          "bytes": 475354,
+          "sha256": "0428976cf081c32664b8bf2474b12c68af54200193dd76ed9030df0922100e23"
+        },
+        {
+          "kernel_offset": 19793830,
+          "image_offset": 19797926,
+          "bytes": 479465,
+          "sha256": "4ac8ffa025f934c1d64596acf5fb10f19a462397dad8a5c5bc453d8d15856a0d"
+        },
+        {
+          "kernel_offset": 20273295,
+          "image_offset": 20277391,
+          "bytes": 476468,
+          "sha256": "cf4df504d8c1d0326b7333e2bfad07cce399c7d0858e933f19d48e7d9a1bb224"
+        },
+        {
+          "kernel_offset": 20749763,
+          "image_offset": 20753859,
+          "bytes": 476146,
+          "sha256": "446dfeb28e277a6b43f261a2c755afdf06e69ef3217ae044cb3ca1bc3d0aa2fd"
+        },
+        {
+          "kernel_offset": 21225909,
+          "image_offset": 21230005,
+          "bytes": 483544,
+          "sha256": "a68e1d06195398f50866fd71b66b56ed81c6cca26248fadf7e2dfe8f36aa2887"
+        },
+        {
+          "kernel_offset": 21709453,
+          "image_offset": 21713549,
+          "bytes": 460714,
+          "sha256": "6e9db06c9b2b2bc78c6e1796111fce7760eaca81d9d5373048f5f658319dd259"
+        }
+      ]
+    },
+    {
+      "kernel_size": 22170167,
+      "kernel_addr": 2147516416,
+      "ramdisk_size": 7227719,
+      "ramdisk_addr": 2164260864,
+      "second_size": 0,
+      "second_addr": 2163212288,
+      "tags_addr": 2147483904,
+      "page_size": 4096,
+      "header_version": 0,
+      "os_version": 268435754,
+      "kernel_file_offset": 4096,
+      "ramdisk_file_offset": 22175744,
+      "second_file_offset": 29405184,
+      "cmdline": "console=ttyHSL0,115200,n8 androidboot.console=ttyHSL0 androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 cma=16M@0-0xffffffff androidboot.selinux=permissive",
+      "name": "recovery.img",
+      "image_bytes": 29406542,
+      "partition_bytes": 67108864,
+      "fits_partition": true,
+      "kernel_compression": "gzip",
+      "compressed_kernel_bytes": 12649678,
+      "kernel_trailing_bytes": 9520489,
+      "kernel_version_string": "Linux version 3.18.71-perf-g5edcf86 (builder@c5-miui-ota-bd29.bj) (gcc version 4.9.x 20150123 (prerelease) (GCC) ) #1 SMP PREEMPT Wed Oct 23 19:27:12 CST 2019",
+      "appended_dtb_candidates": [
+        {
+          "kernel_offset": 12649678,
+          "image_offset": 12653774,
+          "bytes": 471275,
+          "sha256": "e973508177c7f8bb6c3f15e294b5e7cd4090e8a066ba44ec408cba8e2eb4a05c"
+        },
+        {
+          "kernel_offset": 13120953,
+          "image_offset": 13125049,
+          "bytes": 483560,
+          "sha256": "c257837a987ae0a76c7e90b1a997eb87164ffea024078e3de80e583dd1febff9"
+        },
+        {
+          "kernel_offset": 13604513,
+          "image_offset": 13608609,
+          "bytes": 472083,
+          "sha256": "2b09487f91ac253507fb522311a1778bccc1b0dca42c337b45af1a89b7c4d375"
+        },
+        {
+          "kernel_offset": 14076596,
+          "image_offset": 14080692,
+          "bytes": 476980,
+          "sha256": "87bf3bc9481dcaf3709fb5472a70f901ec93e1b3c2aaaa53a2c4401be23ab8f1"
+        },
+        {
+          "kernel_offset": 14553576,
+          "image_offset": 14557672,
+          "bytes": 468503,
+          "sha256": "211d7e0022c937bc18117415f5015ed5518c3eb82b56630de10049ecdd5dba66"
+        },
+        {
+          "kernel_offset": 15022079,
+          "image_offset": 15026175,
+          "bytes": 464424,
+          "sha256": "a2968fa1b189c5e73bbd89a578575ce7cf0a42f2bc31968265260b362f49ce01"
+        },
+        {
+          "kernel_offset": 15486503,
+          "image_offset": 15490599,
+          "bytes": 484056,
+          "sha256": "69647235c903ce26a7c6b77c4caee7975c848fdd5e9a3fb3be1ed2765a438d4f"
+        },
+        {
+          "kernel_offset": 15970559,
+          "image_offset": 15974655,
+          "bytes": 472389,
+          "sha256": "6e356fe31be93142f23adebbadd6a20eaaa2e76e0581e6df8d9807b60e594531"
+        },
+        {
+          "kernel_offset": 16442948,
+          "image_offset": 16447044,
+          "bytes": 475549,
+          "sha256": "d11decade860c8e0e95c08cb3d6dffa0d559081cdc227d26dd3bdc6b4c05b3f9"
+        },
+        {
+          "kernel_offset": 16918497,
+          "image_offset": 16922593,
+          "bytes": 479628,
+          "sha256": "20d00ce00851d98aa1940bcf41b5a8f786da3455ddffeff45c809e090d63b62a"
+        },
+        {
+          "kernel_offset": 17398125,
+          "image_offset": 17402221,
+          "bytes": 480140,
+          "sha256": "9e65b39180795abf7050aba1a59b4f3be8d9a722057a4a9800ea9d83e7ac9ea9"
+        },
+        {
+          "kernel_offset": 17878265,
+          "image_offset": 17882361,
+          "bytes": 476658,
+          "sha256": "1a93d15ff8f65e0ca90324ad574ac42f9ecbe1c02721f274af44219c001751ba"
+        },
+        {
+          "kernel_offset": 18354923,
+          "image_offset": 18359019,
+          "bytes": 479481,
+          "sha256": "e9e598cae2497a9b2ee3e8df9035eaea5a5f1113ab06828fc5f25aa7e02d054d"
+        },
+        {
+          "kernel_offset": 18834404,
+          "image_offset": 18838500,
+          "bytes": 484072,
+          "sha256": "d49e4690f98692970ab570ce8f57355f1a9828b6470bc942acbc8e175e252964"
+        },
+        {
+          "kernel_offset": 19318476,
+          "image_offset": 19322572,
+          "bytes": 475354,
+          "sha256": "0428976cf081c32664b8bf2474b12c68af54200193dd76ed9030df0922100e23"
+        },
+        {
+          "kernel_offset": 19793830,
+          "image_offset": 19797926,
+          "bytes": 479465,
+          "sha256": "4ac8ffa025f934c1d64596acf5fb10f19a462397dad8a5c5bc453d8d15856a0d"
+        },
+        {
+          "kernel_offset": 20273295,
+          "image_offset": 20277391,
+          "bytes": 476468,
+          "sha256": "cf4df504d8c1d0326b7333e2bfad07cce399c7d0858e933f19d48e7d9a1bb224"
+        },
+        {
+          "kernel_offset": 20749763,
+          "image_offset": 20753859,
+          "bytes": 476146,
+          "sha256": "446dfeb28e277a6b43f261a2c755afdf06e69ef3217ae044cb3ca1bc3d0aa2fd"
+        },
+        {
+          "kernel_offset": 21225909,
+          "image_offset": 21230005,
+          "bytes": 483544,
+          "sha256": "a68e1d06195398f50866fd71b66b56ed81c6cca26248fadf7e2dfe8f36aa2887"
+        },
+        {
+          "kernel_offset": 21709453,
+          "image_offset": 21713549,
+          "bytes": 460714,
+          "sha256": "6e9db06c9b2b2bc78c6e1796111fce7760eaca81d9d5373048f5f658319dd259"
+        }
+      ]
+    }
+  ],
+  "device_writes": false,
+  "vendor_scripts_executed": false,
+  "provenance_note": "Xiaomi HTTPS download and local digest; no independently published signature verified",
+  "stock_metadata": {
+    "device": "lithium",
+    "build_number": "V11.0.2.0.OAHMIXM",
+    "userdata_version": "20191023.0000.00"
+  },
+  "stock_layout_comparison": [
+    {
+      "name": "boot",
+      "source": "artifacts/stock/audit/rawprogram4.xml",
+      "physical_partition_number": 4,
+      "start_sector": 81920,
+      "sector_bytes": 4096,
+      "size_bytes": 67108864,
+      "matches_live_size": true
+    },
+    {
+      "name": "recovery",
+      "source": "artifacts/stock/audit/rawprogram0.xml",
+      "physical_partition_number": 0,
+      "start_sector": 16384,
+      "sector_bytes": 4096,
+      "size_bytes": 67108864,
+      "matches_live_size": true
+    }
+  ],
+  "dtb_layout_check": "20 contiguous DTBs exactly cover gzip trailing bytes in both images"
+}

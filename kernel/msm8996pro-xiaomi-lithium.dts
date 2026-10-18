@@ -1,0 +1,74 @@
+// SPDX-License-Identifier: BSD-3-Clause
+/*
+ * Copyright (c) 2026 Xiaomi Mi MIX Linux port contributors
+ */
+
+/dts-v1/;
+
+#include "msm8996pro.dtsi"
+#include "msm8996-xiaomi-common.dtsi"
+#include "pmi8996.dtsi"
+
+/ {
+	model = "Xiaomi Mi MIX";
+	compatible = "xiaomi,lithium", "qcom,msm8996pro", "qcom,msm8996";
+	chassis-type = "handset";
+
+	/* Values selected by the stock bootloader on the observed device. */
+	qcom,msm-id = <305 0x10000>;
+	qcom,board-id = <38 0>;
+
+	aliases {
+		serial0 = &blsp1_uart2;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+};
+
+/* Do not disturb bootloader scanout before the lithium panel path is ready. */
+&mdss {
+	status = "disabled";
+};
+
+&mdss_dsi0 {
+	status = "disabled";
+};
+
+&mdss_dsi0_phy {
+	status = "disabled";
+};
+
+/* Keep nonessential firmware and accelerator paths quiet for first boot. */
+&adsp_pil {
+	status = "disabled";
+};
+
+&gpu {
+	status = "disabled";
+};
+
+&mss_pil {
+	status = "disabled";
+};
+
+&pcie0 {
+	status = "disabled";
+};
+
+&pcie_phy {
+	status = "disabled";
+};
+
+&slim_msm {
+	status = "disabled";
+};
+
+&slpi_pil {
+	status = "disabled";
+};
+
+&venus {
+	status = "disabled";
+};

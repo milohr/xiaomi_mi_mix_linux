@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-17",
+  "purpose": "Phase 2 reproducible source baseline",
+  "sources": [
+    {
+      "id": "pmaports",
+      "url": "https://gitlab.postmarketos.org/postmarketOS/pmaports.git",
+      "ref": "main",
+      "commit": "dfb010f5b9885d185d089b6e1e493030062f9756",
+      "role": "Current scorpio device package and MSM8996 kernel package"
+    },
+    {
+      "id": "pmbootstrap",
+      "url": "https://gitlab.postmarketos.org/postmarketOS/pmbootstrap.git",
+      "ref": "main",
+      "commit": "7d23010a125ca7386fec4e390d14128b6c24d266",
+      "role": "Build orchestration"
+    },
+    {
+      "id": "msm8996-kernel",
+      "url": "https://gitlab.com/msm8996-mainline/linux.git",
+      "ref": "refs/tags/v6.19.5-msm8996",
+      "commit": "1aed438cb5f49d7a61593f764d4a82f83b14114f",
+      "package_archive_sha512": "dd30dd113ad9f0b4ab3771ea655de2becce7ddaf5066d2f860b7bb1eb78573137313191d9da740b152348f9f89894ace2bb94fb195e340f7b6dabedeebbc929f",
+      "role": "Selected close-to-mainline kernel baseline from pinned pmaports"
+    },
+    {
+      "id": "upstream-linux-audit",
+      "url": "https://github.com/torvalds/linux.git",
+      "ref": "master",
+      "commit": "58161ead29e50d70a317ea26b472e0c7508e69da",
+      "role": "Current upstream comparison; not the build baseline"
+    },
+    {
+      "id": "lk2nd",
+      "url": "https://github.com/msm8916-mainline/lk2nd.git",
+      "ref": "main",
+      "commit": "8b46487c4c76776c4f2f61468d44a74c69e6b9ea",
+      "role": "Secondary bootloader baseline; lithium board support must be added"
+    },
+    {
+      "id": "lineage-lithium-kernel",
+      "url": "https://github.com/LineageOS/android_kernel_xiaomi_msm8996.git",
+      "ref": "lineage-18.1",
+      "commit": "4aa1814c63b82ce67d0ef0434ca510be94bb8284",
+      "role": "Downstream hardware evidence"
+    },
+    {
+      "id": "lineage-lithium-device",
+      "url": "https://github.com/LineageOS/android_device_xiaomi_lithium.git",
+      "ref": "lineage-19.1",
+      "commit": "bac0b4e18fc2c6d86d7c79b2764c6e575ad140ec",
+      "role": "Lithium Android board configuration evidence"
+    },
+    {
+      "id": "lineage-msm8996-common-device",
+      "url": "https://github.com/LineageOS/android_device_xiaomi_msm8996-common.git",
+      "ref": "lineage-19.1",
+      "commit": "7486d07ec3f7d5413a53009d63fe98c783667d15",
+      "role": "Shared Xiaomi MSM8996 Android configuration evidence"
+    }
+  ],
+  "rules": [
+    "Build by immutable commit or tag, never by an unrecorded moving branch",
+    "Treat downstream DTS and stock DTBs as evidence, not upstream source text",
+    "Re-pin and review before a release if any selected source changes"
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "built_at": "2026-10-17",
+  "device": "xiaomi-lithium",
+  "source": {
+    "repository": "https://github.com/msm8916-mainline/lk2nd.git",
+    "commit": "8b46487c4c76776c4f2f61468d44a74c69e6b9ea",
+    "tree_state": "pinned commit plus bootloader/lk2nd/0001-msm8996-add-xiaomi-lithium.patch"
+  },
+  "toolchain": {
+    "gcc": "arm-none-eabi-gcc 16.2.0 (Arch Repository)",
+    "binutils_package_sha256": "b494d4e01cc35c4bcef8522c28d32a9b086460f1037eaaa7a046f2c378d0d7d1",
+    "gcc_package_sha256": "b3fca2319f030bafe17873b4cbcaef3d643043a99f18317cc2793bcaf563b702"
+  },
+  "command_target": "lk2nd-msm8996",
+  "outputs": {
+    "lk2nd_img": {
+      "relative_path": "artifacts/build/lk2nd-gcc/build-lk2nd-msm8996/lk2nd.img",
+      "size": 372752,
+      "sha256": "b845d9b612bc08e457b9aa89b23850620e3284467fde4deef999955dac19444d"
+    },
+    "lk_bin_dtb": {
+      "relative_path": "artifacts/build/lk2nd-gcc/build-lk2nd-msm8996/lk.bin-dtb",
+      "size": 364292,
+      "sha256": "2ffc4b42e38f0d046ad5fb246a29caf2ddf1de2fa2e6082e2f1fc1c490b95638"
+    },
+    "lithium_dtb": {
+      "relative_path": "artifacts/build/lk2nd-gcc/build-lk2nd-msm8996/lk2nd/device/dts/msm8996/msm8996pro-xiaomi-lithium.dtb",
+      "size": 512,
+      "sha256": "e7b7d4945c076cbb0e5bbd9b75765c4caeede2b0e73f7a968b3e11121dfe87e8"
+    }
+  },
+  "decoded_match": {
+    "board_id": "0x26",
+    "msm8996_v3": ["0xf6", "0x30000"],
+    "msm8996_pro": ["0x131", "0x10000"],
+    "pmic_id": ["0x20009", "0x10013", "0x0", "0x0"],
+    "compatible": "xiaomi,lithium"
+  },
+  "bundle_dtb_count": 10,
+  "android_boot_header": {
+    "magic": "ANDROID!",
+    "version": 0,
+    "kernel_size": 364292,
+    "kernel_load_address": "0x00008000",
+    "ramdisk_size": 1,
+    "ramdisk_load_address": "0x01000000",
+    "second_load_address": "0x00f00000",
+    "tags_load_address": "0x00000100",
+    "page_size": 4096,
+    "cmdline": "lk2nd"
+  },
+  "recovery_partition_size": 67108864,
+  "fits_recovery_partition": true,
+  "device_write_performed": false
+}

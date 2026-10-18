@@ -1,0 +1,348 @@
+{
+  "source": "artifacts/inventory-20261017T194707466026Z/inventory.json",
+  "source_sha256": "cfa5f6e6d964bdfd344a3a4d0de8520512d6afbaa1f3409be93fa7c7fd19ca6f",
+  "collected_at": "2026-10-17T19:47:07.466026+00:00",
+  "size_basis": "/proc/partitions 1024-byte blocks",
+  "partitions": [
+    {
+      "name": "aboot",
+      "node": "/dev/block/sde23",
+      "size_bytes": 2097152
+    },
+    {
+      "name": "abootbak",
+      "node": "/dev/block/sde24",
+      "size_bytes": 2097152
+    },
+    {
+      "name": "apdp",
+      "node": "/dev/block/sde5",
+      "size_bytes": 262144
+    },
+    {
+      "name": "bk1",
+      "node": "/dev/block/sda3",
+      "size_bytes": 737280
+    },
+    {
+      "name": "bk10",
+      "node": "/dev/block/sdf2",
+      "size_bytes": 1019904
+    },
+    {
+      "name": "bk11",
+      "node": "/dev/block/sdf4",
+      "size_bytes": 3145728
+    },
+    {
+      "name": "bk12",
+      "node": "/dev/block/sdf6",
+      "size_bytes": 1048576
+    },
+    {
+      "name": "bk13",
+      "node": "/dev/block/sde37",
+      "size_bytes": 67108864
+    },
+    {
+      "name": "bk2",
+      "node": "/dev/block/sda8",
+      "size_bytes": 2097152
+    },
+    {
+      "name": "bk3",
+      "node": "/dev/block/sda10",
+      "size_bytes": 8388608
+    },
+    {
+      "name": "bk4",
+      "node": "/dev/block/sdd2",
+      "size_bytes": 958464
+    },
+    {
+      "name": "bk5",
+      "node": "/dev/block/sdd5",
+      "size_bytes": 1048576
+    },
+    {
+      "name": "bk6",
+      "node": "/dev/block/sde4",
+      "size_bytes": 196608
+    },
+    {
+      "name": "bk7",
+      "node": "/dev/block/sde29",
+      "size_bytes": 2097152
+    },
+    {
+      "name": "bk8",
+      "node": "/dev/block/sde30",
+      "size_bytes": 2097152
+    },
+    {
+      "name": "bk9",
+      "node": "/dev/block/sde40",
+      "size_bytes": 1048576
+    },
+    {
+      "name": "bluetooth",
+      "node": "/dev/block/sde26",
+      "size_bytes": 1048576
+    },
+    {
+      "name": "boot",
+      "node": "/dev/block/sde36",
+      "size_bytes": 67108864
+    },
+    {
+      "name": "cache",
+      "node": "/dev/block/sda14",
+      "size_bytes": 268435456
+    },
+    {
+      "name": "cdt",
+      "node": "/dev/block/sdd3",
+      "size_bytes": 32768
+    },
+    {
+      "name": "cmnlib",
+      "node": "/dev/block/sde19",
+      "size_bytes": 1048576
+    },
+    {
+      "name": "cmnlib64",
+      "node": "/dev/block/sde21",
+      "size_bytes": 1048576
+    },
+    {
+      "name": "cmnlib64bak",
+      "node": "/dev/block/sde22",
+      "size_bytes": 1048576
+    },
+    {
+      "name": "cmnlibbak",
+      "node": "/dev/block/sde20",
+      "size_bytes": 1048576
+    },
+    {
+      "name": "cust",
+      "node": "/dev/block/sde38",
+      "size_bytes": 872415232
+    },
+    {
+      "name": "ddr",
+      "node": "/dev/block/sdd4",
+      "size_bytes": 1048576
+    },
+    {
+      "name": "devcfg",
+      "node": "/dev/block/sda4",
+      "size_bytes": 131072
+    },
+    {
+      "name": "devcfgbak",
+      "node": "/dev/block/sda5",
+      "size_bytes": 131072
+    },
+    {
+      "name": "devinfo",
+      "node": "/dev/block/sde1",
+      "size_bytes": 4096
+    },
+    {
+      "name": "dip",
+      "node": "/dev/block/sde25",
+      "size_bytes": 1048576
+    },
+    {
+      "name": "dpo",
+      "node": "/dev/block/sde2",
+      "size_bytes": 4096
+    },
+    {
+      "name": "dsp",
+      "node": "/dev/block/sde32",
+      "size_bytes": 20971520
+    },
+    {
+      "name": "frp",
+      "node": "/dev/block/sda7",
+      "size_bytes": 524288
+    },
+    {
+      "name": "fsc",
+      "node": "/dev/block/sdf1",
+      "size_bytes": 4096
+    },
+    {
+      "name": "fsg",
+      "node": "/dev/block/sde28",
+      "size_bytes": 4194304
+    },
+    {
+      "name": "hyp",
+      "node": "/dev/block/sde13",
+      "size_bytes": 1048576
+    },
+    {
+      "name": "hypbak",
+      "node": "/dev/block/sde14",
+      "size_bytes": 1048576
+    },
+    {
+      "name": "keymaster",
+      "node": "/dev/block/sde17",
+      "size_bytes": 1048576
+    },
+    {
+      "name": "keymasterbak",
+      "node": "/dev/block/sde18",
+      "size_bytes": 1048576
+    },
+    {
+      "name": "keystore",
+      "node": "/dev/block/sda6",
+      "size_bytes": 524288
+    },
+    {
+      "name": "lksecapp",
+      "node": "/dev/block/sde7",
+      "size_bytes": 131072
+    },
+    {
+      "name": "lksecappbak",
+      "node": "/dev/block/sde8",
+      "size_bytes": 131072
+    },
+    {
+      "name": "logo",
+      "node": "/dev/block/sde31",
+      "size_bytes": 8388608
+    },
+    {
+      "name": "mdtp",
+      "node": "/dev/block/sde34",
+      "size_bytes": 33554432
+    },
+    {
+      "name": "misc",
+      "node": "/dev/block/sda9",
+      "size_bytes": 4194304
+    },
+    {
+      "name": "modem",
+      "node": "/dev/block/sde35",
+      "size_bytes": 201326592
+    },
+    {
+      "name": "modemst1",
+      "node": "/dev/block/sdf3",
+      "size_bytes": 4194304
+    },
+    {
+      "name": "modemst2",
+      "node": "/dev/block/sdf5",
+      "size_bytes": 4194304
+    },
+    {
+      "name": "msadp",
+      "node": "/dev/block/sde6",
+      "size_bytes": 262144
+    },
+    {
+      "name": "oops",
+      "node": "/dev/block/sda11",
+      "size_bytes": 16777216
+    },
+    {
+      "name": "persist",
+      "node": "/dev/block/sda12",
+      "size_bytes": 33554432
+    },
+    {
+      "name": "pmic",
+      "node": "/dev/block/sde9",
+      "size_bytes": 524288
+    },
+    {
+      "name": "pmicbak",
+      "node": "/dev/block/sde10",
+      "size_bytes": 524288
+    },
+    {
+      "name": "recovery",
+      "node": "/dev/block/sda13",
+      "size_bytes": 67108864
+    },
+    {
+      "name": "reserve",
+      "node": "/dev/block/sdd1",
+      "size_bytes": 32768
+    },
+    {
+      "name": "rpm",
+      "node": "/dev/block/sde11",
+      "size_bytes": 1048576
+    },
+    {
+      "name": "rpmbak",
+      "node": "/dev/block/sde12",
+      "size_bytes": 1048576
+    },
+    {
+      "name": "sec",
+      "node": "/dev/block/sde3",
+      "size_bytes": 32768
+    },
+    {
+      "name": "splash",
+      "node": "/dev/block/sde33",
+      "size_bytes": 33554432
+    },
+    {
+      "name": "ssd",
+      "node": "/dev/block/sda1",
+      "size_bytes": 16384
+    },
+    {
+      "name": "sti",
+      "node": "/dev/block/sde27",
+      "size_bytes": 2097152
+    },
+    {
+      "name": "switch",
+      "node": "/dev/block/sda2",
+      "size_bytes": 8192
+    },
+    {
+      "name": "system",
+      "node": "/dev/block/sde39",
+      "size_bytes": 3221225472
+    },
+    {
+      "name": "tz",
+      "node": "/dev/block/sde15",
+      "size_bytes": 4194304
+    },
+    {
+      "name": "tzbak",
+      "node": "/dev/block/sde16",
+      "size_bytes": 4194304
+    },
+    {
+      "name": "userdata",
+      "node": "/dev/block/sda15",
+      "size_bytes": 122758868992
+    },
+    {
+      "name": "xbl",
+      "node": "/dev/block/sdb1",
+      "size_bytes": 4149248
+    },
+    {
+      "name": "xblbak",
+      "node": "/dev/block/sdc1",
+      "size_bytes": 4149248
+    }
+  ]
+}

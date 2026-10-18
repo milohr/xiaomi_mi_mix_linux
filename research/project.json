@@ -1,0 +1,465 @@
+{
+  "schema_version": 1,
+  "updated": "2026-10-17T19:59:09.365235+00:00",
+  "target": "xiaomi-lithium",
+  "goal": "Native bare-metal Linux with reproducible pmbootstrap packaging",
+  "current_phase": "P3",
+  "observations": [
+    {
+      "key": "manufacturer",
+      "value": "Xiaomi",
+      "evidence": "prior successful ADB session in conversation",
+      "status": "observed_transcribed",
+      "raw_log_available": false
+    },
+    {
+      "key": "model",
+      "value": "MIX",
+      "evidence": "prior successful ADB session in conversation",
+      "status": "observed_transcribed",
+      "raw_log_available": false
+    },
+    {
+      "key": "device",
+      "value": "lithium",
+      "evidence": "prior successful ADB session in conversation",
+      "status": "observed_transcribed",
+      "raw_log_available": false
+    },
+    {
+      "key": "product",
+      "value": "lithium",
+      "evidence": "prior successful ADB session in conversation",
+      "status": "observed_transcribed",
+      "raw_log_available": false
+    },
+    {
+      "key": "board_platform",
+      "value": "msm8996",
+      "evidence": "prior successful ADB session in conversation",
+      "status": "observed_transcribed",
+      "raw_log_available": false
+    },
+    {
+      "key": "hardware",
+      "value": "qcom",
+      "evidence": "prior successful ADB session in conversation",
+      "status": "observed_transcribed",
+      "raw_log_available": false
+    },
+    {
+      "key": "android",
+      "value": "8.0.0",
+      "evidence": "prior successful ADB session in conversation",
+      "status": "observed_transcribed",
+      "raw_log_available": false
+    },
+    {
+      "key": "security_patch",
+      "value": "2018-10-01",
+      "evidence": "prior successful ADB session in conversation",
+      "status": "observed_transcribed",
+      "raw_log_available": false
+    },
+    {
+      "key": "build_display_id",
+      "value": "OPR1.170623.032",
+      "evidence": "prior successful ADB session in conversation",
+      "status": "observed_transcribed",
+      "raw_log_available": false
+    },
+    {
+      "key": "miui",
+      "value": "V11",
+      "evidence": "prior successful ADB session in conversation",
+      "status": "observed_transcribed",
+      "raw_log_available": false
+    },
+    {
+      "key": "flash_locked",
+      "value": "0",
+      "evidence": "prior successful ADB session in conversation",
+      "status": "observed_transcribed",
+      "raw_log_available": false
+    },
+    {
+      "key": "verified_boot_state",
+      "value": "orange",
+      "evidence": "prior successful ADB session in conversation",
+      "status": "observed_transcribed",
+      "raw_log_available": false
+    },
+    {
+      "key": "verity_mode",
+      "value": "eio",
+      "evidence": "prior successful ADB session in conversation",
+      "status": "observed_transcribed",
+      "raw_log_available": false
+    },
+    {
+      "key": "oem_unlock_supported",
+      "value": "true",
+      "evidence": "prior successful ADB session in conversation",
+      "status": "observed_transcribed",
+      "raw_log_available": false
+    },
+    {
+      "key": "sys_oem_unlock_allowed",
+      "value": "0",
+      "evidence": "prior successful ADB session in conversation",
+      "status": "observed_transcribed",
+      "raw_log_available": false
+    },
+    {
+      "key": "kernel",
+      "value": "3.18.71-perf-g5edcf86",
+      "evidence": "prior successful ADB session in conversation",
+      "status": "observed_transcribed",
+      "raw_log_available": false
+    },
+    {
+      "key": "architecture",
+      "value": "aarch64",
+      "evidence": "prior successful ADB session in conversation",
+      "status": "observed_transcribed",
+      "raw_log_available": false
+    },
+    {
+      "key": "memtotal_kb",
+      "value": 3801116,
+      "evidence": "prior successful ADB session in conversation",
+      "status": "observed_transcribed",
+      "raw_log_available": false
+    },
+    {
+      "key": "incremental_build",
+      "value": "V11.0.2.0.OAHMIXM",
+      "status": "live_observed",
+      "evidence": "artifacts/inventory-20261017T194707466026Z/inventory.json"
+    }
+  ],
+  "user_reported": {
+    "soc": "Snapdragon 821 / MSM8996 Pro",
+    "panel_pixels": [
+      1080,
+      2040
+    ],
+    "aspect_ratio": "17:9"
+  },
+  "unknowns": [
+    "physical memory regions and carveouts",
+    "panel model and variant",
+    "DSI sequence and command state",
+    "framebuffer base/stride/format",
+    "GPIO and PMIC mapping",
+    "whether the new lithium lk2nd selector starts on real hardware",
+    "whether lk2nd Fastboot can load the first Linux image on lithium",
+    "marketed storage SKU; live partition geometry now recorded"
+  ],
+  "sources": [
+    {
+      "id": "linux",
+      "url": "https://github.com/torvalds/linux",
+      "purpose": "upstream kernel",
+      "assessment": "Source baseline not pinned",
+      "commit": null,
+      "sha256": null
+    },
+    {
+      "id": "scorpio-dts",
+      "url": "https://raw.githubusercontent.com/torvalds/linux/master/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-scorpio.dts",
+      "purpose": "sibling device tree",
+      "assessment": "Retrieved 2026-10-17; exists, detailed comparison pending",
+      "commit": null,
+      "sha256": null
+    },
+    {
+      "id": "lithium-downstream-device",
+      "url": "https://github.com/LineageOS/android_device_xiaomi_lithium",
+      "purpose": "downstream device configuration",
+      "assessment": "Repository retrieved; not proof of native Linux support",
+      "commit": null,
+      "sha256": null
+    },
+    {
+      "id": "msm8996-downstream-kernel",
+      "url": "https://github.com/LineageOS/android_kernel_xiaomi_msm8996",
+      "purpose": "downstream hardware evidence",
+      "assessment": "Source lead; exact stock correspondence unverified",
+      "commit": null,
+      "sha256": null
+    },
+    {
+      "id": "lk2nd",
+      "url": "https://github.com/msm8916-mainline/lk2nd",
+      "purpose": "candidate secondary bootloader",
+      "assessment": "MSM8996 target exists; lithium board entry is absent and must be added",
+      "commit": "8b46487c4c76776c4f2f61468d44a74c69e6b9ea",
+      "sha256": null
+    },
+    {
+      "id": "lk2nd-device-list",
+      "url": "https://raw.githubusercontent.com/msm8916-mainline/lk2nd/main/Documentation/devices.md",
+      "purpose": "bootloader compatibility",
+      "assessment": "List omits MSM8996, but source contains the SoC target; lithium remains absent",
+      "commit": "8b46487c4c76776c4f2f61468d44a74c69e6b9ea",
+      "sha256": null
+    },
+    {
+      "id": "pmaports",
+      "url": "https://gitlab.postmarketos.org/postmarketOS/pmaports",
+      "purpose": "device and kernel packaging",
+      "assessment": "Pinned canonical package source; scorpio and the MSM8996 kernel package were audited",
+      "commit": "dfb010f5b9885d185d089b6e1e493030062f9756",
+      "sha256": null
+    },
+    {
+      "id": "pmbootstrap",
+      "url": "https://gitlab.postmarketos.org/postmarketOS/pmbootstrap",
+      "purpose": "build tooling",
+      "assessment": "Pinned canonical build-tool source",
+      "commit": "7d23010a125ca7386fec4e390d14128b6c24d266",
+      "sha256": null
+    },
+    {
+      "id": "drm-api",
+      "url": "https://github.com/torvalds/linux/blob/master/include/drm/drm_mipi_dsi.h",
+      "purpose": "DSI API",
+      "assessment": "Reviewed; no standard struct mipi_dsi_dcs_cmd",
+      "commit": null,
+      "sha256": null
+    },
+    {
+      "id": "porting-guide",
+      "url": "https://wiki.postmarketos.org/wiki/Porting_to_a_new_device",
+      "purpose": "workflow reference",
+      "assessment": "Fetch redirected to wiki.nura.eco and anti-bot page; substantive contents not retrieved",
+      "commit": null,
+      "sha256": null
+    }
+  ],
+  "phases": [
+    {
+      "id": "P0",
+      "title": "Evidence and host readiness",
+      "status": "complete",
+      "dependencies": "None",
+      "tasks": [
+        "Refresh restricted ADB inventory; retain failures as evidence.",
+        "Check host tools and record versions; identify exact Android incremental build and RAM/storage SKU.",
+        "Keep device identity and stock facts separate from marketing and sibling assumptions."
+      ],
+      "deliverables": [
+        "Private raw inventory with timestamp and hashes",
+        "Reviewed research/project.json update"
+      ],
+      "exit_gate": "Identity lithium and current boot state corroborated; missing/denied reads recorded."
+    },
+    {
+      "id": "P1",
+      "title": "Recovery baseline and stock artifacts",
+      "status": "complete",
+      "dependencies": "P0",
+      "tasks": [
+        "Locate exact lithium firmware matching the incremental build; verify provenance and digest.",
+        "Inventory boot/recovery partitions and sizes read-only; inspect boot headers, DTB placement and cmdline offline.",
+        "Confirm user-data backup and documented stock recovery path; never assume EDL is a usable fallback.",
+        "Record a concrete restore procedure and image hashes; do not run vendor flash-all scripts."
+      ],
+      "deliverables": [
+        "Artifact manifest",
+        "Boot-layout report",
+        "Recovery checklist"
+      ],
+      "exit_gate": "Matching restoration artifacts and a reviewed recovery procedure exist before any boot experiment.",
+      "completed_at": "2026-10-17T19:59:09.365235+00:00",
+      "completion_evidence": "research/recovery-baseline.json"
+    },
+    {
+      "id": "P2",
+      "title": "Pin source and boot-path baselines",
+      "status": "complete",
+      "dependencies": "P0; P1 before live experiments",
+      "tasks": [
+        "Pin Linux, pmaports and pmbootstrap revisions and inspect scorpio packages.",
+        "Compare shared MSM8996 support and lithium downstream source; build a component support matrix.",
+        "Audit lk2nd source targets and board matching; add lithium to the existing MSM8996 target from verified stock DTB IDs.",
+        "Build and inspect the lithium lk2nd image, then retain recovery as the selected first-stage path; do not flash a sibling image."
+      ],
+      "deliverables": [
+        "Source lock JSON with full commits",
+        "Scorpio/lithium comparison",
+        "Boot-path decision record"
+      ],
+      "exit_gate": "A supported or explicitly scoped experimental boot path and kernel baseline are chosen with evidence.",
+      "completed_at": "2026-10-17",
+      "completion_evidence": "research/lk2nd-build.json"
+    },
+    {
+      "id": "P3",
+      "title": "Hardware map and minimal DTS",
+      "status": "in_progress",
+      "dependencies": "P1, P2",
+      "tasks": [
+        "Extract DTB and panel evidence offline; retain source locations and hashes.",
+        "Map DRAM, reserved-memory, firmware carveouts, PSCI, interrupt controller, clocks, regulators, USB and storage.",
+        "Author lithium DTS against upstream bindings; enable only evidenced nodes.",
+        "Treat simple-framebuffer as bootloader-initialized scanout: verify address, size, stride, format, power retention and non-overlap.",
+        "Map TLMM separately from PMIC GPIO/MPP and PON keys; verify interrupts, polarity, bias and debounce."
+      ],
+      "deliverables": [
+        "Hardware mapping JSON",
+        "Original lithium DTS patch",
+        "Minimal kernel configuration fragment"
+      ],
+      "exit_gate": "DTS compiles and applicable dtbs_check passes; every enabled node has traceable hardware evidence."
+    },
+    {
+      "id": "P4",
+      "title": "Reproducible pmbootstrap packages",
+      "status": "pending",
+      "dependencies": "P2, P3",
+      "tasks": [
+        "Use pinned pmaports conventions to generate device-xiaomi-lithium/APKBUILD and deviceinfo.",
+        "Prefer the verified shared MSM8996 kernel package; create a separate kernel package only if justified.",
+        "Set DTB name, architecture, image packing and flash metadata from the boot-layout audit.",
+        "Build a minimal rootfs with diagnostic shell and USB networking; record package checksums and build logs."
+      ],
+      "deliverables": [
+        "Device package",
+        "Kernel patches/config",
+        "Reproducible image manifest"
+      ],
+      "exit_gate": "Package lint and build pass; kernel/DTB/image fit verified constraints; no placeholder values remain."
+    },
+    {
+      "id": "P5",
+      "title": "First recoverable native boot",
+      "status": "pending",
+      "dependencies": "P1, P4",
+      "tasks": [
+        "Present exact image hashes, boot method, expected behavior and recovery steps before changing device state.",
+        "Prefer a validated temporary boot path; keep internal filesystems unmounted or read-only initially.",
+        "Capture early console, USB diagnostics or pstore where actually available.",
+        "Establish boot to shell and return to Android; investigate one failure at a time."
+      ],
+      "deliverables": [
+        "Boot log",
+        "Recovery result",
+        "Updated feature matrix"
+      ],
+      "exit_gate": "Native Linux reaches a diagnostic shell and the tested recovery path restores normal operation."
+    },
+    {
+      "id": "P6",
+      "title": "Display, input and essential power",
+      "status": "pending",
+      "dependencies": "P5",
+      "tasks": [
+        "Identify actual panel variant and parse complete downstream commands with transport metadata.",
+        "Implement panel supply/reset timing and DRM modes; simple framebuffer success does not prove native DSI support.",
+        "Enable touch and keys from verified bus/GPIO mappings; test full 1080x2040 input coordinates.",
+        "Validate battery reporting, charging, thermal limits and clean poweroff before sustained use."
+      ],
+      "deliverables": [
+        "Panel driver and binding",
+        "Input patches",
+        "Power validation logs"
+      ],
+      "exit_gate": "Stable display and input with monitored safe thermal and charging behavior."
+    },
+    {
+      "id": "P7",
+      "title": "Connectivity and acceleration",
+      "status": "pending",
+      "dependencies": "P6",
+      "tasks": [
+        "Bring up Wi-Fi/Bluetooth with identified legally usable firmware and calibration data.",
+        "Validate GPU, audio, sensors and suspend/resume separately.",
+        "Treat modem, calls and cameras as independent later work; record unsupported features explicitly."
+      ],
+      "deliverables": [
+        "Firmware inventory",
+        "Feature tests and logs"
+      ],
+      "exit_gate": "Chosen usable-device feature set is repeatable; missing functions are documented."
+    },
+    {
+      "id": "P8",
+      "title": "Reproducibility and upstream review",
+      "status": "pending",
+      "dependencies": "P7",
+      "tasks": [
+        "Rebuild from pinned sources on a clean host and compare artifacts where deterministic.",
+        "Review DTS bindings, driver style, licensing and package submissions.",
+        "Publish installation/recovery instructions only for tested variants and methods."
+      ],
+      "deliverables": [
+        "Release manifest",
+        "Maintainer documentation",
+        "Upstream-ready patches"
+      ],
+      "exit_gate": "A second clean build and documented repeatable install/recovery validate the milestone."
+    }
+  ],
+  "constraints": [
+    "No cross-device images or MediaTek flare assumptions",
+    "No device changes performed by repository tooling",
+    "No invented GPIOs, memory addresses or package checksums",
+    "Raw firmware and private device data remain untracked"
+  ],
+  "boot_path": {
+    "preferred": "Custom lithium entry in lk2nd-msm8996, initially installed to recovery after separate review and authorization",
+    "status": "offline_implementation_built_live_validation_pending",
+    "finding": "The MSM8996 target exists. A lithium board-id 38 selector was added and built; existing scorpio images remain incompatible.",
+    "delivery": "Enter lk2nd through recovery while retaining Android boot, then load Linux into RAM through lk2nd Fastboot",
+    "stock_fastboot": "Static stock aboot audit found no registered boot command string; direct fastboot boot is not assumed"
+  },
+  "host_preflight": {
+    "python": "3.14.8",
+    "host": "Linux-7.2.9-arch1-1-x86_64-with-glibc2.44",
+    "tools": {
+      "collection": {
+        "adb": "/usr/bin/adb",
+        "fastboot": "/usr/bin/fastboot"
+      },
+      "source_and_analysis": {
+        "git": "/usr/bin/git",
+        "dtc": null,
+        "fdtdump": null,
+        "sha256sum": "/usr/bin/sha256sum",
+        "unpack_bootimg": "/usr/bin/unpack_bootimg"
+      },
+      "packaging": {
+        "pmbootstrap": null
+      },
+      "kernel_build": {
+        "make": "/usr/bin/make",
+        "gcc": "/usr/bin/gcc",
+        "clang": "/usr/bin/clang",
+        "bison": "/usr/bin/bison",
+        "flex": "/usr/bin/flex",
+        "pkg-config": "/usr/bin/pkg-config"
+      },
+      "optional_checks": {
+        "shellcheck": null,
+        "dt-validate": null
+      }
+    },
+    "note": "Tool presence is not version or target compatibility validation."
+  },
+  "validation": {
+    "panel_parser_tests": 8,
+    "result": "passed",
+    "hardware_tested": false
+  },
+  "phase1_report": "research/recovery-baseline.json",
+  "live_inventory": "artifacts/inventory-20261017T194707466026Z/inventory.json",
+  "stock_image_audit": "research/stock-image-audit.json",
+  "phase2_source_lock": "research/source-lock.json",
+  "phase2_findings": "docs/PHASE2_FINDINGS.md",
+  "phase2_boot_path": "docs/BOOT_PATH.md",
+  "phase2_lk2nd_build": "research/lk2nd-build.json",
+  "phase3_hardware_map": "research/hardware-map.json",
+  "phase3_dtb_build": "research/kernel-dtb-build.json"
+}

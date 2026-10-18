@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-10-17T19:59:09.365235+00:00",
+  "phase": "P1",
+  "status": "complete",
+  "device_check": {
+    "result": "authorized lithium connected; restricted inventory collected",
+    "inventory": "artifacts/inventory-20261017T194707466026Z/inventory.json",
+    "device_modified": false
+  },
+  "sources": [
+    {
+      "id": "common",
+      "url": "https://raw.githubusercontent.com/LineageOS/android_device_xiaomi_msm8996-common/lineage-19.1/BoardConfigCommon.mk",
+      "retrieved_at": "2026-10-17T19:46:57.816743+00:00",
+      "sha256": "a5152dcfb9814d1f2e1202c38c550c1a6c4f833dcde9316c86a720261dfcfd6a",
+      "local_path": "artifacts/phase1-reference/lithium-phase1-common",
+      "commit": null,
+      "status": "retrieved_reference_not_exact_stock"
+    },
+    {
+      "id": "lithium",
+      "url": "https://raw.githubusercontent.com/LineageOS/android_device_xiaomi_lithium/lineage-19.1/BoardConfig.mk",
+      "retrieved_at": "2026-10-17T19:46:57.816743+00:00",
+      "sha256": "be90a3cffa70d50b7e22d8759b4e7b90c9758bb985cab91aead6aef8a39dfd0f",
+      "local_path": "artifacts/phase1-reference/lithium-phase1-lithium",
+      "commit": null,
+      "status": "retrieved_reference_not_exact_stock"
+    },
+    {
+      "id": "twrp",
+      "url": "https://twrp.me/xiaomi/xiaomimimix.html",
+      "retrieved_at": "2026-10-17T19:46:57.816743+00:00",
+      "sha256": "e671f4b95e07b25f29240f87b99e5b18a1a34c0702ab7a7b0e256c9dfa473473",
+      "local_path": "artifacts/phase1-reference/lithium-phase1-twrp",
+      "commit": null,
+      "status": "retrieved_reference_not_exact_stock"
+    }
+  ],
+  "source_reference_only": {
+    "boot_partition_bytes": 67108864,
+    "recovery_partition_bytes": 67108864,
+    "kernel_image": "Image.gz-dtb",
+    "page_size": 4096,
+    "kernel_base": "0x80000000",
+    "tags_offset": "0x00000100",
+    "ramdisk_offset": "0x01000000",
+    "warning": "Shared LineageOS configuration, not measured stock geometry or instructions for image packing."
+  },
+  "rom_candidate": {
+    "version": "V11.0.2.0.OAHMIXM",
+    "region": "Global",
+    "android": "8.0",
+    "fastboot_archive": "lithium_global_images_V11.0.2.0.OAHMIXM_20191023.0000.00_8.0_global_3454b31c75.tgz",
+    "recovery_archive": "miui_MIMIXGlobal_V11.0.2.0.OAHMIXM_6e058c6d8f_8.0.zip",
+    "index_url": "https://xiaomirom.com/en/download/mi-mix-lithium-stable-V11.0.2.0.OAHMIXM/",
+    "status": "downloaded_integrity_checked_and_metadata_matched",
+    "sha256": "713f8f6f4f65fc51cfb206e0606ae5af946a1baf344277c761530c13bb207b7d",
+    "official_download_url": "https://bigota.d.miui.com/V11.0.2.0.OAHMIXM/lithium_global_images_V11.0.2.0.OAHMIXM_20191023.0000.00_8.0_global_3454b31c75.tgz"
+  },
+  "gates": {
+    "current_incremental_build_known": true,
+    "live_partition_map_collected": true,
+    "matching_stock_images_obtained": true,
+    "stock_boot_headers_inspected": true,
+    "backup_confirmed": true,
+    "physical_recovery_path_tested": true,
+    "temporary_boot_supported": null,
+    "fastboot_roundtrip_tested": true,
+    "restore_procedure_documented": true
+  },
+  "next_actions": [
+    "P2: pin source revisions, audit scorpio packages and establish a compatible boot path"
+  ],
+  "backup": {
+    "status": "not_required_by_user",
+    "statement": "nothing needs to be backed up",
+    "fastboot_tested": true,
+    "recovery_tested": true
+  },
+  "live_partition_report": "research/partition-inventory.json",
+  "download": {
+    "expected_bytes": 1803158296,
+    "primary_result": "stopped after roughly 1.15 MiB due to sustained ~25 KB/s throughput; partial retained",
+    "alternate_url": "https://hugeota.d.miui.com/V11.0.2.0.OAHMIXM/lithium_global_images_V11.0.2.0.OAHMIXM_20191023.0000.00_8.0_global_3454b31c75.tgz",
+    "alternate_head": "HTTP 200; Content-Length 1803158296; Accept-Ranges bytes",
+    "alternate_status": "complete via cdnorg; gzip and tar audit passed",
+    "integrity_note": "Local SHA-256 and complete gzip integrity verified; no independent publisher signature checked",
+    "effective_url": "https://cdnorg.d.miui.com/V11.0.2.0.OAHMIXM/lithium_global_images_V11.0.2.0.OAHMIXM_20191023.0000.00_8.0_global_3454b31c75.tgz",
+    "method": "8 concurrent 4 MiB ranges, exact Content-Range and length validation"
+  },
+  "fastboot": {
+    "tested": true,
+    "product": "MSM8996_A8",
+    "device_unlocked": true,
+    "critical_unlocked": true,
+    "boot_bytes": 67108864,
+    "recovery_bytes": 67108864,
+    "has_slot_boot": "empty; no boolean conclusion from this response",
+    "returned_to_android": true,
+    "log": "artifacts/phase1-fastboot/roundtrip.json"
+  },
+  "remaining": [],
+  "stock_image_report": "research/stock-image-audit.json",
+  "completed_at": "2026-10-17T19:59:09.365235+00:00",
+  "physical_recovery_test": {
+    "evidence_type": "user_report",
+    "recorded_at": "2026-10-17T19:59:09.365235+00:00",
+    "statement": "i did the recovery screen reboot to system and it worked. i did not see any name or version in recovery screen",
+    "entered_recovery": true,
+    "reboot_to_system_succeeded": true,
+    "recovery_name": null,
+    "recovery_version": null,
+    "identity_note": "Recovery implementation not identified; successful menu entry and return confirmed by user."
+  }
+}

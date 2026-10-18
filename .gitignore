@@ -1,0 +1,9 @@
+artifacts/*
+!artifacts/README.md
+sources/*
+!sources/README.md
+build/*
+!build/README.md
+__pycache__/
+*.pyc
+.venv/

@@ -1,0 +1,3189 @@
+{
+  "schema_version": 1,
+  "variant": "sharp",
+  "downstream_node": "qcom,mdss_dsi_sharp_fte716_1080p_video",
+  "downstream_label": "dsi_sharp_fte716_1080p_video",
+  "panel_name": "sharp fte716 1080p video mode dsi panel",
+  "source": {
+    "repository": "https://github.com/LineageOS/android_kernel_xiaomi_msm8996.git",
+    "commit": "4aa1814c63b82ce67d0ef0434ca510be94bb8284",
+    "path": "arch/arm/boot/dts/qcom/dsi-panel-sharp-fte716-1080p-video.dtsi",
+    "node_line": 15
+  },
+  "stock_dtbs": [
+    {
+      "artifact": "artifacts/stock/audit/boot.img.dtb-4",
+      "sha256": "211d7e0022c937bc18117415f5015ed5518c3eb82b56630de10049ecdd5dba66",
+      "node_present": true
+    },
+    {
+      "artifact": "artifacts/stock/audit/boot.img.dtb-5",
+      "sha256": "a2968fa1b189c5e73bbd89a578575ce7cf0a42f2bc31968265260b362f49ce01",
+      "node_present": true
+    },
+    {
+      "artifact": "artifacts/stock/audit/recovery.img.dtb-4",
+      "sha256": "211d7e0022c937bc18117415f5015ed5518c3eb82b56630de10049ecdd5dba66",
+      "node_present": true
+    },
+    {
+      "artifact": "artifacts/stock/audit/recovery.img.dtb-5",
+      "sha256": "a2968fa1b189c5e73bbd89a578575ce7cf0a42f2bc31968265260b362f49ce01",
+      "node_present": true
+    }
+  ],
+  "encoding": {
+    "header_bytes": 7,
+    "fields": [
+      "dtype u8",
+      "last u8",
+      "vc u8",
+      "ack u8",
+      "wait u8 (ms)",
+      "dlen u16 big-endian"
+    ],
+    "struct": {
+      "repository": "https://github.com/LineageOS/android_kernel_xiaomi_msm8996.git",
+      "commit": "4aa1814c63b82ce67d0ef0434ca510be94bb8284",
+      "path": "drivers/video/msm/mdss/mdss_dsi_cmd.h",
+      "line": 84,
+      "line_end": 91
+    },
+    "parser": {
+      "repository": "https://github.com/LineageOS/android_kernel_xiaomi_msm8996.git",
+      "commit": "4aa1814c63b82ce67d0ef0434ca510be94bb8284",
+      "path": "drivers/video/msm/mdss/mdss_dsi_panel.c",
+      "line": 1098,
+      "line_end": 1181
+    },
+    "dlen_byteorder": {
+      "repository": "https://github.com/LineageOS/android_kernel_xiaomi_msm8996.git",
+      "commit": "4aa1814c63b82ce67d0ef0434ca510be94bb8284",
+      "path": "drivers/video/msm/mdss/mdss_dsi_panel.c",
+      "line": 1125
+    },
+    "batching": {
+      "repository": "https://github.com/LineageOS/android_kernel_xiaomi_msm8996.git",
+      "commit": "4aa1814c63b82ce67d0ef0434ca510be94bb8284",
+      "path": "drivers/video/msm/mdss/mdss_dsi_host.c",
+      "line": 1653,
+      "line_end": 1702
+    },
+    "dtype_table": {
+      "repository": "https://github.com/LineageOS/android_kernel_xiaomi_msm8996.git",
+      "commit": "4aa1814c63b82ce67d0ef0434ca510be94bb8284",
+      "path": "drivers/video/msm/mdss/mdss_dsi_cmd.h",
+      "line": 47,
+      "line_end": 70
+    },
+    "round_trip": "dtype,last,vc,ack,wait_ms,dlen>>8,dlen&0xff,payload... concatenated over packets"
+  },
+  "streams": {
+    "on_command": {
+      "property": "qcom,mdss-dsi-on-command",
+      "source": {
+        "repository": "https://github.com/LineageOS/android_kernel_xiaomi_msm8996.git",
+        "commit": "4aa1814c63b82ce67d0ef0434ca510be94bb8284",
+        "path": "arch/arm/boot/dts/qcom/dsi-panel-sharp-fte716-1080p-video.dtsi",
+        "line": 39,
+        "line_end": 128
+      },
+      "command_state": {
+        "value": "dsi_lp_mode",
+        "property": "qcom,mdss-dsi-on-command-state",
+        "line": 132,
+        "meaning": "CMD_REQ_LP_MODE",
+        "parser": {
+          "repository": "https://github.com/LineageOS/android_kernel_xiaomi_msm8996.git",
+          "commit": "4aa1814c63b82ce67d0ef0434ca510be94bb8284",
+          "path": "drivers/video/msm/mdss/mdss_dsi_panel.c",
+          "line": 1165
+        },
+        "consumer": {
+          "repository": "https://github.com/LineageOS/android_kernel_xiaomi_msm8996.git",
+          "commit": "4aa1814c63b82ce67d0ef0434ca510be94bb8284",
+          "path": "drivers/video/msm/mdss/mdss_dsi_panel.c",
+          "line": 232
+        }
+      },
+      "byte_length": 1085,
+      "sha256": "3bdab20aa18e7f3211a1dbab679b95523b1a4b6b5610d550749c416580c86e43",
+      "original_hex": "29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 05 2a 00 00 04 37 29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 05 2b 00 00 07 f7 29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 04 ff 87 16 01 29 00 00 00 00 00 02 00 80 29 01 00 00 00 00 03 ff 87 16 29 00 00 00 00 00 02 00 80 29 00 00 00 00 00 0b ca 80 bf ff 99 ff 80 ff 00 00 00 29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 02 c6 10 29 00 00 00 00 00 02 00 00 29 01 00 00 00 00 13 c7 90 9a 9a 9b c9 a9 98 99 aa a8 bb 88 88 68 45 44 44 44 29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 02 c6 11 29 00 00 00 00 00 02 00 00 29 01 00 00 00 00 13 c7 90 9a 8a 9b c8 99 99 99 a9 a8 ba 88 88 78 56 45 44 44 29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 02 c6 12 29 00 00 00 00 00 02 00 00 29 01 00 00 00 00 13 c7 90 99 9a 8a b9 9a 98 89 b9 98 ba 88 88 78 56 55 55 44 29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 02 c6 13 29 00 00 00 00 00 02 00 00 29 01 00 00 00 00 13 c7 90 99 8a 8a b9 99 89 89 a9 99 b9 88 88 88 56 55 55 55 29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 02 c6 14 29 00 00 00 00 00 02 00 00 29 01 00 00 00 00 13 c7 80 8a 8a 9a b8 89 89 89 a9 98 b9 88 88 88 67 56 55 55 29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 02 c6 15 29 00 00 00 00 00 02 00 00 29 01 00 00 00 00 13 c7 80 99 99 99 a8 99 89 98 a8 89 a9 88 88 88 67 66 66 55 29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 02 c6 16 29 00 00 00 00 00 02 00 00 29 01 00 00 00 00 13 c7 80 99 89 8a a8 99 98 88 99 89 a9 88 88 88 67 66 66 66 29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 02 c6 17 29 00 00 00 00 00 02 00 00 29 01 00 00 00 00 13 c7 80 89 99 89 99 99 88 89 89 89 a9 88 88 88 78 66 66 66 29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 02 c6 18 29 00 00 00 00 00 02 00 00 29 01 00 00 00 00 13 c7 80 89 89 8a 98 89 89 88 99 98 98 88 88 88 78 77 67 66 29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 02 c6 19 29 00 00 00 00 00 02 00 00 29 01 00 00 00 00 13 c7 80 98 98 89 98 89 89 88 99 88 99 88 88 88 78 77 77 66 29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 02 c6 1a 29 00 00 00 00 00 02 00 00 29 01 00 00 00 00 13 c7 80 88 99 88 98 89 89 88 89 98 98 88 88 88 78 77 77 77 29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 02 c6 1b 29 00 00 00 00 00 02 00 00 29 01 00 00 00 00 13 c7 80 88 89 89 88 89 89 88 98 88 98 88 88 88 88 78 77 77 29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 02 c6 1c 29 00 00 00 00 00 02 00 00 29 01 00 00 00 00 13 c7 80 88 89 88 88 89 89 88 98 88 98 88 88 88 88 88 77 77 29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 02 c6 1d 29 00 00 00 00 00 02 00 00 29 01 00 00 00 00 13 c7 80 88 88 89 88 98 88 88 98 88 88 88 88 88 88 88 88 77 29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 02 c6 1e 29 00 00 00 00 00 02 00 00 29 01 00 00 00 00 13 c7 80 88 88 88 98 88 88 88 98 87 89 88 88 88 88 88 88 78 29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 02 c6 1f 29 00 00 00 00 00 02 00 00 29 01 00 00 00 00 13 c7 80 88 88 88 88 88 88 88 88 88 98 88 88 88 88 88 88 88 29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 02 c6 00 29 00 00 00 00 00 02 00 82 29 00 00 00 00 00 02 b3 0c 29 00 00 00 00 00 02 00 00 29 00 00 00 00 00 04 ff 00 00 00 29 00 00 00 00 00 02 00 80 29 01 00 00 00 00 03 ff 00 00 05 01 00 00 78 00 02 11 00 15 00 00 00 00 00 02 51 ff 15 00 00 00 00 00 02 53 24 15 00 00 00 00 00 02 55 00 15 00 00 00 00 00 02 35 00 05 01 00 00 14 00 02 29 00",
+      "packet_count": 88,
+      "batch_count": 20,
+      "stock_dtb_corroboration": {
+        "boot.img.dtb-4": {
+          "dtb_sha256": "211d7e0022c937bc18117415f5015ed5518c3eb82b56630de10049ecdd5dba66",
+          "identical_to_source": true,
+          "property_sha256": "3bdab20aa18e7f3211a1dbab679b95523b1a4b6b5610d550749c416580c86e43"
+        },
+        "boot.img.dtb-5": {
+          "dtb_sha256": "a2968fa1b189c5e73bbd89a578575ce7cf0a42f2bc31968265260b362f49ce01",
+          "identical_to_source": true,
+          "property_sha256": "3bdab20aa18e7f3211a1dbab679b95523b1a4b6b5610d550749c416580c86e43"
+        },
+        "recovery.img.dtb-4": {
+          "dtb_sha256": "211d7e0022c937bc18117415f5015ed5518c3eb82b56630de10049ecdd5dba66",
+          "identical_to_source": true,
+          "property_sha256": "3bdab20aa18e7f3211a1dbab679b95523b1a4b6b5610d550749c416580c86e43"
+        },
+        "recovery.img.dtb-5": {
+          "dtb_sha256": "a2968fa1b189c5e73bbd89a578575ce7cf0a42f2bc31968265260b362f49ce01",
+          "identical_to_source": true,
+          "property_sha256": "3bdab20aa18e7f3211a1dbab679b95523b1a4b6b5610d550749c416580c86e43"
+        }
+      },
+      "packets": [
+        {
+          "index": 0,
+          "byte_offset": 0,
+          "source_line": 40,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 0,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 1,
+          "byte_offset": 9,
+          "source_line": 41,
+          "header_hex": "29 00 00 00 00 00 05",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 5,
+          "payload_hex": "2a 00 00 04 37",
+          "batch": 0,
+          "transmitted_on_wire": "long packet 0x29, word count 5, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "payload starts with DCS opcode 0x2a but is sent as GENERIC long write 0x29, not DCS long write 0x39"
+          ]
+        },
+        {
+          "index": 2,
+          "byte_offset": 21,
+          "source_line": 42,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 0,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 3,
+          "byte_offset": 30,
+          "source_line": 43,
+          "header_hex": "29 00 00 00 00 00 05",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 5,
+          "payload_hex": "2b 00 00 07 f7",
+          "batch": 0,
+          "transmitted_on_wire": "long packet 0x29, word count 5, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "payload starts with DCS opcode 0x2b but is sent as GENERIC long write 0x29, not DCS long write 0x39"
+          ]
+        },
+        {
+          "index": 4,
+          "byte_offset": 42,
+          "source_line": 44,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 0,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 5,
+          "byte_offset": 51,
+          "source_line": 45,
+          "header_hex": "29 00 00 00 00 00 04",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 4,
+          "payload_hex": "ff 87 16 01",
+          "batch": 0,
+          "transmitted_on_wire": "long packet 0x29, word count 4, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 6,
+          "byte_offset": 62,
+          "source_line": 46,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 80",
+          "batch": 0,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 7,
+          "byte_offset": 71,
+          "source_line": 47,
+          "header_hex": "29 01 00 00 00 00 03",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 3,
+          "payload_hex": "ff 87 16",
+          "batch": 0,
+          "transmitted_on_wire": "long packet 0x29, word count 3, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 8,
+          "byte_offset": 81,
+          "source_line": 48,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 80",
+          "batch": 1,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 9,
+          "byte_offset": 90,
+          "source_line": 49,
+          "header_hex": "29 00 00 00 00 00 0b",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 11,
+          "payload_hex": "ca 80 bf ff 99 ff 80 ff 00 00 00",
+          "batch": 1,
+          "transmitted_on_wire": "long packet 0x29, word count 11, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 10,
+          "byte_offset": 108,
+          "source_line": 50,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 1,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 11,
+          "byte_offset": 117,
+          "source_line": 51,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "c6 10",
+          "batch": 1,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 12,
+          "byte_offset": 126,
+          "source_line": 52,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 1,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 13,
+          "byte_offset": 135,
+          "source_line": 53,
+          "header_hex": "29 01 00 00 00 00 13",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 19,
+          "payload_hex": "c7 90 9a 9a 9b c9 a9 98 99 aa a8 bb 88 88 68 45 44 44 44",
+          "batch": 1,
+          "transmitted_on_wire": "long packet 0x29, word count 19, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 14,
+          "byte_offset": 161,
+          "source_line": 54,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 2,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 15,
+          "byte_offset": 170,
+          "source_line": 55,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "c6 11",
+          "batch": 2,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 16,
+          "byte_offset": 179,
+          "source_line": 56,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 2,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 17,
+          "byte_offset": 188,
+          "source_line": 57,
+          "header_hex": "29 01 00 00 00 00 13",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 19,
+          "payload_hex": "c7 90 9a 8a 9b c8 99 99 99 a9 a8 ba 88 88 78 56 45 44 44",
+          "batch": 2,
+          "transmitted_on_wire": "long packet 0x29, word count 19, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 18,
+          "byte_offset": 214,
+          "source_line": 58,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 3,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 19,
+          "byte_offset": 223,
+          "source_line": 59,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "c6 12",
+          "batch": 3,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 20,
+          "byte_offset": 232,
+          "source_line": 60,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 3,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 21,
+          "byte_offset": 241,
+          "source_line": 61,
+          "header_hex": "29 01 00 00 00 00 13",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 19,
+          "payload_hex": "c7 90 99 9a 8a b9 9a 98 89 b9 98 ba 88 88 78 56 55 55 44",
+          "batch": 3,
+          "transmitted_on_wire": "long packet 0x29, word count 19, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 22,
+          "byte_offset": 267,
+          "source_line": 62,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 4,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 23,
+          "byte_offset": 276,
+          "source_line": 63,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "c6 13",
+          "batch": 4,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 24,
+          "byte_offset": 285,
+          "source_line": 64,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 4,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 25,
+          "byte_offset": 294,
+          "source_line": 65,
+          "header_hex": "29 01 00 00 00 00 13",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 19,
+          "payload_hex": "c7 90 99 8a 8a b9 99 89 89 a9 99 b9 88 88 88 56 55 55 55",
+          "batch": 4,
+          "transmitted_on_wire": "long packet 0x29, word count 19, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 26,
+          "byte_offset": 320,
+          "source_line": 66,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 5,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 27,
+          "byte_offset": 329,
+          "source_line": 67,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "c6 14",
+          "batch": 5,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 28,
+          "byte_offset": 338,
+          "source_line": 68,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 5,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 29,
+          "byte_offset": 347,
+          "source_line": 69,
+          "header_hex": "29 01 00 00 00 00 13",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 19,
+          "payload_hex": "c7 80 8a 8a 9a b8 89 89 89 a9 98 b9 88 88 88 67 56 55 55",
+          "batch": 5,
+          "transmitted_on_wire": "long packet 0x29, word count 19, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 30,
+          "byte_offset": 373,
+          "source_line": 70,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 6,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 31,
+          "byte_offset": 382,
+          "source_line": 71,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "c6 15",
+          "batch": 6,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 32,
+          "byte_offset": 391,
+          "source_line": 72,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 6,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 33,
+          "byte_offset": 400,
+          "source_line": 73,
+          "header_hex": "29 01 00 00 00 00 13",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 19,
+          "payload_hex": "c7 80 99 99 99 a8 99 89 98 a8 89 a9 88 88 88 67 66 66 55",
+          "batch": 6,
+          "transmitted_on_wire": "long packet 0x29, word count 19, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 34,
+          "byte_offset": 426,
+          "source_line": 74,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 7,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 35,
+          "byte_offset": 435,
+          "source_line": 75,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "c6 16",
+          "batch": 7,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 36,
+          "byte_offset": 444,
+          "source_line": 76,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 7,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 37,
+          "byte_offset": 453,
+          "source_line": 77,
+          "header_hex": "29 01 00 00 00 00 13",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 19,
+          "payload_hex": "c7 80 99 89 8a a8 99 98 88 99 89 a9 88 88 88 67 66 66 66",
+          "batch": 7,
+          "transmitted_on_wire": "long packet 0x29, word count 19, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 38,
+          "byte_offset": 479,
+          "source_line": 78,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 8,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 39,
+          "byte_offset": 488,
+          "source_line": 79,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "c6 17",
+          "batch": 8,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 40,
+          "byte_offset": 497,
+          "source_line": 80,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 8,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 41,
+          "byte_offset": 506,
+          "source_line": 81,
+          "header_hex": "29 01 00 00 00 00 13",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 19,
+          "payload_hex": "c7 80 89 99 89 99 99 88 89 89 89 a9 88 88 88 78 66 66 66",
+          "batch": 8,
+          "transmitted_on_wire": "long packet 0x29, word count 19, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 42,
+          "byte_offset": 532,
+          "source_line": 82,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 9,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 43,
+          "byte_offset": 541,
+          "source_line": 83,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "c6 18",
+          "batch": 9,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 44,
+          "byte_offset": 550,
+          "source_line": 84,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 9,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 45,
+          "byte_offset": 559,
+          "source_line": 85,
+          "header_hex": "29 01 00 00 00 00 13",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 19,
+          "payload_hex": "c7 80 89 89 8a 98 89 89 88 99 98 98 88 88 88 78 77 67 66",
+          "batch": 9,
+          "transmitted_on_wire": "long packet 0x29, word count 19, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 46,
+          "byte_offset": 585,
+          "source_line": 86,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 10,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 47,
+          "byte_offset": 594,
+          "source_line": 87,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "c6 19",
+          "batch": 10,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 48,
+          "byte_offset": 603,
+          "source_line": 88,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 10,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 49,
+          "byte_offset": 612,
+          "source_line": 89,
+          "header_hex": "29 01 00 00 00 00 13",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 19,
+          "payload_hex": "c7 80 98 98 89 98 89 89 88 99 88 99 88 88 88 78 77 77 66",
+          "batch": 10,
+          "transmitted_on_wire": "long packet 0x29, word count 19, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 50,
+          "byte_offset": 638,
+          "source_line": 90,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 11,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 51,
+          "byte_offset": 647,
+          "source_line": 91,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "c6 1a",
+          "batch": 11,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 52,
+          "byte_offset": 656,
+          "source_line": 92,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 11,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 53,
+          "byte_offset": 665,
+          "source_line": 93,
+          "header_hex": "29 01 00 00 00 00 13",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 19,
+          "payload_hex": "c7 80 88 99 88 98 89 89 88 89 98 98 88 88 88 78 77 77 77",
+          "batch": 11,
+          "transmitted_on_wire": "long packet 0x29, word count 19, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 54,
+          "byte_offset": 691,
+          "source_line": 94,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 12,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 55,
+          "byte_offset": 700,
+          "source_line": 95,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "c6 1b",
+          "batch": 12,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 56,
+          "byte_offset": 709,
+          "source_line": 96,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 12,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 57,
+          "byte_offset": 718,
+          "source_line": 97,
+          "header_hex": "29 01 00 00 00 00 13",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 19,
+          "payload_hex": "c7 80 88 89 89 88 89 89 88 98 88 98 88 88 88 88 78 77 77",
+          "batch": 12,
+          "transmitted_on_wire": "long packet 0x29, word count 19, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 58,
+          "byte_offset": 744,
+          "source_line": 98,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 13,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 59,
+          "byte_offset": 753,
+          "source_line": 99,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "c6 1c",
+          "batch": 13,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 60,
+          "byte_offset": 762,
+          "source_line": 100,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 13,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 61,
+          "byte_offset": 771,
+          "source_line": 101,
+          "header_hex": "29 01 00 00 00 00 13",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 19,
+          "payload_hex": "c7 80 88 89 88 88 89 89 88 98 88 98 88 88 88 88 88 77 77",
+          "batch": 13,
+          "transmitted_on_wire": "long packet 0x29, word count 19, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 62,
+          "byte_offset": 797,
+          "source_line": 102,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 14,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 63,
+          "byte_offset": 806,
+          "source_line": 103,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "c6 1d",
+          "batch": 14,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 64,
+          "byte_offset": 815,
+          "source_line": 104,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 14,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 65,
+          "byte_offset": 824,
+          "source_line": 105,
+          "header_hex": "29 01 00 00 00 00 13",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 19,
+          "payload_hex": "c7 80 88 88 89 88 98 88 88 98 88 88 88 88 88 88 88 88 77",
+          "batch": 14,
+          "transmitted_on_wire": "long packet 0x29, word count 19, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 66,
+          "byte_offset": 850,
+          "source_line": 106,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 15,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 67,
+          "byte_offset": 859,
+          "source_line": 107,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "c6 1e",
+          "batch": 15,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 68,
+          "byte_offset": 868,
+          "source_line": 108,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 15,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 69,
+          "byte_offset": 877,
+          "source_line": 109,
+          "header_hex": "29 01 00 00 00 00 13",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 19,
+          "payload_hex": "c7 80 88 88 88 98 88 88 88 98 87 89 88 88 88 88 88 88 78",
+          "batch": 15,
+          "transmitted_on_wire": "long packet 0x29, word count 19, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 70,
+          "byte_offset": 903,
+          "source_line": 110,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 16,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 71,
+          "byte_offset": 912,
+          "source_line": 111,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "c6 1f",
+          "batch": 16,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 72,
+          "byte_offset": 921,
+          "source_line": 112,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 16,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 73,
+          "byte_offset": 930,
+          "source_line": 113,
+          "header_hex": "29 01 00 00 00 00 13",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 19,
+          "payload_hex": "c7 80 88 88 88 88 88 88 88 88 88 98 88 88 88 88 88 88 88",
+          "batch": 16,
+          "transmitted_on_wire": "long packet 0x29, word count 19, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 74,
+          "byte_offset": 956,
+          "source_line": 114,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 17,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 75,
+          "byte_offset": 965,
+          "source_line": 115,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "c6 00",
+          "batch": 17,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 76,
+          "byte_offset": 974,
+          "source_line": 116,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 82",
+          "batch": 17,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 77,
+          "byte_offset": 983,
+          "source_line": 117,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "b3 0c",
+          "batch": 17,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 78,
+          "byte_offset": 992,
+          "source_line": 118,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 00",
+          "batch": 17,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 79,
+          "byte_offset": 1001,
+          "source_line": 119,
+          "header_hex": "29 00 00 00 00 00 04",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 4,
+          "payload_hex": "ff 00 00 00",
+          "batch": 17,
+          "transmitted_on_wire": "long packet 0x29, word count 4, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 80,
+          "byte_offset": 1012,
+          "source_line": 120,
+          "header_hex": "29 00 00 00 00 00 02",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "00 80",
+          "batch": 17,
+          "transmitted_on_wire": "long packet 0x29, word count 2, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)",
+          "notes": [
+            "mainline mipi_dsi_generic_write() would send 2-byte payload as short packet 0x23, not long 0x29 (drm_mipi_dsi.c:744-770)"
+          ]
+        },
+        {
+          "index": 81,
+          "byte_offset": 1021,
+          "source_line": 121,
+          "header_hex": "29 01 00 00 00 00 03",
+          "dtype": 41,
+          "dtype_hex": "0x29",
+          "dtype_name": "DTYPE_GEN_LWRITE",
+          "class": "generic",
+          "packet_size": "long",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 3,
+          "payload_hex": "ff 00 00",
+          "batch": 17,
+          "transmitted_on_wire": "long packet 0x29, word count 3, payload padded with 0xff to a 4-byte multiple in the host DMA buffer only (mdss_dsi_cmd.c:105-118)"
+        },
+        {
+          "index": 82,
+          "byte_offset": 1031,
+          "source_line": 122,
+          "header_hex": "05 01 00 00 78 00 02",
+          "dtype": 5,
+          "dtype_hex": "0x05",
+          "dtype_name": "DTYPE_DCS_WRITE",
+          "class": "dcs",
+          "packet_size": "short",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 120,
+          "dlen": 2,
+          "payload_hex": "11 00",
+          "batch": 18,
+          "dcs_opcode": "0x11",
+          "dcs_name": "MIPI_DCS_EXIT_SLEEP_MODE",
+          "transmitted_on_wire": "short packet 0x05, data0=0x11, data1=0x00",
+          "notes": [
+            "dlen=2 but DTYPE_DCS_WRITE transmits only payload[0]; data1 forced to 0 (mdss_dsi_cmd.c:293-297); payload[1:]=00 is not sent"
+          ]
+        },
+        {
+          "index": 83,
+          "byte_offset": 1040,
+          "source_line": 123,
+          "header_hex": "15 00 00 00 00 00 02",
+          "dtype": 21,
+          "dtype_hex": "0x15",
+          "dtype_name": "DTYPE_DCS_WRITE1",
+          "class": "dcs",
+          "packet_size": "short",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "51 ff",
+          "batch": 19,
+          "dcs_opcode": "0x51",
+          "dcs_name": "MIPI_DCS_SET_DISPLAY_BRIGHTNESS",
+          "transmitted_on_wire": "short packet 0x15, data0=0x51, data1=0xff"
+        },
+        {
+          "index": 84,
+          "byte_offset": 1049,
+          "source_line": 124,
+          "header_hex": "15 00 00 00 00 00 02",
+          "dtype": 21,
+          "dtype_hex": "0x15",
+          "dtype_name": "DTYPE_DCS_WRITE1",
+          "class": "dcs",
+          "packet_size": "short",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "53 24",
+          "batch": 19,
+          "dcs_opcode": "0x53",
+          "dcs_name": "MIPI_DCS_WRITE_CONTROL_DISPLAY",
+          "transmitted_on_wire": "short packet 0x15, data0=0x53, data1=0x24"
+        },
+        {
+          "index": 85,
+          "byte_offset": 1058,
+          "source_line": 125,
+          "header_hex": "15 00 00 00 00 00 02",
+          "dtype": 21,
+          "dtype_hex": "0x15",
+          "dtype_name": "DTYPE_DCS_WRITE1",
+          "class": "dcs",
+          "packet_size": "short",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "55 00",
+          "batch": 19,
+          "dcs_opcode": "0x55",
+          "dcs_name": "MIPI_DCS_WRITE_POWER_SAVE",
+          "transmitted_on_wire": "short packet 0x15, data0=0x55, data1=0x00"
+        },
+        {
+          "index": 86,
+          "byte_offset": 1067,
+          "source_line": 126,
+          "header_hex": "15 00 00 00 00 00 02",
+          "dtype": 21,
+          "dtype_hex": "0x15",
+          "dtype_name": "DTYPE_DCS_WRITE1",
+          "class": "dcs",
+          "packet_size": "short",
+          "last": 0,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 0,
+          "dlen": 2,
+          "payload_hex": "35 00",
+          "batch": 19,
+          "dcs_opcode": "0x35",
+          "dcs_name": "MIPI_DCS_SET_TEAR_ON",
+          "transmitted_on_wire": "short packet 0x15, data0=0x35, data1=0x00"
+        },
+        {
+          "index": 87,
+          "byte_offset": 1076,
+          "source_line": 127,
+          "header_hex": "05 01 00 00 14 00 02",
+          "dtype": 5,
+          "dtype_hex": "0x05",
+          "dtype_name": "DTYPE_DCS_WRITE",
+          "class": "dcs",
+          "packet_size": "short",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 20,
+          "dlen": 2,
+          "payload_hex": "29 00",
+          "batch": 19,
+          "dcs_opcode": "0x29",
+          "dcs_name": "MIPI_DCS_SET_DISPLAY_ON",
+          "transmitted_on_wire": "short packet 0x05, data0=0x29, data1=0x00",
+          "notes": [
+            "dlen=2 but DTYPE_DCS_WRITE transmits only payload[0]; data1 forced to 0 (mdss_dsi_cmd.c:293-297); payload[1:]=00 is not sent"
+          ]
+        }
+      ],
+      "batches": [
+        {
+          "batch": 0,
+          "packets": [
+            0,
+            7
+          ],
+          "wait_after_ms": 0,
+          "wait_applied": "no wait"
+        },
+        {
+          "batch": 1,
+          "packets": [
+            8,
+            13
+          ],
+          "wait_after_ms": 0,
+          "wait_applied": "no wait"
+        },
+        {
+          "batch": 2,
+          "packets": [
+            14,
+            17
+          ],
+          "wait_after_ms": 0,
+          "wait_applied": "no wait"
+        },
+        {
+          "batch": 3,
+          "packets": [
+            18,
+            21
+          ],
+          "wait_after_ms": 0,
+          "wait_applied": "no wait"
+        },
+        {
+          "batch": 4,
+          "packets": [
+            22,
+            25
+          ],
+          "wait_after_ms": 0,
+          "wait_applied": "no wait"
+        },
+        {
+          "batch": 5,
+          "packets": [
+            26,
+            29
+          ],
+          "wait_after_ms": 0,
+          "wait_applied": "no wait"
+        },
+        {
+          "batch": 6,
+          "packets": [
+            30,
+            33
+          ],
+          "wait_after_ms": 0,
+          "wait_applied": "no wait"
+        },
+        {
+          "batch": 7,
+          "packets": [
+            34,
+            37
+          ],
+          "wait_after_ms": 0,
+          "wait_applied": "no wait"
+        },
+        {
+          "batch": 8,
+          "packets": [
+            38,
+            41
+          ],
+          "wait_after_ms": 0,
+          "wait_applied": "no wait"
+        },
+        {
+          "batch": 9,
+          "packets": [
+            42,
+            45
+          ],
+          "wait_after_ms": 0,
+          "wait_applied": "no wait"
+        },
+        {
+          "batch": 10,
+          "packets": [
+            46,
+            49
+          ],
+          "wait_after_ms": 0,
+          "wait_applied": "no wait"
+        },
+        {
+          "batch": 11,
+          "packets": [
+            50,
+            53
+          ],
+          "wait_after_ms": 0,
+          "wait_applied": "no wait"
+        },
+        {
+          "batch": 12,
+          "packets": [
+            54,
+            57
+          ],
+          "wait_after_ms": 0,
+          "wait_applied": "no wait"
+        },
+        {
+          "batch": 13,
+          "packets": [
+            58,
+            61
+          ],
+          "wait_after_ms": 0,
+          "wait_applied": "no wait"
+        },
+        {
+          "batch": 14,
+          "packets": [
+            62,
+            65
+          ],
+          "wait_after_ms": 0,
+          "wait_applied": "no wait"
+        },
+        {
+          "batch": 15,
+          "packets": [
+            66,
+            69
+          ],
+          "wait_after_ms": 0,
+          "wait_applied": "no wait"
+        },
+        {
+          "batch": 16,
+          "packets": [
+            70,
+            73
+          ],
+          "wait_after_ms": 0,
+          "wait_applied": "no wait"
+        },
+        {
+          "batch": 17,
+          "packets": [
+            74,
+            81
+          ],
+          "wait_after_ms": 0,
+          "wait_applied": "no wait"
+        },
+        {
+          "batch": 18,
+          "packets": [
+            82,
+            82
+          ],
+          "wait_after_ms": 120,
+          "wait_applied": "always"
+        },
+        {
+          "batch": 19,
+          "packets": [
+            83,
+            87
+          ],
+          "wait_after_ms": 20,
+          "wait_applied": "always"
+        }
+      ],
+      "anomalies": []
+    },
+    "off_command": {
+      "property": "qcom,mdss-dsi-off-command",
+      "source": {
+        "repository": "https://github.com/LineageOS/android_kernel_xiaomi_msm8996.git",
+        "commit": "4aa1814c63b82ce67d0ef0434ca510be94bb8284",
+        "path": "arch/arm/boot/dts/qcom/dsi-panel-sharp-fte716-1080p-video.dtsi",
+        "line": 129,
+        "line_end": 131
+      },
+      "command_state": {
+        "value": "dsi_hs_mode",
+        "property": "qcom,mdss-dsi-off-command-state",
+        "line": 133,
+        "meaning": "CMD_REQ_HS_MODE",
+        "parser": {
+          "repository": "https://github.com/LineageOS/android_kernel_xiaomi_msm8996.git",
+          "commit": "4aa1814c63b82ce67d0ef0434ca510be94bb8284",
+          "path": "drivers/video/msm/mdss/mdss_dsi_panel.c",
+          "line": 1165
+        },
+        "consumer": {
+          "repository": "https://github.com/LineageOS/android_kernel_xiaomi_msm8996.git",
+          "commit": "4aa1814c63b82ce67d0ef0434ca510be94bb8284",
+          "path": "drivers/video/msm/mdss/mdss_dsi_panel.c",
+          "line": 232
+        }
+      },
+      "byte_length": 18,
+      "sha256": "c09f10cbd7e0150e77fab2922392201b033ffd19ea8c9afa596d65630aacdf10",
+      "original_hex": "05 01 00 00 32 00 02 28 00 05 01 00 00 78 00 02 10 00",
+      "packet_count": 2,
+      "batch_count": 2,
+      "stock_dtb_corroboration": {
+        "boot.img.dtb-4": {
+          "dtb_sha256": "211d7e0022c937bc18117415f5015ed5518c3eb82b56630de10049ecdd5dba66",
+          "identical_to_source": true,
+          "property_sha256": "c09f10cbd7e0150e77fab2922392201b033ffd19ea8c9afa596d65630aacdf10"
+        },
+        "boot.img.dtb-5": {
+          "dtb_sha256": "a2968fa1b189c5e73bbd89a578575ce7cf0a42f2bc31968265260b362f49ce01",
+          "identical_to_source": true,
+          "property_sha256": "c09f10cbd7e0150e77fab2922392201b033ffd19ea8c9afa596d65630aacdf10"
+        },
+        "recovery.img.dtb-4": {
+          "dtb_sha256": "211d7e0022c937bc18117415f5015ed5518c3eb82b56630de10049ecdd5dba66",
+          "identical_to_source": true,
+          "property_sha256": "c09f10cbd7e0150e77fab2922392201b033ffd19ea8c9afa596d65630aacdf10"
+        },
+        "recovery.img.dtb-5": {
+          "dtb_sha256": "a2968fa1b189c5e73bbd89a578575ce7cf0a42f2bc31968265260b362f49ce01",
+          "identical_to_source": true,
+          "property_sha256": "c09f10cbd7e0150e77fab2922392201b033ffd19ea8c9afa596d65630aacdf10"
+        }
+      },
+      "packets": [
+        {
+          "index": 0,
+          "byte_offset": 0,
+          "source_line": 130,
+          "header_hex": "05 01 00 00 32 00 02",
+          "dtype": 5,
+          "dtype_hex": "0x05",
+          "dtype_name": "DTYPE_DCS_WRITE",
+          "class": "dcs",
+          "packet_size": "short",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 50,
+          "dlen": 2,
+          "payload_hex": "28 00",
+          "batch": 0,
+          "dcs_opcode": "0x28",
+          "dcs_name": "MIPI_DCS_SET_DISPLAY_OFF",
+          "transmitted_on_wire": "short packet 0x05, data0=0x28, data1=0x00",
+          "notes": [
+            "dlen=2 but DTYPE_DCS_WRITE transmits only payload[0]; data1 forced to 0 (mdss_dsi_cmd.c:293-297); payload[1:]=00 is not sent"
+          ]
+        },
+        {
+          "index": 1,
+          "byte_offset": 9,
+          "source_line": 131,
+          "header_hex": "05 01 00 00 78 00 02",
+          "dtype": 5,
+          "dtype_hex": "0x05",
+          "dtype_name": "DTYPE_DCS_WRITE",
+          "class": "dcs",
+          "packet_size": "short",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 120,
+          "dlen": 2,
+          "payload_hex": "10 00",
+          "batch": 1,
+          "dcs_opcode": "0x10",
+          "dcs_name": "MIPI_DCS_ENTER_SLEEP_MODE",
+          "transmitted_on_wire": "short packet 0x05, data0=0x10, data1=0x00",
+          "notes": [
+            "dlen=2 but DTYPE_DCS_WRITE transmits only payload[0]; data1 forced to 0 (mdss_dsi_cmd.c:293-297); payload[1:]=00 is not sent"
+          ]
+        }
+      ],
+      "batches": [
+        {
+          "batch": 0,
+          "packets": [
+            0,
+            0
+          ],
+          "wait_after_ms": 50,
+          "wait_applied": "always"
+        },
+        {
+          "batch": 1,
+          "packets": [
+            1,
+            1
+          ],
+          "wait_after_ms": 120,
+          "wait_applied": "always"
+        }
+      ],
+      "anomalies": []
+    },
+    "displayon_command": {
+      "property": "qcom,mdss-dsi-displayon-command",
+      "source": {
+        "repository": "https://github.com/LineageOS/android_kernel_xiaomi_msm8996.git",
+        "commit": "4aa1814c63b82ce67d0ef0434ca510be94bb8284",
+        "path": "arch/arm/boot/dts/qcom/dsi-panel-sharp-fte716-1080p-video.dtsi",
+        "line": 135,
+        "line_end": 135
+      },
+      "command_state": {
+        "value": "dsi_hs_mode",
+        "property": "qcom,mdss-dsi-displayon-command-state",
+        "line": 137,
+        "meaning": "CMD_REQ_HS_MODE",
+        "parser": {
+          "repository": "https://github.com/LineageOS/android_kernel_xiaomi_msm8996.git",
+          "commit": "4aa1814c63b82ce67d0ef0434ca510be94bb8284",
+          "path": "drivers/video/msm/mdss/mdss_dsi_panel.c",
+          "line": 1165
+        },
+        "consumer": {
+          "repository": "https://github.com/LineageOS/android_kernel_xiaomi_msm8996.git",
+          "commit": "4aa1814c63b82ce67d0ef0434ca510be94bb8284",
+          "path": "drivers/video/msm/mdss/mdss_dsi_panel.c",
+          "line": 232
+        }
+      },
+      "byte_length": 9,
+      "sha256": "75286f6cdad3872f6e54414491f900b64ab047208ce22d88c1f426d166a2ba52",
+      "original_hex": "05 01 00 00 20 00 02 29 00",
+      "packet_count": 1,
+      "batch_count": 1,
+      "stock_dtb_corroboration": {
+        "boot.img.dtb-4": {
+          "dtb_sha256": "211d7e0022c937bc18117415f5015ed5518c3eb82b56630de10049ecdd5dba66",
+          "identical_to_source": true,
+          "property_sha256": "75286f6cdad3872f6e54414491f900b64ab047208ce22d88c1f426d166a2ba52"
+        },
+        "boot.img.dtb-5": {
+          "dtb_sha256": "a2968fa1b189c5e73bbd89a578575ce7cf0a42f2bc31968265260b362f49ce01",
+          "identical_to_source": true,
+          "property_sha256": "75286f6cdad3872f6e54414491f900b64ab047208ce22d88c1f426d166a2ba52"
+        },
+        "recovery.img.dtb-4": {
+          "dtb_sha256": "211d7e0022c937bc18117415f5015ed5518c3eb82b56630de10049ecdd5dba66",
+          "identical_to_source": true,
+          "property_sha256": "75286f6cdad3872f6e54414491f900b64ab047208ce22d88c1f426d166a2ba52"
+        },
+        "recovery.img.dtb-5": {
+          "dtb_sha256": "a2968fa1b189c5e73bbd89a578575ce7cf0a42f2bc31968265260b362f49ce01",
+          "identical_to_source": true,
+          "property_sha256": "75286f6cdad3872f6e54414491f900b64ab047208ce22d88c1f426d166a2ba52"
+        }
+      },
+      "packets": [
+        {
+          "index": 0,
+          "byte_offset": 0,
+          "source_line": 135,
+          "header_hex": "05 01 00 00 20 00 02",
+          "dtype": 5,
+          "dtype_hex": "0x05",
+          "dtype_name": "DTYPE_DCS_WRITE",
+          "class": "dcs",
+          "packet_size": "short",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 32,
+          "dlen": 2,
+          "payload_hex": "29 00",
+          "batch": 0,
+          "dcs_opcode": "0x29",
+          "dcs_name": "MIPI_DCS_SET_DISPLAY_ON",
+          "transmitted_on_wire": "short packet 0x05, data0=0x29, data1=0x00",
+          "notes": [
+            "dlen=2 but DTYPE_DCS_WRITE transmits only payload[0]; data1 forced to 0 (mdss_dsi_cmd.c:293-297); payload[1:]=00 is not sent"
+          ]
+        }
+      ],
+      "batches": [
+        {
+          "batch": 0,
+          "packets": [
+            0,
+            0
+          ],
+          "wait_after_ms": 32,
+          "wait_applied": "always"
+        }
+      ],
+      "anomalies": []
+    },
+    "displayoff_command": {
+      "property": "qcom,mdss-dsi-displayoff-command",
+      "source": {
+        "repository": "https://github.com/LineageOS/android_kernel_xiaomi_msm8996.git",
+        "commit": "4aa1814c63b82ce67d0ef0434ca510be94bb8284",
+        "path": "arch/arm/boot/dts/qcom/dsi-panel-sharp-fte716-1080p-video.dtsi",
+        "line": 134,
+        "line_end": 134
+      },
+      "command_state": {
+        "value": "dsi_hs_mode",
+        "property": "qcom,mdss-dsi-displayoff-command-state",
+        "line": 136,
+        "meaning": "CMD_REQ_HS_MODE",
+        "parser": {
+          "repository": "https://github.com/LineageOS/android_kernel_xiaomi_msm8996.git",
+          "commit": "4aa1814c63b82ce67d0ef0434ca510be94bb8284",
+          "path": "drivers/video/msm/mdss/mdss_dsi_panel.c",
+          "line": 1165
+        },
+        "consumer": {
+          "repository": "https://github.com/LineageOS/android_kernel_xiaomi_msm8996.git",
+          "commit": "4aa1814c63b82ce67d0ef0434ca510be94bb8284",
+          "path": "drivers/video/msm/mdss/mdss_dsi_panel.c",
+          "line": 232
+        }
+      },
+      "byte_length": 9,
+      "sha256": "cd2594af4b668506506d06509137010be034a729d97ed72d09edf1c865672378",
+      "original_hex": "05 01 00 00 20 00 02 28 00",
+      "packet_count": 1,
+      "batch_count": 1,
+      "stock_dtb_corroboration": {
+        "boot.img.dtb-4": {
+          "dtb_sha256": "211d7e0022c937bc18117415f5015ed5518c3eb82b56630de10049ecdd5dba66",
+          "identical_to_source": true,
+          "property_sha256": "cd2594af4b668506506d06509137010be034a729d97ed72d09edf1c865672378"
+        },
+        "boot.img.dtb-5": {
+          "dtb_sha256": "a2968fa1b189c5e73bbd89a578575ce7cf0a42f2bc31968265260b362f49ce01",
+          "identical_to_source": true,
+          "property_sha256": "cd2594af4b668506506d06509137010be034a729d97ed72d09edf1c865672378"
+        },
+        "recovery.img.dtb-4": {
+          "dtb_sha256": "211d7e0022c937bc18117415f5015ed5518c3eb82b56630de10049ecdd5dba66",
+          "identical_to_source": true,
+          "property_sha256": "cd2594af4b668506506d06509137010be034a729d97ed72d09edf1c865672378"
+        },
+        "recovery.img.dtb-5": {
+          "dtb_sha256": "a2968fa1b189c5e73bbd89a578575ce7cf0a42f2bc31968265260b362f49ce01",
+          "identical_to_source": true,
+          "property_sha256": "cd2594af4b668506506d06509137010be034a729d97ed72d09edf1c865672378"
+        }
+      },
+      "packets": [
+        {
+          "index": 0,
+          "byte_offset": 0,
+          "source_line": 134,
+          "header_hex": "05 01 00 00 20 00 02",
+          "dtype": 5,
+          "dtype_hex": "0x05",
+          "dtype_name": "DTYPE_DCS_WRITE",
+          "class": "dcs",
+          "packet_size": "short",
+          "last": 1,
+          "vc": 0,
+          "ack": 0,
+          "wait_ms": 32,
+          "dlen": 2,
+          "payload_hex": "28 00",
+          "batch": 0,
+          "dcs_opcode": "0x28",
+          "dcs_name": "MIPI_DCS_SET_DISPLAY_OFF",
+          "transmitted_on_wire": "short packet 0x05, data0=0x28, data1=0x00",
+          "notes": [
+            "dlen=2 but DTYPE_DCS_WRITE transmits only payload[0]; data1 forced to 0 (mdss_dsi_cmd.c:293-297); payload[1:]=00 is not sent"
+          ]
+        }
+      ],
+      "batches": [
+        {
+          "batch": 0,
+          "packets": [
+            0,
+            0
+          ],
+          "wait_after_ms": 32,
+          "wait_applied": "always"
+        }
+      ],
+      "anomalies": []
+    }
+  },
+  "other_command_properties_not_decoded": [
+    {
+      "property": "qcom,mdss-dsi-dispparam-cabcon-command",
+      "line": 178,
+      "byte_length": 9,
+      "sha256": "c92323a4be53ba7b30003d1c58fba6588c7171f86ec46259007ea097f3397a6c"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-cabcguion-command",
+      "line": 179,
+      "byte_length": 9,
+      "sha256": "c92323a4be53ba7b30003d1c58fba6588c7171f86ec46259007ea097f3397a6c"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-cabcstillon-command",
+      "line": 180,
+      "byte_length": 9,
+      "sha256": "e8234474d383f60d736a675450712ed8fd90a200f4beafc71423885c3de828b2"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-cabcmovieon-command",
+      "line": 181,
+      "byte_length": 9,
+      "sha256": "6fcda28c6d1b1fe5aab2e78fedad4a415a2bb3fbb0208f4d1a57dbff99e82b94"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-cabcoff-command",
+      "line": 182,
+      "byte_length": 9,
+      "sha256": "ca3ff0b2984fcb485a63de22a48003175757aca150382ffae0dd5caa3bd6a649"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-dimmingon-command",
+      "line": 183,
+      "byte_length": 9,
+      "sha256": "790a6c3a137814dcfd1ffb1aa2611d5c6463f823a877c8407a346d4ea46bf9a1"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-idleon-command",
+      "line": 184,
+      "byte_length": 9,
+      "sha256": "5c484764fdda783a03a0b70e568265ba36486ee6ebab2469a765dc46e2072d3a"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-idleoff-command",
+      "line": 185,
+      "byte_length": 9,
+      "sha256": "d52d37a606fb2bef211795ceb0d5e701c96095bce6a0aa94417e94dda64c64de"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-warm-command",
+      "line": 186,
+      "byte_length": 450,
+      "sha256": "f2c4a95fbb43b874a889a8f0baf8c18f697e581ebac8a444b484f888291b060f"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-cold-command",
+      "line": 223,
+      "byte_length": 450,
+      "sha256": "8bd39e3e59d477db0c1cf839f97a36e35592888c57ca5e29ebc2d2153205fb38"
+    }
+  ],
+  "property_comparison_vs_stock": [
+    {
+      "property": "qcom,mdss-dsi-panel-name",
+      "source_line": 16,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-panel-type",
+      "source_line": 17,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-panel-id",
+      "source_line": 18,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-panel-model",
+      "source_line": 19,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-panel-framerate",
+      "source_line": 20,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-virtual-channel-id",
+      "source_line": 21,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-stream",
+      "source_line": 22,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-panel-width",
+      "source_line": 23,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-panel-height",
+      "source_line": 24,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-h-front-porch",
+      "source_line": 25,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-h-back-porch",
+      "source_line": 26,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-h-pulse-width",
+      "source_line": 27,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-h-sync-skew",
+      "source_line": 28,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-v-back-porch",
+      "source_line": 29,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-v-front-porch",
+      "source_line": 30,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-v-pulse-width",
+      "source_line": 31,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-h-left-border",
+      "source_line": 32,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-h-right-border",
+      "source_line": 33,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-v-top-border",
+      "source_line": 34,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-v-bottom-border",
+      "source_line": 35,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-bpp",
+      "source_line": 36,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-underflow-color",
+      "source_line": 37,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-border-color",
+      "source_line": 38,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-on-command",
+      "source_line": 39,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-off-command",
+      "source_line": 129,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-on-command-state",
+      "source_line": 132,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-off-command-state",
+      "source_line": 133,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-displayoff-command",
+      "source_line": 134,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-displayon-command",
+      "source_line": 135,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-displayoff-command-state",
+      "source_line": 136,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-displayon-command-state",
+      "source_line": 137,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-h-sync-pulse",
+      "source_line": 138,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-traffic-mode",
+      "source_line": 139,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-bllp-eof-power-mode",
+      "source_line": 140,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-bllp-power-mode",
+      "source_line": 141,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-lp11-init",
+      "source_line": 142,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-lane-0-state",
+      "source_line": 143,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-lane-1-state",
+      "source_line": 144,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-lane-2-state",
+      "source_line": 145,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-lane-3-state",
+      "source_line": 146,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-panel-timings",
+      "source_line": 147,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-panel-timings-phy-v2",
+      "source_line": 148,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-t-clk-post",
+      "source_line": 153,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-t-clk-pre",
+      "source_line": 154,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-bl-min-level",
+      "source_line": 155,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-bl-max-level",
+      "source_line": 156,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-brightness-max-level",
+      "source_line": 157,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-dma-trigger",
+      "source_line": 158,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-mdp-trigger",
+      "source_line": 159,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-bl-pmic-control-type",
+      "source_line": 160,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-reset-sequence",
+      "source_line": 161,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-pan-physical-width-dimension",
+      "source_line": 162,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-pan-physical-height-dimension",
+      "source_line": 163,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-min-refresh-rate",
+      "source_line": 164,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-max-refresh-rate",
+      "source_line": 165,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-tx-eot-append",
+      "source_line": 166,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,esd-check-enabled",
+      "source_line": 167,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-panel-status-check-mode",
+      "source_line": 169,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,video-panel-esd-te-check",
+      "source_line": 170,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,cont-splash-enabled",
+      "source_line": 172,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,panel-supply-entries",
+      "source_line": 173,
+      "boot.img.dtb-4": "phandle_reference_not_compared",
+      "boot.img.dtb-5": "phandle_reference_not_compared",
+      "recovery.img.dtb-4": "phandle_reference_not_compared",
+      "recovery.img.dtb-5": "phandle_reference_not_compared"
+    },
+    {
+      "property": "qcom,dispparam-enabled",
+      "source_line": 174,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,disp-paneloff-disablecabc-enabled",
+      "source_line": 175,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-night-brightness",
+      "source_line": 176,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-panel-on-dimming-delay",
+      "source_line": 177,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-cabcon-command",
+      "source_line": 178,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-cabcguion-command",
+      "source_line": 179,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-cabcstillon-command",
+      "source_line": 180,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-cabcmovieon-command",
+      "source_line": 181,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-cabcoff-command",
+      "source_line": 182,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-dimmingon-command",
+      "source_line": 183,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-idleon-command",
+      "source_line": 184,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-idleoff-command",
+      "source_line": 185,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-warm-command",
+      "source_line": 186,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-warm-command-state",
+      "source_line": 222,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-cold-command",
+      "source_line": 223,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    },
+    {
+      "property": "qcom,mdss-dsi-dispparam-cold-command-state",
+      "source_line": 259,
+      "boot.img.dtb-4": "identical",
+      "boot.img.dtb-5": "identical",
+      "recovery.img.dtb-4": "identical",
+      "recovery.img.dtb-5": "identical"
+    }
+  ],
+  "stock_only_properties": []
+}

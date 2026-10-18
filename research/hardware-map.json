@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "updated": "2026-10-17",
+  "device": "xiaomi-lithium",
+  "phase": "P3",
+  "status": "in_progress",
+  "live_observations": {
+    "soc_id": {
+      "value": 305,
+      "status": "observed",
+      "source": "/sys/devices/soc0/soc_id"
+    },
+    "soc_revision": {
+      "value": "1.1",
+      "status": "observed",
+      "source": "/sys/devices/soc0/revision"
+    },
+    "machine": {
+      "value": "MSM8996pro",
+      "status": "observed",
+      "source": "/sys/devices/soc0/machine"
+    },
+    "board_id": {
+      "value": [38, 0],
+      "status": "observed",
+      "source": "/proc/device-tree/qcom,board-id"
+    },
+    "pmic_id": {
+      "value": [131081, 65555, 0, 0],
+      "hex": ["0x20009", "0x10013", "0x0", "0x0"],
+      "status": "observed",
+      "source": "/proc/device-tree/qcom,pmic-id"
+    },
+    "selected_panel": {
+      "value": "qcom,mdss_dsi_sharp_fte716_1080p_video",
+      "status": "observed",
+      "source": "/proc/device-tree/chosen/bootargs",
+      "privacy_note": "Only the panel selector was retained; the complete bootargs contained a device identifier and is not recorded."
+    },
+    "dram": {
+      "value": [
+        {"base": "0x80000000", "size": "0x80000000"},
+        {"base": "0x100000000", "size": "0x7e550000"}
+      ],
+      "status": "observed",
+      "source": "/proc/device-tree/memory/reg",
+      "note": "The bootloader supplies the memory reg; the Linux SoC DTS intentionally leaves its size zero."
+    }
+  },
+  "stock_dtb_evidence": {
+    "msm8996_v3": {
+      "artifact": "artifacts/stock/audit/boot.img.dtb-4",
+      "sha256": "211d7e0022c937bc18117415f5015ed5518c3eb82b56630de10049ecdd5dba66",
+      "msm_id": [246, 196608],
+      "board_id": [38, 0]
+    },
+    "msm8996_pro": {
+      "artifact": "artifacts/stock/audit/boot.img.dtb-5",
+      "sha256": "a2968fa1b189c5e73bbd89a578575ce7cf0a42f2bc31968265260b362f49ce01",
+      "msm_id": [305, 65536],
+      "board_id": [38, 0]
+    }
+  },
+  "reserved_memory": [
+    {"name": "dfps_data_mem", "base": "0x83400000", "size": "0x1000", "status": "observed_live"},
+    {"name": "cont_splash_mem", "base": "0x83401000", "size": "0x23ff000", "status": "observed_live"},
+    {"name": "removed_regions", "base": "0x85800000", "size": "0x4400000", "status": "observed_live"},
+    {"name": "modem_region", "base": "0x89c00000", "size": "0x6200000", "status": "observed_live"},
+    {"name": "peripheral_region", "base": "0x8fe00000", "size": "0x2b00000", "status": "observed_live"},
+    {"name": "cont_splash_mem_hdmi", "base": "0xb1c00000", "size": "0x23ff000", "status": "observed_live"},
+    {"name": "ocimem_log", "base": "0xb4000000", "size": "0x100000", "status": "observed_live"},
+    {"name": "adsp_region", "base": null, "size": null, "status": "dynamic_live"},
+    {"name": "qseecom_region", "base": null, "size": null, "status": "dynamic_live"},
+    {"name": "secure_region", "base": null, "size": null, "status": "dynamic_live"}
+  ],
+  "initial_dts_decisions": {
+    "soc_description": "msm8996pro.dtsi",
+    "reason": "The running target reports SoC ID 305, revision 1.1, and MSM8996pro.",
+    "bootloader_supplied_dram": true,
+    "enable_uart": true,
+    "uart_evidence": "Downstream msm8996-xiaomi-common.dtsi enables BLSP1 UART2 and stock bootargs select ttyHSL0 at 115200n8.",
+    "enable_simple_framebuffer": false,
+    "framebuffer_reason": "The splash reservation is proven, but active scanout size, stride, format, and retained clock/power requirements are not yet proven.",
+    "enable_display": false,
+    "enable_touch": false,
+    "enable_modem": false,
+    "enable_audio": false
+  },
+  "unknowns": [
+    "exact mainline-safe firmware carveout overrides",
+    "active framebuffer byte layout and stride",
+    "whether BLSP1 UART2 is externally observable on this unit",
+    "minimum USB gadget nodes and Type-C/extcon requirements",
+    "lithium-specific UFS regulator configuration",
+    "mainline-compatible Sharp FTE716 panel driver"
+  ]
+}
