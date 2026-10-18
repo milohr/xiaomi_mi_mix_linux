@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * DRAFT, NOT HARDWARE TESTED. Sharp and AUO FTE716 1080x2040 video mode DSI
- * panels of the Xiaomi Mi MIX (lithium).
+ * Sharp and AUO FTE716 1080x2040 video mode DSI panels of the Xiaomi Mi MIX
+ * (lithium). The Sharp variant is verified on hardware (init, off/on, msm DRM).
  *
  * The init and off sequences were generated with
  * linux-mdss-dsi-panel-driver-generator --dumb-dcs from the stock lithium
@@ -237,14 +237,18 @@ static int fte716_probe(struct mipi_dsi_device *dsi)
 	if (ret < 0)
 		return ret;
 
-	/* Requested high: keep the panel as the bootloader left it until prepare. */
-	ctx->reset_gpio = devm_gpiod_get(dev, "reset", GPIOD_OUT_HIGH);
+	/*
+	 * Deasserted (line high), as the bootloader leaves the running panel, so
+	 * its picture stays until the first modeset instead of going black.
+	 */
+	ctx->reset_gpio = devm_gpiod_get(dev, "reset", GPIOD_OUT_LOW);
 	if (IS_ERR(ctx->reset_gpio))
 		return dev_err_probe(dev, PTR_ERR(ctx->reset_gpio),
 				     "Failed to get reset-gpios\n");
 
 	/* Downstream disp_en_gpio (TLMM 47); its electrical role is unverified. */
-	ctx->enable_gpio = devm_gpiod_get_optional(dev, "enable", GPIOD_OUT_LOW);
+	/* High, as the bootloader leaves it with the panel lit (see reset above). */
+	ctx->enable_gpio = devm_gpiod_get_optional(dev, "enable", GPIOD_OUT_HIGH);
 	if (IS_ERR(ctx->enable_gpio))
 		return dev_err_probe(dev, PTR_ERR(ctx->enable_gpio),
 				     "Failed to get enable-gpios\n");
