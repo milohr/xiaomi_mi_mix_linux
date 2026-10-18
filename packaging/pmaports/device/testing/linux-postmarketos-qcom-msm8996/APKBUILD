@@ -3,7 +3,7 @@ maintainer="Yassine Oudjana (Tooniis) <y.oudjana@protonmail.com>"
 _flavor="postmarketos-qcom-msm8996"
 pkgname=linux-$_flavor
 pkgver=6.19.5
-pkgrel=11
+pkgrel=12
 pkgdesc="Kernel close to mainline with extra patches for Qualcomm MSM8996 devices"
 arch="aarch64"
 _carch="arm64"
@@ -39,6 +39,7 @@ source="
 	0005-arm64-dts-qcom-xiaomi-lithium-battery-and-charger.patch
 	0006-arm64-dts-qcom-xiaomi-lithium-add-audio.patch
 	0007-ASoC-qcom-apq8096-clock-quaternary-MI2S.patch
+	0008-power-supply-qcom_fg-report-charging-current-as-positive.patch
 "
 builddir="$srcdir/linux-$_tag"
 
@@ -75,6 +76,7 @@ fd9253575ccb4331e942e0365c79cb830572ff5960cad14f07d2a0c807592a8fc4921d7233814c90
 35b3cd9b96ed3d03b9044ba8484bfe3b5896f78b70e6917ef43db8a33d10e5e401ad7a1d428da132b030113156233d668c9b806f8fd9da4cd75773eceb9b0281  0003-drm-panel-arm64-dts-xiaomi-lithium-display.patch
 7e9b9e6a4f5bb62ecf2ebf15d31c99759808da314d884ef9aa50bc5d7b8018dd40081e596396ac951d9233e4621b753b913d94374e589ee0ea1e01167799cc71  0004-arm64-dts-qcom-xiaomi-lithium-enable-wifi.patch
 bb0279dab9846e001e29c163eea523948ad33ddc18e09ca2f99408b39b4e749cfc7d4e695c5b0737f8186c30377da8182cc8db81c84216e6f2a8ec238ee09d86  0005-arm64-dts-qcom-xiaomi-lithium-battery-and-charger.patch
-49eba62d49219c581788354fbe0fed6356522f5d4d84c8776e361648de617169c5d65c34ef72c430742d423fd19425533268d110ac4d091620c7feea764ae289  0006-arm64-dts-qcom-xiaomi-lithium-add-audio.patch
+385ecfdf46e33bf8f2aca846eaf485c599a4af03451a98d32b933d7d2aac3cf0903924b3c17ee459a8d2c9dc664fc4121c2414c5a11152b62eeb05e544becf78  0006-arm64-dts-qcom-xiaomi-lithium-add-audio.patch
 8002688c7b1fee29bf9ccf5076d544260a38617a281859cdda75d186bd5da08c9c1d436698748bbd5e51dc4e9994599e87d79ade6eae72cc564083a0525594e6  0007-ASoC-qcom-apq8096-clock-quaternary-MI2S.patch
+ceb830da42f486f094d14d98dc61cdb15fcb2dc03ec4b25ea5ed7be98be34ef62f8f9c207d47ac2e839cc91e95ebd733aff4e7d4bd1efa0e64f726765941a87a  0008-power-supply-qcom_fg-report-charging-current-as-positive.patch
 "

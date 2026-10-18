@@ -1,0 +1,27 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] power: supply: qcom_fg: report charging current as positive
+
+The fuel gauge reports the current drawn from the battery, so current_now
+was negative while charging. upower then reports a charging battery as
+discharging. Invert it to the common convention: positive while charging,
+negative while discharging.
+
+---
+diff --git a/drivers/power/supply/qcom_fg.c b/drivers/power/supply/qcom_fg.c
+--- a/drivers/power/supply/qcom_fg.c
++++ b/drivers/power/supply/qcom_fg.c
+@@ -834,7 +834,14 @@
+ 		ret = chip->ops->get_capacity(chip, &val->intval);
+ 		break;
+ 	case POWER_SUPPLY_PROP_CURRENT_NOW:
++		/*
++		 * The FG reports the current drawn from the battery; userspace
++		 * (upower) expects positive while charging, negative while
++		 * discharging.
++		 */
+ 		ret = chip->ops->get_current(chip, &val->intval);
++		if (!ret)
++			val->intval = -val->intval;
+ 		break;
+ 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+ 		ret = chip->ops->get_voltage(chip, &val->intval);
