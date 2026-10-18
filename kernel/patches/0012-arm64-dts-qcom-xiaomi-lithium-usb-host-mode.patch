@@ -1,11 +1,12 @@
 From: Xiaomi Mi MIX Linux port contributors
-Subject: [PATCH] arm64: dts: qcom: xiaomi-lithium: allow USB host mode
+Subject: [PATCH] arm64: dts: qcom: xiaomi-lithium: automatic USB host mode
 
-Make the DWC3 dual role with a software role switch that starts as a
-peripheral, and describe VBUS as stock does: the charger's OTG boost
-switched onto the connector by PMI8994 GPIO 5. The stock TUSB320L has no
-interrupt wired, so the role is switched through
-/sys/class/usb_role/<controller>/role.
+Describe the TUSB320L Type-C controller (stock tusb320l@47 on BLSP2 I2C3)
+and let it switch the DWC3 between device and host through extcon, as on
+the other Xiaomi MSM8996 boards. Stock lists no interrupt for it, but INT_N
+is TLMM 63 like on those boards: measured low with an interrupt pending
+and high after clearing it. VBUS for attached devices is the charger's OTG
+boost switched onto the connector by PMI8994 GPIO 5, as in stock.
 
 ---
 diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
@@ -32,7 +33,33 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
  	disp_vddr: disp-vddr-regulator {
  		compatible = "regulator-fixed";
  		regulator-name = "disp_vddr";
-@@ -393,6 +407,15 @@
+@@ -219,6 +233,25 @@
+ 	};
+ };
+ 
++/* Stock i2c@75b7000 (BLSP2 QUP3, gpio51/52): the USB Type-C port controller. */
++&blsp2_i2c3 {
++	status = "okay";
++
++	/*
++	 * Stock tusb320l@47 (0x67 is an unpopulated alternate). Stock lists no
++	 * interrupt, but INT_N is TLMM 63 as on the Xiaomi siblings: measured
++	 * low with an interrupt pending, high after clearing it.
++	 */
++	typec: typec@47 {
++		compatible = "ti,tusb320l";
++		reg = <0x47>;
++		interrupt-parent = <&tlmm>;
++		interrupts = <63 IRQ_TYPE_EDGE_FALLING>;
++		pinctrl-0 = <&typec_int_default>;
++		pinctrl-names = "default";
++	};
++};
++
+ /* Stock i2c@75ba000 (BLSP2 QUP6) at 400 kHz. */
+ &blsp2_i2c6 {
+ 	clock-frequency = <400000>;
+@@ -393,6 +426,15 @@
  };
  
  &pmi8994_gpios {
@@ -48,19 +75,37 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
  	/* Stock gpio@c100: output, no pull, VIN2. TFA9891 reset is active high: low runs the amp. */
  	speaker_amp_reset: speaker-amp-reset-state {
  		pins = "gpio2";
-@@ -606,10 +629,18 @@
+@@ -537,6 +579,14 @@
+ 		bias-disable;
+ 	};
+ 
++	/* TUSB320L INT_N, open drain with an external pull-up (reads high when idle). */
++	typec_int_default: typec-int-default-state {
++		pins = "gpio63";
++		function = "gpio";
++		drive-strength = <2>;
++		bias-disable;
++	};
++
+ 	mdss_vddr_default: mdss-vddr-default-state {
+ 		pins = "gpio40";
+ 		function = "gpio";
+@@ -595,6 +645,7 @@
+ 		      "sleep",
+ 		      "mock_utmi",
+ 		      "ref";
++	extcon = <&typec>;
+ 	qcom,select-utmi-as-pipe-clk;
+ 
+ 	status = "okay";
+@@ -606,10 +657,13 @@
   * switching is not described yet.
   */
  &usb3_dwc3 {
 -	dr_mode = "peripheral";
-+	/*
-+	 * Dual role, starting as a device (USB networking at boot). No Type-C
-+	 * role interrupt is wired (stock TUSB320L has none), so the role is
-+	 * switched in software: /sys/class/usb_role/<controller>/role.
-+	 */
++	/* Dual role, switched by the TUSB320L when something is plugged in. */
 +	dr_mode = "otg";
-+	usb-role-switch;
-+	role-switch-default-mode = "peripheral";
++	extcon = <&typec>;
  	maximum-speed = "high-speed";
  	phys = <&hsusb_phy1>;
  	phy-names = "usb2-phy";

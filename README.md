@@ -22,7 +22,7 @@ This repository is independent of the MediaTek Redmi `flare` project.
 | GPU (Adreno 530) | ✅ | lithium's signed zap shader; GPU_GX supplied from PMI8994 S2; Phosh renders on the GPU |
 | Bluetooth | 🔧 | QCA6174 on UART; patch drafted, untested |
 | Microphones | 🔧 | codec capture path present, untested |
-| USB host / OTG | 🔧 | patch drafted (role switch, VBUS); untested |
+| USB host / OTG | ✅ | automatic via TUSB320L (INT on TLMM 63): devices without own power get host + 5 V; self-powered docks need a dock rule (next) |
 | Suspend | ❌ | hangs; disabled for now (staged test plan in `artifacts/p8`) |
 | Earpiece (piezo, LM48560) | ❌ | no mainline driver |
 | Modem / calls | ❌ | out of scope for now |
@@ -36,7 +36,7 @@ Details: [Phase 6 findings](docs/PHASE6_FINDINGS.md) (current), [handoff](docs/H
   device tree (0001), touch (0002), display + panel driver (0003), Wi-Fi (0004),
   battery/charger (0005), audio codec (0006), apq8096 MI2S clocks (0007),
   fuel-gauge current sign (0008), GPU (0009), TFA9891 driver (0010), speaker (0011),
-  USB host mode (0012). Every board value is traced to lithium's stock device
+  automatic USB host mode (0012). Every board value is traced to lithium's stock device
   tree.
 - **Packages**: [`packaging/pmaports/`](packaging/pmaports) — `linux-postmarketos-qcom-msm8996`,
   `device-xiaomi-lithium` (deviceinfo, Sxmo profile, UCM, WirePlumber rule) and

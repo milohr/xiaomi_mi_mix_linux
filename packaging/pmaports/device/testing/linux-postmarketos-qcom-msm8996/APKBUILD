@@ -3,7 +3,7 @@ maintainer="Yassine Oudjana (Tooniis) <y.oudjana@protonmail.com>"
 _flavor="postmarketos-qcom-msm8996"
 pkgname=linux-$_flavor
 pkgver=6.19.5
-pkgrel=15
+pkgrel=16
 pkgdesc="Kernel close to mainline with extra patches for Qualcomm MSM8996 devices"
 arch="aarch64"
 _carch="arm64"
@@ -86,5 +86,5 @@ ceb830da42f486f094d14d98dc61cdb15fcb2dc03ec4b25ea5ed7be98be34ef62f8f9c207d47ac2e
 1c70a3ef8df7589fb769e69f3529bafa24b88dd3b6f3319a1f085360bee3403e00cf28c8898dcf677aa27d508b689862dd90dd828961989ab8778510f66a376b  0009-arm64-dts-qcom-xiaomi-lithium-enable-the-gpu.patch
 5801807435982930e4f12de888a9d7c71307ba3e9f121b99b3e73606d11dfa51f5a26ffa13f9861b31a24026cf114e4547b227316074410eb4e71e73157908a8  0010-ASoC-codecs-tfa989x-add-TFA9891-support.patch
 4dd3d282a3f20d91febabf51f410de43b98a9fcdf62b9a154b6a97831183b626eb59849d7707271e6de5e87a0bb68a3ac22c05c68e11faf6f1738b02a430cf54  0011-arm64-dts-qcom-xiaomi-lithium-add-the-speaker.patch
-3327998cb2d10cc9a2b64402a0e5b94ad83913ef1c84005787cd990656ee374917c884cf1a099b0c6fc8e54d3171538ffdc8cf149db42a4ebd484afb203b3794  0012-arm64-dts-qcom-xiaomi-lithium-usb-host-mode.patch
+9923dc43268530ba9be20a4cae1400f5dd5ad0eb70a48b5fc68ee82e71cd73f9e5e3ffbaad0859ac458763c88d2dcdb7e1b09e7fdca54f94456e866b41b34415  0012-arm64-dts-qcom-xiaomi-lithium-usb-host-mode.patch
 "
