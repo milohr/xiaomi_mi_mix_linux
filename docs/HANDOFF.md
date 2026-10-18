@@ -1,15 +1,23 @@
-# Session handoff — pmOS with display (msm DRM), touch, Wi-Fi, Phosh; next: battery, audio, GPU, BT
+# Session handoff — pmOS + Plasma Mobile: display, GPU, touch, Wi-Fi, BT, audio, USB-C, charging; next: suspend
 
 ## Current state (2026-10-18 evening)
 
-Kernel r10 + device r4 installed; see the top of `docs/PHASE6_FINDINGS.md`. ssh:
-`user@192.168.1.96` (Wi-Fi) or `user@172.16.42.1` (USB); passwordless sudo on the phone
-and for pmbootstrap on the laptop. Builds: `sh scripts/pmb_build.sh --kernel` (~5 min with
-ccache, ~35 after a config change); install = `apk add` the apks, then write `/boot/boot.img`
-behind lk2nd (`dd … of=/dev/sde36 bs=512K seek=1`, verify both hashes); restore image
-`artifacts/p6/boot-partition-current.img` via stock fastboot. Next: the P9 series
-(`artifacts/p9/series/0005–0010`: power, Bluetooth, USB OTG, GPU, audio, bindings) and the
-local firmware package, one topic per build. Agent briefs: `artifacts/AGENT_BRIEF_P7…P10.md`.
+Kernel r19/r20 + device r9/r10; the status table is in `README.md`, the hardware findings
+at the top of `docs/PHASE6_FINDINGS.md`. ssh: `user@192.168.1.96` (Wi-Fi) or
+`user@172.16.42.1` (USB); passwordless sudo on the phone and for pmbootstrap on the laptop.
+UI: Plasma Mobile (`plasma-mobile.service`); Phosh and Sxmo removed.
+
+Build: `sh scripts/pmb_build.sh --kernel` (kernel + device; ~5 min with ccache, ~35 after a
+config change); firmware: `scripts/make-firmware-tarball.sh` then
+`pmbootstrap build firmware-xiaomi-lithium` (blobs never committed). Install: `apk add` the
+apks, then write `/boot/boot.img` behind lk2nd (`dd … of=/dev/sde36 bs=512K seek=1`, check
+both hashes). Quick DTB experiments: `scripts/swap_bootimg_dtb.py` into the current boot.img.
+Restore: `artifacts/p6/boot-partition-current.img` via stock fastboot (Volume Down + Power).
+Patches regenerate from the DTS chain in the session scratchpad; keep `kernel/patches/` and
+`packaging/.../linux-postmarketos-qcom-msm8996/` identical (stage script checks).
+
+Next: suspend (staged `pm_test` with RTC wake), then CPU idle without `cpuidle.off=1`;
+agent P11 (jack detection/MBHC, Quick Charge, battery profile, Chromium GPU faults).
 
 ## History
 

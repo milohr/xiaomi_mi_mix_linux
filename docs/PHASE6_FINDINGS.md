@@ -8,6 +8,38 @@ panel driver (brightness via PMI8994 WLED, screen off/on), **touch** (FT8716, ed
 home network), Sxmo (dwm) and **Phosh** (software rendering until the GPU works). Raw logs:
 `artifacts/p6/` (ignored). Live partition map: `research/live-partitions-p6.json`.
 
+## Audio, GPU, USB-C, Bluetooth, charging (2026-10-18, kernel r11–r19)
+
+Hardware facts found by testing, where the stock tree is wrong or silent:
+
+- **TLMM 47/48 are BLSP1 I2C3** (speaker and earpiece amps), not panel enable and
+  backlight enable as stock's DSI node claims. With I2C3 on, the panel's `enable-gpios`
+  made the panel probe fail and took the whole display down; the panel has no enable GPIO.
+- **The speaker amp is a TFA9891** (revision 0x92), though stock names it tfa9890; patch
+  0010 adds it to `tfa989x` with NXP's `tfa9891_specific()` init. It is fed by quaternary
+  MI2S; the DSP accepts the clock-set API (`Q6AFE_LPASS_CLK_ID_QUAD_MI2S_IBIT`, patch 0007).
+- **The TUSB320L interrupt is TLMM 63** (stock lists none): measured low with an interrupt
+  pending, high after clearing it. It is at 0x47 on BLSP2 I2C3; 0x67 is unpopulated.
+- **GPU_GX needs PMI8994 S2** (`vdd_gfx`, stock 0.4–1.065 V), or the GDSC never turns on and
+  the msm DRM device fails to bind with the GPU node enabled (patch 0009).
+- **Bluetooth's UART needs `serial1`**: without the alias it became port 0, i.e. the
+  console, and `hci_uart` could not open it (patch 0014). Controller 0x00440302 (Rome 3.2),
+  generic `rampatch/nvm_00440302`; it is unconfigured until a public address is set, which
+  device r9 does from `persist:/wlan_bt/bt.mac` (byte-reversed).
+- **Self-powered USB-C docks give no data**: without USB Power Delivery the dock is the
+  source, the phone attaches as a device, and the dock keeps its hub off unless it sees a
+  powered host. Unpowered docks and devices work automatically. Patch 0013 makes the
+  charger refuse OTG boost while USB input is present (the DWC3 enables VBUS on every
+  switch to host).
+- **Charging**: fuel-gauge current sign inverted for upower (0008); 3.2 A cap; the USB-C
+  current advertisement raises the input limit (device r8). Dock data ports deliver about
+  0.5 A. No Quick Charge (HVDCP) in mainline `qcom-smbchg`.
+- **Chromium/QtWebEngine on the Adreno 530 faults** (`gpu fault ... WRITE PERMISSION`) with
+  every GPU flag combination tried; web views render on the CPU (device r8,
+  `environment.d`). Phosh/KWin GL is fine.
+- **Suspend**: only `s2idle` is offered (no PSCI SYSTEM_SUSPEND); CPU idle (PSCI) was not
+  built. Kernel r20 adds PM debug and the PSCI idle driver, held off with `cpuidle.off=1`.
+
 ## The real display driver and the rest of the day (2026-10-18, kernel r5–r10)
 
 - **Panel** (patch 0003): `panel-xiaomi-lithium-fte716` (lmdpdg tables from stock) on DSI0,
