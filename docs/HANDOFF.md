@@ -1,4 +1,4 @@
-# Session handoff — P5 done (debug shell over USB); P6 next: UFS
+# Session handoff — P6 in progress: storage and USB work; rootfs next
 
 ## Current state
 
@@ -29,6 +29,18 @@ the stock map needs. `scripts/build_lithium_dtb.sh` builds it (`622ba9fa…`,
 reproducible), runs the full schema check, and checks it against the stock DTB
 (39/39). **Correction:** revision 1 sent the console to 0x7570000, which
 lithium's stock disables as a console. Phase completion does not authorize flashing.
+
+## Phase 6 (2026-10-18, in progress): UFS and USB together
+
+UFS needed `regulator-allow-set-load` on its rails (L20, L25). That exposed a race: the USB
+gadget started while UFS idled and released `ln_bb_clk`, the RPM XO buffer the USB PHY's
+reference derives from; nine RAM-only boots bisected it (table in
+[PHASE6_FINDINGS.md](PHASE6_FINDINGS.md)). Fix: the `&usb3` glue holds
+`RPM_SMD_LN_BB_CLK` (DTS + patch 0001; schema warns about the sixth clock). Boot U9 has
+storage (six LUNs, 68 labelled partitions, `research/live-partitions-p6.json`) and the USB
+debug shell. The user allows erasing Android: the rootfs goes on `userdata` next. The helper
+agent's offline work is in `artifacts/p6/` (ufs-audit, rootcause, power dtsi, display plan,
+touch test, ramoops patch, kernel config, flash/restore dry-run scripts, pull list).
 
 ## Phase 5 completed (2026-10-18)
 

@@ -1,0 +1,278 @@
+{
+  "source": "P6 U9 boot 2026-10-18: blkid and /proc/partitions in the pmOS debug shell (read-only)",
+  "ufs": "TOSHIBA THGBF7T0L8LBATAB, six LUNs sda..sdf",
+  "partitions": {
+    "aboot": {
+      "device": "/dev/sde23",
+      "bytes": 2097152
+    },
+    "abootbak": {
+      "device": "/dev/sde24",
+      "bytes": 2097152
+    },
+    "apdp": {
+      "device": "/dev/sde5",
+      "bytes": 262144
+    },
+    "bk1": {
+      "device": "/dev/sda3",
+      "bytes": 737280
+    },
+    "bk10": {
+      "device": "/dev/sdf2",
+      "bytes": 1019904
+    },
+    "bk11": {
+      "device": "/dev/sdf4",
+      "bytes": 3145728
+    },
+    "bk12": {
+      "device": "/dev/sdf6",
+      "bytes": 1048576
+    },
+    "bk13": {
+      "device": "/dev/sde37",
+      "bytes": 67108864
+    },
+    "bk2": {
+      "device": "/dev/sda8",
+      "bytes": 2097152
+    },
+    "bk3": {
+      "device": "/dev/sda10",
+      "bytes": 8388608
+    },
+    "bk4": {
+      "device": "/dev/sdd2",
+      "bytes": 958464
+    },
+    "bk5": {
+      "device": "/dev/sdd5",
+      "bytes": 1048576
+    },
+    "bk6": {
+      "device": "/dev/sde4",
+      "bytes": 196608
+    },
+    "bk7": {
+      "device": "/dev/sde29",
+      "bytes": 2097152
+    },
+    "bk8": {
+      "device": "/dev/sde30",
+      "bytes": 2097152
+    },
+    "bk9": {
+      "device": "/dev/sde40",
+      "bytes": 1048576
+    },
+    "bluetooth": {
+      "device": "/dev/sde26",
+      "bytes": 1048576
+    },
+    "boot": {
+      "device": "/dev/sde36",
+      "bytes": 67108864
+    },
+    "cache": {
+      "device": "/dev/sda14",
+      "bytes": 268435456
+    },
+    "cdt": {
+      "device": "/dev/sdd3",
+      "bytes": 32768
+    },
+    "cmnlib": {
+      "device": "/dev/sde19",
+      "bytes": 1048576
+    },
+    "cmnlib64": {
+      "device": "/dev/sde21",
+      "bytes": 1048576
+    },
+    "cmnlib64bak": {
+      "device": "/dev/sde22",
+      "bytes": 1048576
+    },
+    "cmnlibbak": {
+      "device": "/dev/sde20",
+      "bytes": 1048576
+    },
+    "cust": {
+      "device": "/dev/sde38",
+      "bytes": 872415232
+    },
+    "ddr": {
+      "device": "/dev/sdd4",
+      "bytes": 1048576
+    },
+    "devcfg": {
+      "device": "/dev/sda4",
+      "bytes": 131072
+    },
+    "devcfgbak": {
+      "device": "/dev/sda5",
+      "bytes": 131072
+    },
+    "devinfo": {
+      "device": "/dev/sde1",
+      "bytes": 4096
+    },
+    "dip": {
+      "device": "/dev/sde25",
+      "bytes": 1048576
+    },
+    "dpo": {
+      "device": "/dev/sde2",
+      "bytes": 4096
+    },
+    "dsp": {
+      "device": "/dev/sde32",
+      "bytes": 20971520
+    },
+    "frp": {
+      "device": "/dev/sda7",
+      "bytes": 524288
+    },
+    "fsc": {
+      "device": "/dev/sdf1",
+      "bytes": 4096
+    },
+    "fsg": {
+      "device": "/dev/sde28",
+      "bytes": 4194304
+    },
+    "hyp": {
+      "device": "/dev/sde13",
+      "bytes": 1048576
+    },
+    "hypbak": {
+      "device": "/dev/sde14",
+      "bytes": 1048576
+    },
+    "keymaster": {
+      "device": "/dev/sde17",
+      "bytes": 1048576
+    },
+    "keymasterbak": {
+      "device": "/dev/sde18",
+      "bytes": 1048576
+    },
+    "keystore": {
+      "device": "/dev/sda6",
+      "bytes": 524288
+    },
+    "lksecapp": {
+      "device": "/dev/sde7",
+      "bytes": 131072
+    },
+    "lksecappbak": {
+      "device": "/dev/sde8",
+      "bytes": 131072
+    },
+    "logo": {
+      "device": "/dev/sde31",
+      "bytes": 8388608
+    },
+    "mdtp": {
+      "device": "/dev/sde34",
+      "bytes": 33554432
+    },
+    "misc": {
+      "device": "/dev/sda9",
+      "bytes": 4194304
+    },
+    "modem": {
+      "device": "/dev/sde35",
+      "bytes": 201326592
+    },
+    "modemst1": {
+      "device": "/dev/sdf3",
+      "bytes": 4194304
+    },
+    "modemst2": {
+      "device": "/dev/sdf5",
+      "bytes": 4194304
+    },
+    "msadp": {
+      "device": "/dev/sde6",
+      "bytes": 262144
+    },
+    "oops": {
+      "device": "/dev/sda11",
+      "bytes": 16777216
+    },
+    "persist": {
+      "device": "/dev/sda12",
+      "bytes": 33554432
+    },
+    "pmic": {
+      "device": "/dev/sde9",
+      "bytes": 524288
+    },
+    "pmicbak": {
+      "device": "/dev/sde10",
+      "bytes": 524288
+    },
+    "recovery": {
+      "device": "/dev/sda13",
+      "bytes": 67108864
+    },
+    "reserve": {
+      "device": "/dev/sdd1",
+      "bytes": 32768
+    },
+    "rpm": {
+      "device": "/dev/sde11",
+      "bytes": 1048576
+    },
+    "rpmbak": {
+      "device": "/dev/sde12",
+      "bytes": 1048576
+    },
+    "sec": {
+      "device": "/dev/sde3",
+      "bytes": 32768
+    },
+    "splash": {
+      "device": "/dev/sde33",
+      "bytes": 33554432
+    },
+    "ssd": {
+      "device": "/dev/sda1",
+      "bytes": 16384
+    },
+    "sti": {
+      "device": "/dev/sde27",
+      "bytes": 2097152
+    },
+    "switch": {
+      "device": "/dev/sda2",
+      "bytes": 8192
+    },
+    "system": {
+      "device": "/dev/sde39",
+      "bytes": 3221225472
+    },
+    "tz": {
+      "device": "/dev/sde15",
+      "bytes": 4194304
+    },
+    "tzbak": {
+      "device": "/dev/sde16",
+      "bytes": 4194304
+    },
+    "userdata": {
+      "device": "/dev/sda15",
+      "bytes": 122758868992
+    },
+    "xbl": {
+      "device": "/dev/sdb1",
+      "bytes": 4149248
+    },
+    "xblbak": {
+      "device": "/dev/sdc1",
+      "bytes": 4149248
+    }
+  }
+}

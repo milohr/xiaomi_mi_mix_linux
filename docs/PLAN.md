@@ -82,7 +82,7 @@ Status: **gate met 2026-10-18** ([PHASE5_FINDINGS.md](PHASE5_FINDINGS.md)); UFS 
 
 ## P6 — Display, input and essential power
 
-Status: **pending**, with offline groundwork: panel draft (docs/DISPLAY.md) and touch device tree (docs/TOUCH.md, patch 0002). Dependencies: P5.
+Status: **in progress** ([PHASE6_FINDINGS.md](PHASE6_FINDINGS.md)): storage and USB work (2026-10-18); panel draft (docs/DISPLAY.md) and touch device tree (docs/TOUCH.md, patch 0002) ready offline. Dependencies: P5.
 
 1. Identify actual panel variant and parse complete downstream commands with transport metadata.
 2. Implement panel supply/reset timing and DRM modes; simple framebuffer success does not prove native DSI support.
