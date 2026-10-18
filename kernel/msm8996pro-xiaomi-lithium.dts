@@ -149,6 +149,7 @@
 			regulator-name = "vreg_l20a_2p95";
 			regulator-min-microvolt = <2950000>;
 			regulator-max-microvolt = <2950000>;
+			regulator-allow-set-load;
 		};
 
 		vreg_l24a_3p075: l24 {
@@ -161,6 +162,7 @@
 			regulator-name = "vreg_l25a_1p2";
 			regulator-min-microvolt = <1200000>;
 			regulator-max-microvolt = <1200000>;
+			regulator-allow-set-load;
 		};
 
 		vreg_l28a_0p925: l28 {
