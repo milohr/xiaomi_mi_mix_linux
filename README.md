@@ -47,3 +47,7 @@ The project patch adds lithium to lk2nd's MSM8996 bundle from verified stock DTB
 IDs. The existing scorpio image is not a lithium image. See
 [Phase 2 findings](docs/PHASE2_FINDINGS.md) and
 [boot-path decision](docs/BOOT_PATH.md).
+
+A parallel display track has an offline, compile-tested panel driver draft and
+an lk2nd panel-selection draft, neither hardware tested. See
+[display status](docs/DISPLAY.md).

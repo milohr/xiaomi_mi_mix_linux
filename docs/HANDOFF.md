@@ -47,3 +47,34 @@ recorded in `research/lk2nd-build.json`. No device write occurred.
 Stock aboot static strings expose no registered `boot` command, so direct stock
 `fastboot boot` is not assumed. Next: author and validate the minimal
 pinned-kernel lithium DTS. See `docs/PHASE2_FINDINGS.md`.
+
+## Display track (parallel to P3, prepares P6) — 2026-10-17
+
+Separate session; touched no Phase 3 file (`kernel/msm8996pro-xiaomi-lithium.dts`,
+`kernel/patches/`, `artifacts/build/kernel-phase3`) and did not rebuild the
+reviewed Phase 2 lk2nd image (`b845d9b6…`, re-hashed, unchanged). No device writes;
+only read-only ADB `getprop`/sysfs reads. Full status: [DISPLAY.md](DISPLAY.md).
+
+- **Display audit**: complete and hash-verified; see
+  `research/delegated/display-audit/HANDOFF.md`. It now feeds the items below.
+- **Panel driver draft**: `kernel/panel-draft/`, Sharp and AUO in one driver,
+  compile-tested `W=1` clean against the pinned kernel, checkpatch clean, and every
+  packet checked against stock (`scripts/verify_panel_draft.py`). Rebuild with
+  `scripts/build_panel_draft.sh`. Hashes are in `research/display-draft-build.json`.
+- **lk2nd `0002` (draft)**: maps the stock `mdss_mdp.panel=` name to a Linux panel
+  compatible. It builds and has its own image hash, and it isn't part of the reviewed
+  Phase 2 image. Decide at P5 review whether to include it.
+
+**For the Phase 3 owner:** the pinned lk2nd image already contains
+cont-splash + `lk2nd.pass-simplefb`, which writes a measured simple-framebuffer
+node into the Linux DTB at boot. So the minimal DTS needs **no** hard-coded
+simplefb. Keep `cont_splash_mem`/`dfps_data_mem` reserved and leave TLMM
+8/10/40/47/48, L14 and LAB/IBB untouched. Also note: the working-copy
+`kernel/msm8996pro-xiaomi-lithium.dts` (includes `msm8996-xiaomi-common.dtsi`,
+disables MDSS/GPU/PILs, no UART enable) differs from
+`kernel/patches/0001-…patch`, which is what `kernel-dtb-build.json` records.
+Reconcile them before the next DTB build.
+
+New ignored host tools: `artifacts/toolchain/lld/bin/ld.lld` (wrapper),
+`artifacts/toolchain/bc/usr/bin/bc`, `artifacts/toolchain/venv-lmdpdg`,
+and `sources/lmdpdg` (pinned). A separate kernel `O=` tree is at `artifacts/build/kernel-panel`.

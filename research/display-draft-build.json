@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "built_at": "2026-10-17",
+  "device": "xiaomi-lithium",
+  "purpose": "Phase 6 preparation: offline panel driver draft and lk2nd panel selection",
+  "hardware_tested": false,
+  "device_write_performed": false,
+  "inputs": {
+    "stock_dtb": {
+      "relative_path": "artifacts/stock/audit/boot.img.dtb-5",
+      "sha256": "a2968fa1b189c5e73bbd89a578575ce7cf0a42f2bc31968265260b362f49ce01",
+      "note": "MSM8996 Pro, board-id 38; the DTB the live unit selects"
+    },
+    "lmdpdg": {
+      "url": "https://github.com/msm8916-mainline/linux-mdss-dsi-panel-driver-generator.git",
+      "commit": "28c4df25628f6241ce925af15637a443ea2b3bb5",
+      "acquired": "2026-10-17",
+      "options": ["--dumb-dcs"],
+      "generated_sha256": {
+        "sharp_fte716_1080p_video/panel-sharp-fte716.c": "5087be1095369858741e68673c12875a9ecdb1dc393bbe099a97fe50e2401b93",
+        "auo_fte716_1080p_video/panel-auo-fte716.c": "44698bb03d0c3ce0fbfc6b5d497db30a1ede990bec58f200730c9045191c88eb"
+      }
+    },
+    "kernel": {
+      "repository": "https://gitlab.com/msm8996-mainline/linux.git",
+      "commit": "1aed438cb5f49d7a61593f764d4a82f83b14114f"
+    },
+    "lk2nd": {
+      "repository": "https://github.com/msm8916-mainline/lk2nd.git",
+      "commit": "8b46487c4c76776c4f2f61468d44a74c69e6b9ea",
+      "patches": [
+        "bootloader/lk2nd/0001-msm8996-add-xiaomi-lithium.patch",
+        "bootloader/lk2nd/0002-msm8996-xiaomi-lithium-select-panel.patch"
+      ]
+    }
+  },
+  "host_tools": {
+    "clang": "23.1.1 (system)",
+    "ld.lld": {"package": "lld-23.1.1-1-x86_64.pkg.tar.zst", "source": "https://archive.archlinux.org/packages/l/lld/", "sha256": "4c3505d01fd960f1e5292f87f30219d027991c34d4dd99034f2dc1d211f2b40f"},
+    "bc": {"package": "bc-1.08.2-1-x86_64.pkg.tar.zst", "source": "https://archive.archlinux.org/packages/b/bc/", "sha256": "b9e5f0d61a674c9be1a0608f3fcab766d989d9a002c37e55a74ccfc8e87027ab"},
+    "arm-none-eabi-gcc": "16.2.0 (as recorded in research/lk2nd-build.json)",
+    "dtc": "artifacts/build/kernel-phase3/scripts/dtc/dtc (pinned kernel's dtc)"
+  },
+  "outputs": {
+    "driver_template": {"relative_path": "kernel/panel-draft/panel-xiaomi-lithium-fte716.c.in", "sha256": "403bbfcc892c198430288fd32355b212a2daa7869d05f94d02815b74010fc35a"},
+    "driver_source": {"relative_path": "kernel/panel-draft/panel-xiaomi-lithium-fte716.c", "sha256": "c3e3a30e408676691cda8a773c34cb91f2ad990a48da91f36565a81dab4f9eba"},
+    "driver_module": {"relative_path": "build/panel-module/panel-xiaomi-lithium-fte716.ko", "sha256": "b059c60f77de895816ab9b29d98f377bd06baba9dbb77c8a6e243822e2ce453d", "note": "compile test only; modpost exports unresolved without a linked vmlinux"},
+    "lk2nd_panel_patch": {"relative_path": "bootloader/lk2nd/0002-msm8996-xiaomi-lithium-select-panel.patch", "sha256": "abc9a3c2e3fcf7cddf6c4765a0b85f7f668fa97355a4954d06dca29806819834"},
+    "lk2nd_img": {"relative_path": "artifacts/build/lk2nd-panel/build-lk2nd-msm8996/lk2nd.img", "size": 372752, "sha256": "2fd4f27a1a726d9cab53849d41e0d2ccd822166b56c45be70240e7e3968820df"},
+    "lk_bin_dtb": {"relative_path": "artifacts/build/lk2nd-panel/build-lk2nd-msm8996/lk.bin-dtb", "sha256": "7b14035240026cf7748effa71a847f83d0f35f5d50f253b00c5cfbaad9115e99"},
+    "lithium_lk2nd_dtb": {"relative_path": "artifacts/build/lk2nd-panel/build-lk2nd-msm8996/lk2nd/device/dts/msm8996/msm8996pro-xiaomi-lithium.dtb", "size": 752, "sha256": "f6c95c2d30ea3432d4d90db02b217360a3ba28967974cfa479450e4b39ad86a8"}
+  },
+  "validation": {
+    "driver_compile": "passed, clang W=1, no warnings",
+    "checkpatch": "0 errors, 0 warnings",
+    "stream_check": "scripts/verify_panel_draft.py: Sharp on 88, off 2; AUO on 144, off 2 packets match stock bytes, class and waits",
+    "stream_check_negative_control": "one changed payload byte (51 ff -> 51 fe) fails, exit 1",
+    "known_wire_difference": "59 Sharp and 93 AUO two-byte generic writes are sent as 0x23 instead of stock 0x29",
+    "pipeline_reproducible": "scripts/build_panel_draft.sh reproduced identical driver and module hashes",
+    "lk2nd_patch_series": "0001+0002 apply cleanly at the pinned commit and reproduce the built tree",
+    "lk2nd_dtb_decoded": "lk2nd panel node with lk2nd,panel and both FTE716 subnodes present"
+  },
+  "reviewed_phase2_image_unchanged": "artifacts/build/lk2nd-gcc lk2nd.img b845d9b612bc08e457b9aa89b23850620e3284467fde4deef999955dac19444d"
+}

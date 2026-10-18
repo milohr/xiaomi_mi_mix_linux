@@ -10,3 +10,8 @@ an lk2nd board selector, not the Linux hardware-description DTS.
 The match tuple was independently compiled and decoded before any device use.
 The build artifact is ignored by Git and described by
 `research/lk2nd-build.json`. Building this image does not authorize flashing it.
+
+`0002-msm8996-xiaomi-lithium-select-panel.patch` is a **draft** on top of 0001.
+It lets lk2nd map the stock `mdss_mdp.panel=` name to a Linux panel compatible.
+It is not in the reviewed Phase 2 image. Its separate build and hashes are in
+`research/display-draft-build.json`; see `docs/DISPLAY.md`.

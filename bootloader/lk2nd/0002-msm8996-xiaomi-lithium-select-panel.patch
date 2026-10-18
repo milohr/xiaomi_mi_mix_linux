@@ -1,0 +1,35 @@
+From: xiaomi-mi-linux-port contributors
+Subject: [PATCH] lk2nd: msm8996: xiaomi-lithium: select the FTE716 panel
+
+DRAFT, applies on top of 0001. Not part of the reviewed Phase 2 image.
+
+The stock bootloader detects the panel and names it in mdss_mdp.panel=.
+Lithium's stock DTBs (board-id 38) carry two variants, Sharp and AUO
+FTE716. Map each name to a Linux panel compatible so lk2nd rewrites the
+"xiaomi,lithium-panel" node of the Linux DTB before boot.
+
+---
+diff --git a/lk2nd/device/dts/msm8996/msm8996pro-xiaomi-lithium.dts b/lk2nd/device/dts/msm8996/msm8996pro-xiaomi-lithium.dts
+index 800be90..7bf70bb 100644
+--- a/lk2nd/device/dts/msm8996/msm8996pro-xiaomi-lithium.dts
++++ b/lk2nd/device/dts/msm8996/msm8996pro-xiaomi-lithium.dts
+@@ -14,4 +14,19 @@
+ &lk2nd {
+ 	model = "Xiaomi Mi MIX";
+ 	compatible = "xiaomi,lithium";
++
++	/*
++	 * The stock bootloader names the detected panel in mdss_mdp.panel=.
++	 * Both FTE716 variants exist in lithium's stock DTBs (board-id 38).
++	 */
++	panel {
++		compatible = "xiaomi,lithium-panel", "lk2nd,panel";
++
++		qcom,mdss_dsi_sharp_fte716_1080p_video {
++			compatible = "xiaomi,lithium-sharp-fte716";
++		};
++		qcom,mdss_dsi_auo_fte716_1080p_video {
++			compatible = "xiaomi,lithium-auo-fte716";
++		};
++	};
+ };

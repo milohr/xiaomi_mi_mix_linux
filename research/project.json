@@ -461,5 +461,33 @@
   "phase2_boot_path": "docs/BOOT_PATH.md",
   "phase2_lk2nd_build": "research/lk2nd-build.json",
   "phase3_hardware_map": "research/hardware-map.json",
-  "phase3_dtb_build": "research/kernel-dtb-build.json"
+  "phase3_dtb_build": "research/kernel-dtb-build.json",
+  "display_track": {
+    "status": "offline drafts ready; not hardware tested",
+    "updated": "2026-10-17",
+    "doc": "docs/DISPLAY.md",
+    "evidence": [
+      "research/delegated/display-audit/HANDOFF.md",
+      "research/display-draft-build.json"
+    ],
+    "deliverables": [
+      "kernel/panel-draft/panel-xiaomi-lithium-fte716.c",
+      "bootloader/lk2nd/0002-msm8996-xiaomi-lithium-select-panel.patch",
+      "scripts/build_panel_draft.sh",
+      "scripts/verify_panel_draft.py"
+    ],
+    "resolves_for_planning": {
+      "panel model and variant": "Sharp FTE716 on this unit (live); AUO is the only other lithium variant (stock DTBs)",
+      "DSI sequence and command state": "decoded losslessly; draft driver matches all 236 stock packets except the 0x29->0x23 type of 2-byte generic writes",
+      "framebuffer base/stride/format": "to be measured at boot by lk2nd cont-splash via lk2nd.pass-simplefb; do not hard-code (hypothesis until lk2nd runs on lithium)"
+    },
+    "open": [
+      "0x23 acceptance by the panel",
+      "PMI8994/6 LAB/IBB mainline support",
+      "roles of TLMM 47/48 and the gpio40 vddr rail",
+      "native MDP5/DSI takeover on lithium",
+      "dt-binding and final compatibles"
+    ],
+    "device_write_performed": false
+  }
 }
