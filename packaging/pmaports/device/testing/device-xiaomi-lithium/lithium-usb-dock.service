@@ -1,0 +1,6 @@
+[Unit]
+Description=Use a self-powered USB-C dock as a USB host port
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/lithium-usb-dock

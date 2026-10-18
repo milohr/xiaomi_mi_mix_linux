@@ -2,8 +2,10 @@ From: Xiaomi Mi MIX Linux port contributors
 Subject: [PATCH] arm64: dts: qcom: xiaomi-lithium: automatic USB host mode
 
 Describe the TUSB320L Type-C controller (stock tusb320l@47 on BLSP2 I2C3)
-and let it switch the DWC3 between device and host through extcon, as on
-the other Xiaomi MSM8996 boards. Stock lists no interrupt for it, but INT_N
+and let it switch the DWC3 between device and host: extcon to the glue as
+on the other Xiaomi MSM8996 boards, and a USB-C connector graph to the
+DWC3 role switch, which userspace may override (a self-powered dock
+attaches as a source). Stock lists no interrupt for it, but INT_N
 is TLMM 63 like on those boards: measured low with an interrupt pending
 and high after clearing it. VBUS for attached devices is the charger's OTG
 boost switched onto the connector by PMI8994 GPIO 5, as in stock.
@@ -33,7 +35,7 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
  	disp_vddr: disp-vddr-regulator {
  		compatible = "regulator-fixed";
  		regulator-name = "disp_vddr";
-@@ -219,6 +233,25 @@
+@@ -219,6 +233,39 @@
  	};
  };
  
@@ -53,13 +55,27 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
 +		interrupts = <63 IRQ_TYPE_EDGE_FALLING>;
 +		pinctrl-0 = <&typec_int_default>;
 +		pinctrl-names = "default";
++
++		/* Sets the DWC3 role on every attach; userspace may override it for docks. */
++		connector {
++			compatible = "usb-c-connector";
++			label = "USB-C";
++			power-role = "dual";
++			data-role = "dual";
++
++			port {
++				typec_hs_out: endpoint {
++					remote-endpoint = <&usb3_dwc3_hs_in>;
++				};
++			};
++		};
 +	};
 +};
 +
  /* Stock i2c@75ba000 (BLSP2 QUP6) at 400 kHz. */
  &blsp2_i2c6 {
  	clock-frequency = <400000>;
-@@ -393,6 +426,15 @@
+@@ -393,6 +440,15 @@
  };
  
  &pmi8994_gpios {
@@ -75,7 +91,7 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
  	/* Stock gpio@c100: output, no pull, VIN2. TFA9891 reset is active high: low runs the amp. */
  	speaker_amp_reset: speaker-amp-reset-state {
  		pins = "gpio2";
-@@ -537,6 +579,14 @@
+@@ -537,6 +593,14 @@
  		bias-disable;
  	};
  
@@ -90,7 +106,7 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
  	mdss_vddr_default: mdss-vddr-default-state {
  		pins = "gpio40";
  		function = "gpio";
-@@ -595,6 +645,7 @@
+@@ -595,6 +659,7 @@
  		      "sleep",
  		      "mock_utmi",
  		      "ref";
@@ -98,18 +114,29 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64
  	qcom,select-utmi-as-pipe-clk;
  
  	status = "okay";
-@@ -606,10 +657,13 @@
+@@ -606,10 +671,24 @@
   * switching is not described yet.
   */
  &usb3_dwc3 {
 -	dr_mode = "peripheral";
-+	/* Dual role, switched by the TUSB320L when something is plugged in. */
++	/*
++	 * Dual role, switched by the TUSB320L when something is plugged in
++	 * (USB-C connector graph). The role switch also takes userspace
++	 * requests: a self-powered dock presents as a source, so the phone
++	 * attaches as a device and lithium-usb-dock switches it to host.
++	 */
 +	dr_mode = "otg";
-+	extcon = <&typec>;
++	usb-role-switch;
  	maximum-speed = "high-speed";
  	phys = <&hsusb_phy1>;
  	phy-names = "usb2-phy";
 +	vbus-supply = <&usb_otg_vreg>;
++
++	port {
++		usb3_dwc3_hs_in: endpoint {
++			remote-endpoint = <&typec_hs_out>;
++		};
++	};
  };
  
  

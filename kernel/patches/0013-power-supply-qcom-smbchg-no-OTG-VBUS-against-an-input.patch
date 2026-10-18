@@ -1,0 +1,30 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] power: supply: qcom-smbchg: do not drive OTG VBUS against an input
+
+The OTG boost was enabled whenever a consumer asked, even with a charger or
+a powered dock already supplying VBUS. A dual-role port can be in host mode
+under such a source (a dock that powers the phone), and the DWC3 enables
+its VBUS regulator on every switch to host. Refuse with -EBUSY while USB
+input is present, so two sources never drive VBUS.
+
+---
+diff --git a/drivers/power/supply/qcom-smbchg.c b/drivers/power/supply/qcom-smbchg.c
+--- a/drivers/power/supply/qcom-smbchg.c
++++ b/drivers/power/supply/qcom-smbchg.c
+@@ -704,6 +704,16 @@
+ 
+ 	dev_dbg(chip->dev, "Enabling OTG VBUS regulator");
+ 
++	/*
++	 * Never drive VBUS against an external source: a powered dock or a
++	 * charger already supplies it, and the USB controller may still be put
++	 * in host mode on such a port.
++	 */
++	if (smbchg_usb_is_present(chip)) {
++		dev_info(chip->dev, "USB input present, not enabling OTG VBUS\n");
++		return -EBUSY;
++	}
++
+ 	ret = regmap_update_bits(chip->regmap,
+ 				 chip->base + SMBCHG_BAT_IF_CMD_CHG, OTG_EN_BIT,
+ 				 OTG_EN_BIT);

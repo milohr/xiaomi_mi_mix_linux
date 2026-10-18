@@ -1,0 +1,2 @@
+# Self-powered USB-C docks: see /usr/libexec/lithium-usb-dock.
+ACTION=="change", SUBSYSTEM=="extcon", ATTR{name}=="*charger@1000", TAG+="systemd", ENV{SYSTEMD_WANTS}+="lithium-usb-dock.service"

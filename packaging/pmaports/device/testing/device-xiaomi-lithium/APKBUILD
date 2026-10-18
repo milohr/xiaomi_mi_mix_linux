@@ -3,7 +3,7 @@ maintainer="Camilo Higuita <milo.h@aol.com>"
 pkgname=device-xiaomi-lithium
 pkgdesc="Xiaomi Mi MIX"
 pkgver=1
-pkgrel=6
+pkgrel=7
 url="https://postmarketos.org"
 license="MIT"
 arch="aarch64"
@@ -22,6 +22,9 @@ source="
 	ucm-lithium.conf
 	ucm-HiFi.conf
 	wireplumber-51-lithium-audio.conf
+	lithium-usb-dock
+	lithium-usb-dock.service
+	90-lithium-usb-dock.rules
 	"
 
 build() {
@@ -38,6 +41,12 @@ package() {
 		"$pkgdir"/usr/share/alsa/ucm2/Xiaomi/lithium/HiFi.conf
 	install -Dm644 "$srcdir"/wireplumber-51-lithium-audio.conf \
 		"$pkgdir"/usr/share/wireplumber/wireplumber.conf.d/51-lithium-audio.conf
+	install -Dm755 "$srcdir"/lithium-usb-dock \
+		"$pkgdir"/usr/libexec/lithium-usb-dock
+	install -Dm644 "$srcdir"/lithium-usb-dock.service \
+		"$pkgdir"/usr/lib/systemd/system/lithium-usb-dock.service
+	install -Dm644 "$srcdir"/90-lithium-usb-dock.rules \
+		"$pkgdir"/usr/lib/udev/rules.d/90-lithium-usb-dock.rules
 }
 
 sha512sums="
@@ -46,4 +55,7 @@ sha512sums="
 3b035e3f5896b99d70b272bd5cfd0d709c2fed81e57a95000bc1162ce5aad88d3781dd810a0375d9f69fe1b0c6988520c06aa8f224ddb73afaee54e03ea3fd51  ucm-lithium.conf
 96453d9af9a4eed949f4950536180aaa26f470bbb26272728ab205aecb1c62a2f848ec637b30eac8da5d48b6cc690a51df6847ecff8c878b40629195ac4a0965  ucm-HiFi.conf
 19489ba61e5604c39a2772f754ee56d45ac67b6ed48464b81e4a84b3450c213ba8f83d574de53c513ad065c1e4bbf4675b5bba8f8a5758375fa2b9522ae9dd38  wireplumber-51-lithium-audio.conf
+89c606dbfc60dc3466798c6dda7cf8f81680affe698b5ba7ceeb349ffb7412834093aad9f7a126e48cd1326969109fc845c7e818369693643c3c5764f207f7d8  lithium-usb-dock
+100e88ec47882edb6016f5dc240a099c051501dce0c389acb128ecae368e4a94bfd474df0bf09488dcd17c5289da3c1d2d51ba04de3147909322529652573067  lithium-usb-dock.service
+82e93932755bc585bd79839e486abd5d9caee8ee4226a94a1b0399e9860b9faae6c027bc56ad55cc4aef96c357d14ee71711da28c1a73e248ce2d554af1bb198  90-lithium-usb-dock.rules
 "
