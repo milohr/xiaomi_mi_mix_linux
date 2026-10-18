@@ -16,6 +16,15 @@ def block(text, name):
     return m.group(1).split() if m else []
 
 
+def expand(text, value):
+    """Expand the simple variables an APKBUILD assigns at top level (name=value)."""
+    assigned = dict(re.findall(r'^(\w+)="?([^"\n$]*(?:\$\w+[^"\n$]*)*)"?$', text, re.M))
+    assigned.update(_flavor="postmarketos-qcom-msm8996", arch="aarch64")
+    for _ in range(3):
+        value = re.sub(r"\$(\w+)", lambda m: assigned.get(m.group(1), m.group(0)), value)
+    return value
+
+
 def main():
     bad = 0
     for pkg in map(Path, sys.argv[1:]):
@@ -25,7 +34,7 @@ def main():
         for src in block(text, "source"):
             if "://" in src or "::" in src or "$url" in src:
                 continue
-            name = src.replace("$_flavor", "postmarketos-qcom-msm8996").replace("$arch", "aarch64")
+            name = expand(text, src)
             path = pkg / name
             if not path.exists():
                 print(f"MISSING  {pkg.name}/{name}")
