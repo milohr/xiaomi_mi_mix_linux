@@ -1,0 +1,49 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] net: ipa2-lite: free dropped TX packets, tear down in order
+
+ipa_ndev_start_xmit() returned NETDEV_TX_OK for packets it refuses (not
+QMAP, linearize failure, no TX endpoint) without freeing them, so each
+one leaked. The kernel sends its own IPv6 neighbour discovery and
+multicast packets straight to rmnet_ipa0, so this happened whenever the
+interface was up (its "TX dropped" counter). Free them; packets refused
+by ipa_enqueue_skb() are already freed there.
+
+ipa_remove_netdev() also deleted the NAPI contexts before
+unregister_netdev(), whose ndo_stop then disabled deleted contexts.
+Unregister first; free_netdev() deletes them.
+
+---
+--- a/drivers/net/ipa2-lite/ipa.c
++++ b/drivers/net/ipa2-lite/ipa.c
+@@ -1042,13 +1042,16 @@
+ 	struct ipa_ndev *ipa_ndev = netdev_priv(ndev);
+ 	int ret;
+ 
+-	if (skb->protocol != htons(ETH_P_MAP) || skb_linearize(skb) || !ipa_ndev->tx)
++	/* Only QMAP frames (from rmnet) go to the modem */
++	if (skb->protocol != htons(ETH_P_MAP) || skb_linearize(skb) || !ipa_ndev->tx) {
++		dev_kfree_skb_any(skb);
+ 		goto drop_tx;
++	}
+ 
+ 	ret = ipa_enqueue_skb(skb, ndev, ipa_ndev->tx);
+ 	if (ret == -EBUSY)
+ 		return NETDEV_TX_BUSY;
+-	else if (ret < 0)
++	else if (ret < 0)	/* ipa_enqueue_skb() freed it */
+ 		goto drop_tx;
+ 	else if (ret <= IPA_TX_STOP_FREE_THRESH)
+ 		netif_stop_queue(ndev);
+@@ -1090,11 +1093,8 @@
+ static void ipa_remove_netdev(void *data)
+ {
+ 	struct net_device *ndev = data;
+-	struct ipa_ndev *ipa_ndev = netdev_priv(ndev);
+ 
+-	netif_napi_del(ipa_ndev->rx->napi);
+-	if (ipa_ndev->tx)
+-		netif_napi_del(ipa_ndev->tx->napi);
++	/* Stops the device (ndo_stop disables NAPI); free_netdev() deletes NAPI */
+ 	unregister_netdev(ndev);
+ 	free_netdev(ndev);
+ }

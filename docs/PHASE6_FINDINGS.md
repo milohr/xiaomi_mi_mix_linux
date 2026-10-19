@@ -228,6 +228,16 @@ Hardware facts found by testing, where the stock tree is wrong or silent:
   selected), `USBIN_CHGR_CFG` 0x02 (5 V/9 V continuous allowed), `USBIN_HVDCP_STS` 0x00 with the
   current wall charger (a plain DCP). With a QC charger the PMIC may go to 9 V by itself; first
   test with the user present.
+- **QC2 adapter found, and a trap** (r44): with the USB gadget kept off D+/D- (normally its pull-up
+  spoils the handshake), a QC charger answered (`USBIN_HVDCP_STS` 0x12: HVDCP, 9 V selected) but the
+  input stayed at 5 V and AICL settled at its lowest step (ICL 300 mA, battery -660 mA while
+  plugged in). This PMIC needs downstream's `force_9v_hvdcp()`. 0041 now selects 5 V and reruns
+  AICL by default (full-current DCP); `qcom_smbchg.hvdcp_9v=1` runs the downstream sequence and
+  keeps 9 V only if USBIN measures 8.4–9.6 V. The check also runs at probe (charger present at boot).
+- **Lifetime review** (r44): ipa2-lite leaked every TX packet it refused (IPv6 ND/MLD sent straight to
+  rmnet_ipa0) and deleted NAPI contexts before unregister_netdev() (0043); OV16880 grabbed the
+  flip controls even when stream start failed (0029); the smbchg HVDCP work was cancelled after the
+  power supply it uses on teardown (0041).
 - **NFC** (0042): PN548 on BLSP2 QUP2 (0x75b6000) at 0x28, IRQ GPIO 9, VEN 12, firmware 21 (pulled
   up as stock). `nxp-nci` binds; `nfctool -d nfc0 -1` powers it up (NCI init OK; MIFARE, FeliCa,
   ISO-DEP, Jewel, NFC-DEP). Left powered off.

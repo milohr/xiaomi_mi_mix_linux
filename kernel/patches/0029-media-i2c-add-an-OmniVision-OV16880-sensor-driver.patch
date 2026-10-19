@@ -1947,9 +1947,9 @@ new file mode 100644
 +		pm_runtime_put(ov16880->dev);
 +	}
 +
-+	/* vflip and hflip cannot change during streaming */
-+	__v4l2_ctrl_grab(ov16880->vflip, enable);
-+	__v4l2_ctrl_grab(ov16880->hflip, enable);
++	/* vflip and hflip cannot change while streaming */
++	__v4l2_ctrl_grab(ov16880->vflip, enable && !ret);
++	__v4l2_ctrl_grab(ov16880->hflip, enable && !ret);
 +
 +	mutex_unlock(&ov16880->mutex);
 +

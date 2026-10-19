@@ -1,15 +1,21 @@
 From: Xiaomi Mi MIX Linux port contributors
-Subject: [PATCH] power: supply: qcom-smbchg: report the input voltage and HVDCP detection
+Subject: [PATCH] power: supply: qcom-smbchg: handle Quick Charge 2.0 adapters
 
 Read the USB input voltage from an optional "usbin" IIO channel and
 report it as VOLTAGE_NOW. The channel is looked up on first use: the ADC
 driver may be a module, and the charger must not wait for it.
 
-After a DCP is detected, the PMIC runs the Quick Charge 2.0 (HVDCP)
-handshake by itself; 2.5 s later (as downstream does) read
-USBIN_HVDCP_STS and log whether an HVDCP adapter answered, the voltage
-the PMIC selected and the measured input voltage. No charger setting is
-changed.
+After a DCP is detected (or found at probe), the PMIC runs the Quick
+Charge 2.0 (HVDCP) handshake by itself; 2.5 s later (as downstream does)
+read USBIN_HVDCP_STS. The bootloader leaves the 9 V adapter selected,
+but on this PMIC the adapter stays at 5 V until the downstream
+force_9v_hvdcp() sequence runs, and meanwhile AICL treats the 5 V input
+as collapsing and settles at 300 mA: on the Mi MIX a QC2 charger
+charged slower than a plain one, the battery draining while plugged in.
+So by default select 5 V and rerun AICL, using the adapter as a DCP.
+With hvdcp_9v=1 (experimental) run the downstream sequence (5 V, pulse
+force-QC2.0, 500 ms, 9 V), accept 8.4-9.6 V measured on USBIN, and fall
+back to 5 V otherwise.
 
 Also print the AICL read error from the right variable (it printed an
 uninitialized one).
@@ -27,16 +33,20 @@ uninitialized one).
  	help
 --- a/drivers/power/supply/qcom-smbchg.h
 +++ b/drivers/power/supply/qcom-smbchg.h
-@@ -42,6 +42,8 @@
+@@ -42,6 +42,12 @@
  #define SMBCHG_USB_CHGPTH_ICL_STS_2		0x309
  #define SMBCHG_USB_CHGPTH_RID_STS		0x30b
  #define SMBCHG_USB_CHGPTH_USBIN_HVDCP_STS	0x30c
 +#define USBIN_HVDCP_SEL_9V_BIT			BIT(1)
 +#define USBIN_HVDCP_SEL_BIT			BIT(4)
++#define SMBCHG_USB_CHGPTH_CMD_HVDCP_1_FORCE_QC2	BIT(3)
++#define HVDCP_ADAPTER_SEL_MASK			GENMASK(5, 4)
++#define HVDCP_ADAPTER_SEL_5V			0x00
++#define HVDCP_ADAPTER_SEL_9V			0x10
  #define SMBCHG_USB_CHGPTH_INPUT_STS		0x30d
  #define SMBCHG_USB_CHGPTH_USBID_MSB		0x30e
  #define SMBCHG_USB_CHGPTH_RT_STS		0x310
-@@ -249,6 +251,9 @@
+@@ -249,6 +255,9 @@
  
  	spinlock_t sec_access_lock;
  	struct work_struct otg_reset_work;
@@ -48,7 +58,7 @@ uninitialized one).
  };
 --- a/drivers/power/supply/qcom-smbchg.c
 +++ b/drivers/power/supply/qcom-smbchg.c
-@@ -6,9 +6,12 @@
+@@ -6,9 +6,13 @@
   * Copyright (c) 2021 Alejandro Tafalla <atafalla@dnyon.com>
   */
  
@@ -58,10 +68,11 @@ uninitialized one).
  #include <linux/extcon-provider.h>
  #include <linux/fwnode.h>
 +#include <linux/iio/consumer.h>
++#include <linux/delay.h>
  #include <linux/interrupt.h>
  #include <linux/kernel.h>
  #include <linux/module.h>
-@@ -940,6 +943,69 @@
+@@ -940,6 +944,152 @@
  	return IRQ_HANDLED;
  }
  
@@ -100,6 +111,57 @@ uninitialized one).
 + * detecting a DCP; downstream reads the result 2.5 s after insertion.
 + */
 +#define SMBCHG_HVDCP_DETECT_MS	2500
++/* Window accepted as a 9 V adapter output */
++#define SMBCHG_HVDCP_9V_MIN_UV	8400000
++#define SMBCHG_HVDCP_9V_MAX_UV	9600000
++
++static bool hvdcp_9v;
++module_param(hvdcp_9v, bool, 0644);
++MODULE_PARM_DESC(hvdcp_9v, "Ask Quick Charge 2.0 adapters for 9 V (experimental, default off)");
++
++static void smbchg_usb_aicl_rerun(struct smbchg_chip *chip)
++{
++	qcom_pmic_sec_masked_write(chip->regmap,
++				   chip->base + SMBCHG_USB_CHGPTH_AICL_CFG,
++				   USB_CHGPTH_AICL_EN, 0);
++	msleep(50);
++	qcom_pmic_sec_masked_write(chip->regmap,
++				   chip->base + SMBCHG_USB_CHGPTH_AICL_CFG,
++				   USB_CHGPTH_AICL_EN, USB_CHGPTH_AICL_EN);
++}
++
++static int smbchg_hvdcp_select(struct smbchg_chip *chip, unsigned int sel)
++{
++	return qcom_pmic_sec_masked_write(chip->regmap,
++					  chip->base + SMBCHG_USB_CHGPTH_CFG,
++					  HVDCP_ADAPTER_SEL_MASK, sel);
++}
++
++/* Downstream force_9v_hvdcp(): 5 V, pulse force-QC2.0, wait, then 9 V */
++static int smbchg_hvdcp_force_9v(struct smbchg_chip *chip)
++{
++	int ret;
++
++	ret = smbchg_hvdcp_select(chip, HVDCP_ADAPTER_SEL_5V);
++	if (ret)
++		return ret;
++
++	ret = regmap_update_bits(chip->regmap,
++				 chip->base + SMBCHG_USB_CHGPTH_CMD_HVDCP_1,
++				 SMBCHG_USB_CHGPTH_CMD_HVDCP_1_FORCE_QC2,
++				 SMBCHG_USB_CHGPTH_CMD_HVDCP_1_FORCE_QC2);
++	if (!ret)
++		ret = regmap_update_bits(chip->regmap,
++					 chip->base + SMBCHG_USB_CHGPTH_CMD_HVDCP_1,
++					 SMBCHG_USB_CHGPTH_CMD_HVDCP_1_FORCE_QC2, 0);
++	if (ret)
++		return ret;
++
++	/* Let the adapter enter QC2.0 before asking for 9 V (avoids UV) */
++	msleep(500);
++
++	return smbchg_hvdcp_select(chip, HVDCP_ADAPTER_SEL_9V);
++}
 +
 +static void smbchg_hvdcp_worker(struct work_struct *work)
 +{
@@ -118,20 +180,52 @@ uninitialized one).
 +
 +	smbchg_usbin_read_uv(chip, &uv);
 +
-+	if (sts & USBIN_HVDCP_SEL_BIT)
-+		dev_info(chip->dev, "HVDCP adapter, %s selected, USBIN %d mV\n",
-+			 sts & USBIN_HVDCP_SEL_9V_BIT ? "9 V" : "5 V", uv / 1000);
-+	else
++	if (!(sts & USBIN_HVDCP_SEL_BIT)) {
 +		dev_info(chip->dev, "no HVDCP adapter (status %#x), USBIN %d mV\n",
 +			 sts, uv / 1000);
++		goto out;
++	}
 +
++	dev_info(chip->dev, "HVDCP adapter, %s selected, USBIN %d mV\n",
++		 sts & USBIN_HVDCP_SEL_9V_BIT ? "9 V" : "5 V", uv / 1000);
++
++	if (uv >= SMBCHG_HVDCP_9V_MIN_UV)
++		goto out;
++
++	if (hvdcp_9v) {
++		ret = smbchg_hvdcp_force_9v(chip);
++		/* The adapter settles within a few hundred ms */
++		msleep(1000);
++		uv = 0;
++		smbchg_usbin_read_uv(chip, &uv);
++		if (!ret && uv >= SMBCHG_HVDCP_9V_MIN_UV &&
++		    uv <= SMBCHG_HVDCP_9V_MAX_UV) {
++			dev_info(chip->dev, "HVDCP at 9 V, USBIN %d mV\n",
++				 uv / 1000);
++			smbchg_usb_aicl_rerun(chip);
++			goto out;
++		}
++		dev_warn(chip->dev, "HVDCP 9 V failed (%d, USBIN %d mV), back to 5 V\n",
++			 ret, uv / 1000);
++	}
++
++	/*
++	 * Still at 5 V with the 9 V adapter selected, AICL treats the input as
++	 * collapsing and settles at its lowest step (300 mA). Select 5 V and
++	 * rerun AICL so that the adapter is used as a plain DCP.
++	 */
++	smbchg_hvdcp_select(chip, HVDCP_ADAPTER_SEL_5V);
++	smbchg_usb_aicl_rerun(chip);
++	dev_info(chip->dev, "HVDCP adapter used at 5 V\n");
++
++out:
 +	power_supply_changed(chip->usb_psy);
 +}
 +
  static irqreturn_t smbchg_handle_usb_source_detect(int irq, void *data)
  {
  	struct smbchg_chip *chip = data;
-@@ -979,6 +1045,12 @@
+@@ -979,6 +1129,12 @@
  		}
  	}
  
@@ -144,7 +238,7 @@ uninitialized one).
  	smbchg_extcon_update(chip);
  	power_supply_changed(chip->usb_psy);
  
-@@ -1057,14 +1129,13 @@
+@@ -1057,14 +1213,13 @@
  {
  	struct smbchg_chip *chip = data;
  	int ilim;
@@ -160,7 +254,7 @@ uninitialized one).
  	else
  		dev_dbg(chip->dev, "AICL result: %uuA", ilim);
  
-@@ -1284,6 +1355,11 @@
+@@ -1284,6 +1439,11 @@
  	case POWER_SUPPLY_PROP_USB_TYPE:
  		val->intval = smbchg_usb_get_type(chip);
  		break;
@@ -172,7 +266,7 @@ uninitialized one).
  	case POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT:
  		ret = smbchg_charging_get_iterm(chip);
  		if (ret < 0)
-@@ -1358,7 +1434,8 @@
+@@ -1358,7 +1518,8 @@
  	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
  	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
  	POWER_SUPPLY_PROP_USB_TYPE,
@@ -182,18 +276,42 @@ uninitialized one).
  };
  
  static const struct power_supply_desc smbchg_usb_psy_desc = {
-@@ -1532,6 +1609,14 @@
+@@ -1532,6 +1693,9 @@
  
  	spin_lock_init(&chip->sec_access_lock);
  	INIT_WORK(&chip->otg_reset_work, smbchg_otg_reset_worker);
-+	ret = devm_delayed_work_autocancel(chip->dev, &chip->hvdcp_work,
-+					   smbchg_hvdcp_worker);
-+	if (ret)
-+		return ret;
-+
 +	ret = devm_add_action_or_reset(chip->dev, smbchg_usbin_release, chip);
 +	if (ret)
 +		return ret;
  
  	/* Initialize OTG regulator */
  	chip->otg_rdesc.id = -1;
+@@ -1565,6 +1729,15 @@
+ 		return PTR_ERR(chip->usb_psy);
+ 	}
+ 
++	/*
++	 * After the power supply it uses and before the IRQs that queue it,
++	 * so that teardown cancels it in between.
++	 */
++	ret = devm_delayed_work_autocancel(chip->dev, &chip->hvdcp_work,
++					   smbchg_hvdcp_worker);
++	if (ret)
++		return ret;
++
+ 	ret = power_supply_get_battery_info(chip->usb_psy, &chip->batt_info);
+ 	if (ret) {
+ 		dev_err(chip->dev, "Failed to get battery info: %pe\n",
+@@ -1635,6 +1808,12 @@
+ 
+ 	platform_set_drvdata(pdev, chip);
+ 
++	/* A charger plugged in before boot raises no source-detect IRQ */
++	if (smbchg_usb_is_present(chip) &&
++	    smbchg_usb_get_type(chip) == POWER_SUPPLY_USB_TYPE_DCP)
++		mod_delayed_work(system_wq, &chip->hvdcp_work,
++				 msecs_to_jiffies(SMBCHG_HVDCP_DETECT_MS));
++
+ 	return 0;
+ }
+ 
