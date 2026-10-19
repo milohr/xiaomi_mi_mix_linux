@@ -34,7 +34,7 @@ Hardware facts found by testing, where the stock tree is wrong or silent:
 - **Charging**: fuel-gauge current sign inverted for upower (0008); 3.2 A cap; the USB-C
   current advertisement raises the input limit (device r8). Dock data ports deliver about
   0.5 A. No Quick Charge (HVDCP) in mainline `qcom-smbchg`.
-- **Chromium/QtWebEngine on the Adreno 530 faults** (`gpu fault ... WRITE PERMISSION`) with
+- *(Fixed in r29, see "GPU faults found and fixed" above.)* **Chromium/QtWebEngine on the Adreno 530 faults** (`gpu fault ... WRITE PERMISSION`) with
   every GPU flag combination tried; web views render on the CPU (device r8,
   `environment.d`). Phosh/KWin GL is fine.
 - **Suspend works (kernel r22)**: s2idle only (no PSCI SYSTEM_SUSPEND); wakes on the RTC
