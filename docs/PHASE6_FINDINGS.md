@@ -147,6 +147,24 @@ Hardware facts found by testing, where the stock tree is wrong or silent:
   `/etc/mpv/mpv.conf` (device r15) turns on `hwdec=v4l2m2m-copy` and skips AV1 for YouTube.
 - Wi-Fi power save is already on (NetworkManager default).
 
+## Modem bring-up and an IPA boot loop (2026-10-19, kernel r30–r32)
+
+- **The modem boots and registers** (Movistar, PS attached):
+  - TZ only assigns the modem its stock range (0x89c00000), so reserved memory follows stock (patch 0027).
+  - rmtfs serves file copies of modemst1/modemst2/fsg (`rmtfs -s -o /var/lib/rmtfs`, never `-P`);
+    the packaged `rmtfs.service` (`-r -P`) is masked.
+  - The modem crashed ("fatal error without message") until a 1 KiB zero `modem_fsc` cookie existed:
+    lithium has no fsc partition.
+  - The USIM stays "detected" until a provisioning session is activated
+    (`qmicli --uim-change-provisioning-session=...primary-gw-provisioning,aid=<USIM AID>`).
+- **Boot loop with ipa2-lite** (kernel r32): every boot reset at about 20 s, before rmtfs starts the
+  modem, with nothing in the persisted journal after about 19 s. The same image boots normally with
+  `ipa2-lite` blacklisted, so loading the IPA v2.5 driver resets the SoC (likely an access to the IPA
+  block without the bus votes stock makes). Recovered through stock fastboot (Volume Down + Power,
+  product `MSM8996_A8`) by writing `artifacts/p6/boot-partition-r30.img`. ipa2-lite stays blacklisted
+  (`/etc/modprobe.d/zz-no-ipa2-lite.conf`) until its probe is understood.
+- **Cameras identified** (see docs/HARDWARE_COVERAGE.md): rear OV16880 (OFilm), front OV5675.
+
 ## The real display driver and the rest of the day (2026-10-18, kernel r5–r10)
 
 - **Panel** (patch 0003): `panel-xiaomi-lithium-fte716` (lmdpdg tables from stock) on DSI0,

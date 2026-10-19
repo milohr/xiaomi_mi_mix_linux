@@ -24,12 +24,29 @@ names (`artifacts/p3/stock-dtb5.dts`, line numbers below), and where the port st
 | NFC | NXP PN548, `nxp,nfc-548` | ❌ mainline `nxp-nci` covers PN54x; tags only on Linux |
 | Vibration | PMI8994 haptics, ERM, `qcom,qpnp-haptic` (:17839) | ❌ no mainline PMI8994 haptics driver |
 | Flash / torch | PMI8994 flash LED, `qcom,qpnp-flash-led` | ❌ no mainline driver for this PMIC's flash |
-| Rear camera 16 MP, PDAF | OV16880 (OFilm) or S5K3P3 (Qtech) variant, EEPROM (:8276, :8319), VCM | ❌ see below |
-| Front camera 5 MP | CSI port 2, `qcom,camera@2` (:8246); model unknown | ❌ |
+| Rear camera 16 MP, PDAF | **OV16880** (OFilm module on this unit), EEPROM, VCM at 0x0c | ❌ no mainline sensor driver; see below |
+| Front camera 5 MP | **OV5675**, CSI port 2, `qcom,camera@2` (:8246) | 🔧 mainline `ov5675` driver exists |
 | Fingerprint (rear) | FPC1020, `fpc,fpc1020` | ❌ see below |
 | Earpiece (piezo-ceramic), ultrasonic proximity | | ⏭️ calls only |
 
 ## Cameras
+
+Identified on hardware (2026-10-19, kernel r32, test module `artifacts/camera/camprobe`):
+powered in stock order (vdig, vana, vio, vaf; reset/standby high; MCLK 24 MHz) and read over CCI.
+
+| Bus | Address | Answer | Device |
+|---|---|---|---|
+| CCI0 (rear) | 0x36 | 0x300a = `01 68 80` | **OV16880** |
+| CCI0 | 0x58 | ack | module EEPROM of the OV16880/OFilm variant (stock 8-bit 0xb0); 0x50 (S5K3P3/Qtech) absent |
+| CCI0 | 0x0c | ack | focus motor (VCM), model not read yet |
+| CCI0 | 0x21 | ack | unknown |
+| CCI1 (front) | 0x36 | 0x300b = `56 75` | **OV5675** |
+
+Wiring (stock, verified by the probe): rear MCLK0 GPIO 13, reset GPIO 86, standby GPIO 30,
+vdig L3 1.2 V, vana L17 2.95 V, vio LVS1 1.8 V, vaf L23 2.8 V, CSIPHY0; front MCLK2 GPIO 15,
+reset GPIO 23, vdig L27 1.2 V, vana L29 2.7 V, vio LVS1, CSIPHY2. CCI reads are limited in
+length (the 16-byte EEPROM reads were refused by the adapter quirk, not by the EEPROM).
+
 
 - CAMSS supports MSM8996 in mainline. libcamera's software ISP can turn raw frames into images.
   No mainline driver exists for the hardware ISP, so expect modest preview resolution and frame
