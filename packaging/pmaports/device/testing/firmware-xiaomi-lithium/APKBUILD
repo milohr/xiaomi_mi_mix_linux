@@ -3,7 +3,7 @@
 maintainer="Camilo Higuita <milo.h@aol.com>"
 pkgname=firmware-xiaomi-lithium
 pkgver=20261018
-pkgrel=0
+pkgrel=1
 pkgdesc="Device-specific firmware for Xiaomi Mi MIX"
 url="https://github.com/milohr/xiaomi_mi_mix_linux"
 arch="aarch64"
@@ -25,5 +25,5 @@ package() {
 }
 
 sha512sums="
-cba48754408711fa861316347dbcb4c8d39dadf67c62acfa6f3004e08f18bb4ba7591eafe15995025f88c445bcc394fcbfa5319f2753eb203c81b011394a078f  firmware-lithium-20261018.tar.gz
+e69a6ccda8fd62d9fa342bd829f3528e4fa9f89ba8dde55b779e380d904a8c6e0f40069989f90bedec25c94399c1a32e86869563fe626e7f19ae9b11898cd64f  firmware-lithium-20261018.tar.gz
 "

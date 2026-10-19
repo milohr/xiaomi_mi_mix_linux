@@ -37,7 +37,7 @@ Details: [Phase 6 findings](docs/PHASE6_FINDINGS.md) (current), [handoff](docs/H
   battery/charger (0005), audio codec (0006), apq8096 MI2S clocks (0007),
   fuel-gauge current sign (0008), GPU (0009), TFA9891 driver (0010), speaker (0011),
   automatic USB host mode (0012), OTG VBUS guard (0013), Bluetooth (0014), mdp5 resume
-  fix (0015), PCIe power domain kept on in suspend (0016), headphone jack detection (0017). Every board value is traced to
+  fix (0015), PCIe power domain kept on in suspend (0016), headphone jack detection (0017), headphones on their own DSP stream (0018). Every board value is traced to
   lithium's stock device tree.
 - **Packages**: [`packaging/pmaports/`](packaging/pmaports) — `linux-postmarketos-qcom-msm8996`,
   `device-xiaomi-lithium` (deviceinfo, UCM, WirePlumber rule, USB-C current, Bluetooth address) and

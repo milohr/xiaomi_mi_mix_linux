@@ -12,6 +12,7 @@ system_img="$root/artifacts/p8/extract/system.raw.img"
 [ -f "$stock/wlan/bdwlan30.bin" ]
 [ -f "$stock/adsp/adsp.mdt" ]
 [ -f "$stock/slpi/slpi_a1.mdt" ]
+[ -f "$stock/venus/venus.mdt" ]
 [ -f "$system_img" ]
 command -v debugfs >/dev/null
 
@@ -34,6 +35,12 @@ install -m644 "$stock/slpi/slpi_a1.mdt" \
 for src in "$stock"/slpi/slpi_a1.b??; do
   dst=$(basename "$src" | sed 's/^slpi_a1/slpi/')
   install -m644 "$src" "$stage/$name/firmware/qcom/msm8996/lithium/$dst"
+done
+
+install -m644 "$stock/venus/venus.mdt" \
+  "$stage/$name/firmware/qcom/msm8996/lithium/venus.mbn"
+for src in "$stock"/venus/venus.b??; do
+  install -m644 "$src" "$stage/$name/firmware/qcom/msm8996/lithium/$(basename "$src")"
 done
 
 for file in a530_zap.mdt a530_zap.b00 a530_zap.b01 a530_zap.b02; do

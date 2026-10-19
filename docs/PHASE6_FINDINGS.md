@@ -68,6 +68,14 @@ Hardware facts found by testing, where the stock tree is wrong or silent:
   mainline's "normally closed" properties; the defaults are right. UCM: Headphones
   priority 300 with `JackControl "Headphone Jack"`, so they win while plugged. Headset mic
   detection (downstream "legacy" detection) and button thresholds are still open.
+- **Headphones need their own DSP stream** (patch 0018, device r13). Sharing MultiMedia1
+  with the speaker forced UCM conflicting devices, so each jack event made PipeWire switch
+  profiles and reopen the PCM; through its `_ucmNNNN.` names that intermittently failed with
+  -EINVAL and left only a dummy sink. MultiMedia2 (hw:N,1) feeds the headphones; both DSP
+  routes are connected in the verb's EnableSequence (a front end opens only with a back end
+  routed), so Speaker and Headphones are two sinks of one HiFi profile. WirePlumber ranks the
+  headphone sink 1100 (ACP gives it 728 by PCM number, the speaker 1000), so it wins only while
+  its route is available. Hardware: five plug/unplug switches, stream followed, 0 failed opens.
 - **Browser GPU faults are not Chromium's**: Firefox (WebRender) triggers the same
   translation faults. They come from the browser's GPU process (none with Chromium on the
   CPU, none from KWin), run 0.8–1 MB past the end of a 2.5 MiB buffer (a 1088×544 BGRA

@@ -1,0 +1,38 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] arm64: dts: qcom: xiaomi-lithium: headphones on their own stream
+
+Speaker and headphones shared the MultiMedia1 front end, so UCM had to put
+them in separate (conflicting) profiles and every jack event made PipeWire
+switch profiles, closing and reopening the PCM. Through its per-UCM
+"_ucmNNNN." PCM names that reopen intermittently failed with -EINVAL and
+left only a dummy output.
+
+Add MultiMedia2 (hw:N,1) for the headphones. With a back end routed to each
+front end for the whole verb, both outputs are sinks of one profile and a
+jack event only changes the preferred sink. Tested on hardware with the
+matching UCM (device package r13).
+
+---
+--- a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
++++ b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+@@ -805,6 +805,7 @@
+ 
+ &q6asmdai {
+ 	dai@0 { reg = <MSM_FRONTEND_DAI_MULTIMEDIA1>; };
++	dai@1 { reg = <MSM_FRONTEND_DAI_MULTIMEDIA2>; };
+ };
+ 
+ &sound {
+@@ -821,6 +822,12 @@
+ 		cpu { sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA1>; };
+ 	};
+ 
++	/* Headphones get their own stream: speaker and headphones are separate PCMs */
++	mm2-dai-link {
++		link-name = "MultiMedia2";
++		cpu { sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA2>; };
++	};
++
+ 	wcd-aif1-pb-dai-link {
+ 		link-name = "AIF1_PB";
+ 		cpu { sound-dai = <&q6afedai SLIMBUS_4_RX>; };

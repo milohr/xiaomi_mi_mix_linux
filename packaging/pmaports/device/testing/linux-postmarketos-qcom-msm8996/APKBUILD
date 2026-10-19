@@ -3,7 +3,7 @@ maintainer="Yassine Oudjana (Tooniis) <y.oudjana@protonmail.com>"
 _flavor="postmarketos-qcom-msm8996"
 pkgname=linux-$_flavor
 pkgver=6.19.5
-pkgrel=24
+pkgrel=25
 pkgdesc="Kernel close to mainline with extra patches for Qualcomm MSM8996 devices"
 arch="aarch64"
 _carch="arm64"
@@ -49,6 +49,7 @@ source="
 	0015-drm-msm-mdp5-drop-stale-hwpipes-from-a-resumed-plane-state.patch
 	0016-clk-qcom-gcc-msm8996-keep-the-PCIe-GDSCs-on-in-system-suspend.patch
 	0017-ASoC-wcd9335-headset-detection.patch
+	0018-arm64-dts-qcom-xiaomi-lithium-headphones-on-their-own-stream.patch
 "
 builddir="$srcdir/linux-$_tag"
 
@@ -97,4 +98,5 @@ da37bd6726c60cbe535e045df78ece6bee0411c7e2135a184790c82cab427d97587d1df2f307dd2b
 34de79a83beb26ac0e3d5a088f6cc432cf2063b918e3f19875fa99c7f5c94a1b1314443af86eb78b62327a21fb8de77aec1d62779bb5776fe433d6c0bbceb7a5  0015-drm-msm-mdp5-drop-stale-hwpipes-from-a-resumed-plane-state.patch
 f3ec0d3aacb1ff62903e242e26658609bacc31ec7b49a58eb1fe6df07a5afe1ab62155925718a8900128f56283fee4b672b6b6a5ee12585eb281a8912881fa79  0016-clk-qcom-gcc-msm8996-keep-the-PCIe-GDSCs-on-in-system-suspend.patch
 97fd1d623a2c1f2eadf3dc4398e3e519c7e2806338dfd47393e3dbfb179737df0f7894f4130b26fdc820e71a137a85f69048eaee353a2e9a7d78b767bde33f02  0017-ASoC-wcd9335-headset-detection.patch
+562e561b980f07a9e642da9bbfcf374b05e53b6708a190011ba2004905a826730738c031ab8180ee9c19c8e0135ef2a482d8d93ca591449eccbd50e2b8eeac70  0018-arm64-dts-qcom-xiaomi-lithium-headphones-on-their-own-stream.patch
 "
