@@ -1,0 +1,105 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] net: ipa2-lite: support QMAPv4 checksum offload
+
+ModemManager offers the modem QMAPv5, QMAPv4 and plain QMAP in turn, and
+the MSM8996 modem takes QMAPv4, which puts a MAP checksum header in front
+of every uplink packet and expects one behind every downlink packet. For
+IPA ports ModemManager reads the checksum format from the device's
+feature/{rx,tx}_offload files, as the mainline ipa driver provides; with
+neither file the rmnet link had no checksum flags, the modem took the
+first 4 bytes of every IP packet as the checksum header, and no traffic
+went through.
+
+Configure the endpoints like downstream rmnet_ipa does with a checksum
+data format (uplink: 8-byte header, checksum offload with its metadata one
+word in; downlink: checksum offload, the hardware appending the trailer)
+and report "MAPv4" in feature/rx_offload and feature/tx_offload.
+
+Tested on the Xiaomi Mi MIX: NetworkManager brings the connection up at
+boot, ping and a 10 MB download over UMTS without errors.
+
+---
+--- a/drivers/net/ipa2-lite/ipa-hw.h
++++ b/drivers/net/ipa2-lite/ipa-hw.h
+@@ -174,6 +174,9 @@
+ #define IPA_EP_CFG_CS_METADATA_HDR_OFFSET_BMSK		0x00000078
+ #define IPA_EP_CFG_CS_OFFLOAD_EN_BMSK			0x00000006
+ #define IPA_EP_CFG_FRAG_OFFLOAD_EN_BMSK			0x00000001
++#define IPA_EP_CFG_CS_OFFLOAD_UL			(1 << 1)
++#define IPA_EP_CFG_CS_OFFLOAD_DL			(2 << 1)
++#define IPA_EP_CFG_CS_METADATA_HDR_OFFSET(w)		((w) << 3)
+ #define REG_IPA_EP_HDR_METADATA_MASK(ep)		IPA_EP_REG(0x0220,  (ep))
+ #define REG_IPA_EP_HDR_METADATA(ep)			IPA_EP_REG(0x0270,  (ep))
+ #define IPA_EP_HDR_METADATA_MUX_ID_BMSK			0x00FF0000
+--- a/drivers/net/ipa2-lite/ipa.c
++++ b/drivers/net/ipa2-lite/ipa.c
+@@ -268,7 +268,18 @@
+ 		break;
+ 	case EP_TX:
+ 	case EP_TEST_TX:
+-		iowrite32(ipa->test_mode ? 0xc4 : 0x44, ipa->mmio + REG_IPA_EP_HDR(id));
++		if (id == EP_TX && !ipa->test_mode) {
++			/*
++			 * QMAPv4 uplink: QMAP header plus the MAP checksum header
++			 * (8 bytes), checksum offload with its metadata one word
++			 * in, as downstream rmnet_ipa with checksum egress format.
++			 */
++			iowrite32(0x48, ipa->mmio + REG_IPA_EP_HDR(id));
++			iowrite32(IPA_EP_CFG_CS_OFFLOAD_UL | IPA_EP_CFG_CS_METADATA_HDR_OFFSET(1),
++				  ipa->mmio + REG_IPA_EP_CFG(id));
++		} else {
++			iowrite32(ipa->test_mode ? 0xc4 : 0x44, ipa->mmio + REG_IPA_EP_HDR(id));
++		}
+ 		iowrite32(0x00000001, ipa->mmio + REG_IPA_EP_HDR_EXT(id));
+ 		iowrite32(0x00000005, ipa->mmio + REG_IPA_EP_STATUS(id));
+ 		iowrite32(0x00000007, ipa->mmio + REG_IPA_EP_ROUTE(id));
+@@ -279,6 +290,9 @@
+ 		iowrite32(0x002800c4, ipa->mmio + REG_IPA_EP_HDR(id));
+ 		iowrite32(0x0000000b, ipa->mmio + REG_IPA_EP_HDR_EXT(id));
+ 		iowrite32(0xff000000, ipa->mmio + REG_IPA_EP_HDR_METADATA_MASK(id));
++		/* QMAPv4 downlink: the hardware appends the MAP checksum trailer */
++		if (id == EP_RX)
++			iowrite32(IPA_EP_CFG_CS_OFFLOAD_DL, ipa->mmio + REG_IPA_EP_CFG(id));
+ 		break;
+ 	default:
+ 		break;
+@@ -1334,8 +1348,39 @@
+ 	.attrs		= ipa_modem_attrs,
+ };
+ 
++/*
++ * Checksum offload format, read by ModemManager (as for the mainline ipa
++ * driver) to create the rmnet link with matching MAPv4 checksum flags; the
++ * modem picks QMAPv4 when ModemManager offers it.
++ */
++static ssize_t rx_offload_show(struct device *dev,
++			       struct device_attribute *attr, char *buf)
++{
++	return sysfs_emit(buf, "MAPv4\n");
++}
++static DEVICE_ATTR_RO(rx_offload);
++
++static ssize_t tx_offload_show(struct device *dev,
++			       struct device_attribute *attr, char *buf)
++{
++	return sysfs_emit(buf, "MAPv4\n");
++}
++static DEVICE_ATTR_RO(tx_offload);
++
++static struct attribute *ipa_feature_attrs[] = {
++	&dev_attr_rx_offload.attr,
++	&dev_attr_tx_offload.attr,
++	NULL
++};
++
++static const struct attribute_group ipa_feature_group = {
++	.name		= "feature",
++	.attrs		= ipa_feature_attrs,
++};
++
+ const struct attribute_group *ipa_groups[] = {
+ 	&ipa_modem_group,
++	&ipa_feature_group,
+ 	NULL
+ };
+ 

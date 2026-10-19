@@ -19,11 +19,11 @@ names (`artifacts/p3/stock-dtb5.dts`, line numbers below), and where the port st
 | Light sensor | none | — not fitted; no auto-brightness |
 | Battery 4400 mAh, charging | PMI8994 | ✅ up to 3 A at 5 V |
 | Quick Charge 3.0 (18 W) | PMI8994 HVDCP | ❌ no fully sourced register sequence (`artifacts/p11/hvdcp-gap-analysis.md`) |
-| LTE, dual nano-SIM | modem (MSS) | 🔧 modem boots and registers; IPA data path (ipa2-lite) probes, rmnet_ipa0 + ModemManager; data untested |
+| LTE, dual nano-SIM | modem (MSS) | ✅ data over UMTS (Movistar CO), either SIM slot; LTE-only finds no Movistar cell in the phone's bands (1/3/5/7/8/38-41) |
 | GPS / GLONASS / BeiDou | inside the modem | ❌ reachable through ModemManager once the modem runs |
 | NFC | NXP PN548, `nxp,nfc-548` | ❌ mainline `nxp-nci` covers PN54x; tags only on Linux |
-| Vibration | PMI8994 haptics, ERM, `qcom,qpnp-haptic` (:17839) | ❌ no mainline PMI8994 haptics driver |
-| Flash / torch | PMI8994 flash LED, `qcom,qpnp-flash-led` | ❌ no mainline driver for this PMIC's flash |
+| Vibration | PMI8994 haptics, ERM, `qcom,qpnp-haptic` (:17839) | ✅ in-tree qcom-spmi-haptics with ERM support and stock drive limits (patch 0037) |
+| Flash / torch | PMI8994 flash LED (type 0x18, subtype 0x01), `qcom,qpnp-flash-led` | ✅ torch only: new leds-qcom-flash-v1 (patch 0035), `white:torch`; camera flash strobe not supported |
 | Rear camera 16 MP, PDAF | **OV16880** (OFilm module on this unit), EEPROM, DW9763 VCM at 0x0c | ✅ new driver (patch 0029) with stock tables; manual focus only |
 | Front camera 5 MP | **OV5675**, CSI port 2, `qcom,camera@2` (:8246) | ✅ mainline `ov5675`, libcamera software ISP |
 | Fingerprint (rear) | FPC1020, `fpc,fpc1020` | ❌ see below |

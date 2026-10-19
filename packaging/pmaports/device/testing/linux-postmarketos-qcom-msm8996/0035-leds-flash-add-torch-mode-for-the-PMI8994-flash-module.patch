@@ -1,0 +1,278 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] leds: flash: add torch mode for the PMI8994 flash module
+
+PMI8994/PMI8996 carry the first-generation SPMI flash block (type 0x18,
+subtype 0x01 dual / 0x02 single), whose registers differ from the blocks
+leds-qcom-flash handles. Add a small LED class driver for its torch mode,
+one LED (default "white:torch") driving all channels at a 0..15 level, so
+the Plasma Mobile flashlight finds it. The sequence (secure unlock, torch
+register, channel and max current, module enable, software strobe) follows
+the downstream leds-qpnp-flash driver. Camera flash (strobe with safety
+timer, VPH droop handling) is not supported.
+
+Tested on the Xiaomi Mi MIX: the face-down rear camera's raw frame goes
+from black (mean 67, black level 64) to saturated with the torch on.
+
+---
+diff --git a/drivers/leds/flash/Kconfig b/drivers/leds/flash/Kconfig
+--- a/drivers/leds/flash/Kconfig
++++ b/drivers/leds/flash/Kconfig
+@@ -92,6 +92,19 @@
+ 
+ 	  This driver can be built as a module, it will be called "leds-qcom-flash".
+ 
++config LEDS_QCOM_FLASH_V1
++	tristate "Torch mode of the first-generation Qualcomm PMIC flash module"
++	depends on MFD_SPMI_PMIC || COMPILE_TEST
++	depends on LEDS_CLASS && OF
++	select REGMAP
++	help
++	  This option enables torch (flashlight) mode of the flash LED module
++	  in PMI8994 and PMI8996, whose register map predates the one handled
++	  by LEDS_QCOM_FLASH.
++
++	  To compile this driver as a module, choose M here: the module will
++	  be called leds-qcom-flash-v1.
++
+ config LEDS_RT4505
+ 	tristate "LED support for RT4505 flashlight controller"
+ 	depends on I2C && OF
+diff --git a/drivers/leds/flash/Makefile b/drivers/leds/flash/Makefile
+--- a/drivers/leds/flash/Makefile
++++ b/drivers/leds/flash/Makefile
+@@ -8,6 +8,7 @@
+ obj-$(CONFIG_LEDS_LM3601X)	+= leds-lm3601x.o
+ obj-$(CONFIG_LEDS_MAX77693)	+= leds-max77693.o
+ obj-$(CONFIG_LEDS_QCOM_FLASH)	+= leds-qcom-flash.o
++obj-$(CONFIG_LEDS_QCOM_FLASH_V1)	+= leds-qcom-flash-v1.o
+ obj-$(CONFIG_LEDS_RT4505)	+= leds-rt4505.o
+ obj-$(CONFIG_LEDS_RT8515)	+= leds-rt8515.o
+ obj-$(CONFIG_LEDS_SGM3140)	+= leds-sgm3140.o
+diff --git a/drivers/leds/flash/leds-qcom-flash-v1.c b/drivers/leds/flash/leds-qcom-flash-v1.c
+new file mode 100644
+--- /dev/null
++++ b/drivers/leds/flash/leds-qcom-flash-v1.c
+@@ -0,0 +1,223 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Torch (flashlight) mode of the first-generation Qualcomm SPMI flash LED
++ * block (PMI8994/PMI8996, peripheral type 0x18, subtype 0x01/0x02), whose
++ * register map predates the one leds-qcom-flash drives.
++ *
++ * Register sequence from the downstream leds-qpnp-flash driver.
++ */
++
++#include <linux/bits.h>
++#include <linux/leds.h>
++#include <linux/module.h>
++#include <linux/mod_devicetable.h>
++#include <linux/mutex.h>
++#include <linux/platform_device.h>
++#include <linux/property.h>
++#include <linux/regmap.h>
++
++#define FLASH_TYPE			0x04
++#define  FLASH_TYPE_VAL			0x18
++#define FLASH_SUBTYPE			0x05
++#define  FLASH_SUBTYPE_DUAL		0x01
++#define  FLASH_SUBTYPE_SINGLE		0x02
++#define FLASH_MAX_CURRENT		0x41
++#define FLASH_LED_CURRENT(n)		(0x42 + (n))
++#define  FLASH_CURRENT_MASK		GENMASK(6, 0)
++#define FLASH_MODULE_ENABLE_CTRL	0x46
++#define  FLASH_MODULE_ENABLE_MASK	GENMASK(7, 5)
++#define  FLASH_MODULE_ENABLE		0x80
++#define  FLASH_MODULE_CTRL_DEFAULT	0x60
++#define FLASH_STROBE_CTRL		0x47
++#define  FLASH_STROBE_MASK		GENMASK(7, 6)
++#define  FLASH_STROBE_TYPE_HW		BIT(2)
++#define  FLASH_STROBE_LED(n)		BIT(7 - (n))
++#define FLASH_UNLOCK_SECURE		0xd0
++#define  FLASH_UNLOCK_VAL		0xa5
++#define FLASH_TORCH			0xe4
++#define  FLASH_TORCH_MASK		GENMASK(1, 0)
++#define  FLASH_TORCH_ENABLE		0x00
++#define  FLASH_TORCH_DISABLE		0x03
++
++/* Torch current is a 0..15 level of the channel's range (downstream TORCH_MAX_LEVEL) */
++#define FLASH_TORCH_MAX_LEVEL		0x0f
++
++struct qcom_flash_v1 {
++	struct led_classdev cdev;
++	struct regmap *regmap;
++	u32 base;
++	unsigned int num_leds;
++	/* Serializes the multi-register torch sequence */
++	struct mutex lock;
++};
++
++static int qcom_flash_v1_update(struct qcom_flash_v1 *flash, u32 reg,
++				u32 mask, u32 val)
++{
++	return regmap_update_bits(flash->regmap, flash->base + reg, mask, val);
++}
++
++static int qcom_flash_v1_torch_reg(struct qcom_flash_v1 *flash, u32 val)
++{
++	int ret;
++
++	/* The torch register is behind a secure-access unlock */
++	ret = regmap_write(flash->regmap, flash->base + FLASH_UNLOCK_SECURE,
++			   FLASH_UNLOCK_VAL);
++	if (ret)
++		return ret;
++
++	return qcom_flash_v1_update(flash, FLASH_TORCH, FLASH_TORCH_MASK, val);
++}
++
++static int qcom_flash_v1_on(struct qcom_flash_v1 *flash, u32 level)
++{
++	u32 strobe = 0;
++	unsigned int i;
++	int ret;
++
++	ret = qcom_flash_v1_torch_reg(flash, FLASH_TORCH_ENABLE);
++	if (ret)
++		return ret;
++
++	for (i = 0; i < flash->num_leds; i++) {
++		ret = qcom_flash_v1_update(flash, FLASH_LED_CURRENT(i),
++					   FLASH_CURRENT_MASK, level);
++		if (ret)
++			return ret;
++		strobe |= FLASH_STROBE_LED(i);
++	}
++
++	ret = qcom_flash_v1_update(flash, FLASH_MAX_CURRENT, FLASH_CURRENT_MASK,
++				   FLASH_TORCH_MAX_LEVEL);
++	if (ret)
++		return ret;
++
++	ret = qcom_flash_v1_update(flash, FLASH_MODULE_ENABLE_CTRL,
++				   FLASH_MODULE_ENABLE_MASK, FLASH_MODULE_ENABLE);
++	if (ret)
++		return ret;
++
++	/* Software strobe of the channels in use */
++	return qcom_flash_v1_update(flash, FLASH_STROBE_CTRL,
++				    FLASH_STROBE_MASK | FLASH_STROBE_TYPE_HW,
++				    strobe);
++}
++
++static int qcom_flash_v1_off(struct qcom_flash_v1 *flash)
++{
++	int ret;
++
++	ret = qcom_flash_v1_update(flash, FLASH_STROBE_CTRL,
++				   FLASH_STROBE_MASK | FLASH_STROBE_TYPE_HW, 0);
++	if (ret)
++		return ret;
++
++	ret = qcom_flash_v1_torch_reg(flash, FLASH_TORCH_DISABLE);
++	if (ret)
++		return ret;
++
++	return qcom_flash_v1_update(flash, FLASH_MODULE_ENABLE_CTRL,
++				    FLASH_MODULE_ENABLE_MASK,
++				    FLASH_MODULE_CTRL_DEFAULT);
++}
++
++static int qcom_flash_v1_brightness_set(struct led_classdev *cdev,
++					enum led_brightness brightness)
++{
++	struct qcom_flash_v1 *flash = container_of(cdev, struct qcom_flash_v1,
++						   cdev);
++	int ret;
++
++	mutex_lock(&flash->lock);
++	if (brightness)
++		ret = qcom_flash_v1_on(flash, brightness);
++	else
++		ret = qcom_flash_v1_off(flash);
++	mutex_unlock(&flash->lock);
++
++	return ret;
++}
++
++static int qcom_flash_v1_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct led_init_data init_data = {};
++	struct qcom_flash_v1 *flash;
++	u32 type, subtype;
++	int ret;
++
++	flash = devm_kzalloc(dev, sizeof(*flash), GFP_KERNEL);
++	if (!flash)
++		return -ENOMEM;
++
++	flash->regmap = dev_get_regmap(dev->parent, NULL);
++	if (!flash->regmap)
++		return dev_err_probe(dev, -ENODEV, "parent regmap missing\n");
++
++	ret = device_property_read_u32(dev, "reg", &flash->base);
++	if (ret)
++		return dev_err_probe(dev, ret, "reg missing\n");
++
++	ret = regmap_read(flash->regmap, flash->base + FLASH_TYPE, &type);
++	if (!ret)
++		ret = regmap_read(flash->regmap, flash->base + FLASH_SUBTYPE,
++				  &subtype);
++	if (ret)
++		return dev_err_probe(dev, ret, "reading the peripheral type failed\n");
++
++	if (type != FLASH_TYPE_VAL ||
++	    (subtype != FLASH_SUBTYPE_DUAL && subtype != FLASH_SUBTYPE_SINGLE))
++		return dev_err_probe(dev, -ENODEV,
++				     "not a flash v1 block (type %#x subtype %#x)\n",
++				     type, subtype);
++
++	flash->num_leds = subtype == FLASH_SUBTYPE_DUAL ? 2 : 1;
++	mutex_init(&flash->lock);
++
++	/* Start from a known state: torch off, module at its reset value */
++	ret = qcom_flash_v1_off(flash);
++	if (ret)
++		return dev_err_probe(dev, ret, "initial torch off failed\n");
++
++	flash->cdev.max_brightness = FLASH_TORCH_MAX_LEVEL;
++	flash->cdev.brightness_set_blocking = qcom_flash_v1_brightness_set;
++	init_data.fwnode = dev_fwnode(dev);
++	init_data.default_label = "white:torch";
++
++	ret = devm_led_classdev_register_ext(dev, &flash->cdev, &init_data);
++	if (ret)
++		return dev_err_probe(dev, ret, "registering the LED failed\n");
++
++	platform_set_drvdata(pdev, flash);
++
++	return 0;
++}
++
++static void qcom_flash_v1_remove(struct platform_device *pdev)
++{
++	struct qcom_flash_v1 *flash = platform_get_drvdata(pdev);
++
++	mutex_lock(&flash->lock);
++	qcom_flash_v1_off(flash);
++	mutex_unlock(&flash->lock);
++}
++
++static const struct of_device_id qcom_flash_v1_match[] = {
++	{ .compatible = "qcom,pmi8994-flash-led" },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, qcom_flash_v1_match);
++
++static struct platform_driver qcom_flash_v1_driver = {
++	.driver = {
++		.name = "leds-qcom-flash-v1",
++		.of_match_table = qcom_flash_v1_match,
++	},
++	.probe = qcom_flash_v1_probe,
++	.remove = qcom_flash_v1_remove,
++};
++module_platform_driver(qcom_flash_v1_driver);
++
++MODULE_DESCRIPTION("Qualcomm PMI8994 flash LED torch driver");
++MODULE_LICENSE("GPL");

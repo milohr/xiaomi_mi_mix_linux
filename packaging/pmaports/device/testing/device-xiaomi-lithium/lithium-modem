@@ -21,11 +21,29 @@ until [ "$(cat "$mss/state")" = running ] && qmicli -d qrtr://0 --uim-get-card-s
 	sleep 1
 done
 
-status=$(qmicli -d qrtr://0 --uim-get-card-status 2>/dev/null)
+# "slot aid" of the first USIM in a slot whose card is present
+usim_slot() {
+	echo "$1" | awk '
+		/^Slot \[/ { slot = $2; gsub(/[^0-9]/, "", slot); present = 0; usim = 0 }
+		/Card state: .present./ { present = 1 }
+		/Application type:  .usim/ { usim = 1 }
+		present && usim && /Application ID:/ { getline; gsub(/[ \t]/, ""); print slot, $0; exit }'
+}
+
+# The cards are read a few seconds after the UIM service answers
+i=0
+while :; do
+	status=$(qmicli -d qrtr://0 --uim-get-card-status 2>/dev/null)
+	[ -n "$(usim_slot "$status")" ] && break
+	i=$((i + 1))
+	[ "$i" -gt 30 ] && break
+	sleep 1
+done
+
 if echo "$status" | grep -q "Primary GW:   session doesn't exist"; then
-	aid=$(echo "$status" | awk '/Application type:  .usim/ {u=1} u && /Application ID:/ {getline; gsub(/[ \t]/, ""); print; exit}')
-	if [ -n "$aid" ]; then
-		qmicli -d qrtr://0 --uim-change-provisioning-session="slot=1,activate=yes,session-type=primary-gw-provisioning,aid=$aid" ||
+	set -- $(usim_slot "$status")
+	if [ "$#" -eq 2 ]; then
+		qmicli -d qrtr://0 --uim-change-provisioning-session="slot=$1,activate=yes,session-type=primary-gw-provisioning,aid=$2" ||
 			echo "SIM provisioning failed" >&2
 	fi
 fi

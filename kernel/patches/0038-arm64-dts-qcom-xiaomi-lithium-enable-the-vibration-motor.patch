@@ -1,0 +1,29 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] arm64: dts: qcom: xiaomi-lithium: enable the vibration motor
+
+PMI8994 haptics with the stock ERM settings: square wave, 5263 us play
+rate, brake pattern 3/3/2/2.
+
+---
+diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+--- a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
++++ b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+@@ -558,6 +558,18 @@
+ 	status = "okay";
+ };
+ 
++/*
++ * Vibration motor (stock qcom,haptic@c000): ERM, square wave. Stock plays it in
++ * direct mode; the driver uses buffer mode, its only one, which suits an ERM too.
++ */
++&pmi8994_haptics {
++	qcom,actuator-type = <HAP_TYPE_ERM>;
++	qcom,wave-shape = <HAP_WAVE_SQUARE>;
++	qcom,wave-play-rate-us = <5263>;
++	qcom,brake-pattern = <0x3 0x3 0x2 0x2>;
++	status = "okay";
++};
++
+ &pmi8994_wled {
+ 	/* Stock qcom,leds@d800: strings 0-1, 20 mA full scale, 600 kHz, 31 V OVP. */
+ 	qcom,num-strings = <2>;

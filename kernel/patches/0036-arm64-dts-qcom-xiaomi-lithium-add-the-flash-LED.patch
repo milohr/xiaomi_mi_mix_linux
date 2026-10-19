@@ -1,0 +1,23 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] arm64: dts: qcom: xiaomi-lithium: add the flash LED
+
+The dual-tone flash on PMI8994 SID 3 at 0xd300 (stock qcom,leds@d300),
+exposed as the "white:torch" flashlight.
+
+---
+diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+--- a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
++++ b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+@@ -1179,3 +1179,12 @@
+ 		};
+ 	};
+ };
++
++/* Flash LED block of PMI8994 (SID 3, stock qcom,leds@d300): dual-tone flash, used as the torch */
++&{/soc@0/spmi@400f000/pmic@3} {
++	flash-led@d300 {
++		compatible = "qcom,pmi8994-flash-led";
++		reg = <0xd300>;
++		label = "white:torch";
++	};
++};

@@ -3,7 +3,7 @@ maintainer="Yassine Oudjana (Tooniis) <y.oudjana@protonmail.com>"
 _flavor="postmarketos-qcom-msm8996"
 pkgname=linux-$_flavor
 pkgver=6.19.5
-pkgrel=36
+pkgrel=40
 pkgdesc="Kernel close to mainline with extra patches for Qualcomm MSM8996 devices"
 arch="aarch64"
 _carch="arm64"
@@ -66,6 +66,11 @@ source="
 	0032-arm64-dts-qcom-xiaomi-lithium-add-the-rear-camera-focus-motor.patch
 	0033-net-ipa2-lite-support-IPA-v2.5-on-MSM8996.patch
 	0034-arm64-dts-qcom-xiaomi-lithium-enable-IPA.patch
+	0035-leds-flash-add-torch-mode-for-the-PMI8994-flash-module.patch
+	0036-arm64-dts-qcom-xiaomi-lithium-add-the-flash-LED.patch
+	0037-Input-qcom-spmi-haptics-support-ERM-actuators.patch
+	0038-arm64-dts-qcom-xiaomi-lithium-enable-the-vibration-motor.patch
+	0039-net-ipa2-lite-support-QMAPv4-checksum-offload.patch
 "
 builddir="$srcdir/linux-$_tag"
 
@@ -96,7 +101,7 @@ package() {
 }
 sha512sums="
 dd30dd113ad9f0b4ab3771ea655de2becce7ddaf5066d2f860b7bb1eb78573137313191d9da740b152348f9f89894ace2bb94fb195e340f7b6dabedeebbc929f  linux-v6.19.5-msm8996.tar.gz
-9c0bffaa43087b47b781d74989a007cd805f7838d9e4e345df68fb5ddb935c1999a7ed0db1a917ddec1211096ae496520c10a88ac0551afbfec2792b8880a7de  config-postmarketos-qcom-msm8996.aarch64
+7059af18d39c60f94bcf76aaa1f56a0ff28c251cc55616ed3911b39a664bacd61ef3c0ef2ce78877b8589261ad8681dc599f89414c96227cfe11966a39db0ade  config-postmarketos-qcom-msm8996.aarch64
 876c3d43827bba055beda882e7a017b9efe900e5c54ec0895c16dfca37a9eade9e46f9d80422ade3a5f10a303d3c1f523b7aec1738ada0248e4b7421cdf7c5bd  0001-arm64-dts-qcom-add-xiaomi-mi-mix.patch
 439d1ec6ee9751139ad967a48e4cf6385cbda7f461327423e08916b3dc574887b5113f395728acd20480b533f6cca2fa6bc1ee5e7e5a1f2f38e3cf17ce80746c  0002-arm64-dts-qcom-xiaomi-lithium-add-touchscreen.patch
 b16899d3b2c258301586e8f7d5f61cfba6ee50d9c6e342e38587e5e7601039bc9747914e000aeb614d573e1904d49cfbce6914e5531168c8bbec04e27039ce07  0003-drm-panel-arm64-dts-xiaomi-lithium-display.patch
@@ -131,4 +136,9 @@ e1cf48e789a760354e54421a079708778c50275c57dd7969c4679f4f0e92e8c86e51716777f15883
 06a62775c130e9761e4a581ae4ebcb8e916b00039b3ec71e1d21c2a9f87fdb939a284288ffabc6f290606add9d4d99ada8fda39719002f338145e3e71708c546  0032-arm64-dts-qcom-xiaomi-lithium-add-the-rear-camera-focus-motor.patch
 c95fbcbb6f19e7db833e5585f38b3f3e843f8e52eb75fce40e26ab331a2319f2e524c98b9a1a36bb3aabbd1087c3576e3ae8c51f6cd5c31ea2cb2a8ea2e96357  0033-net-ipa2-lite-support-IPA-v2.5-on-MSM8996.patch
 3fcfcf33654de0c92fca540dc7fea7ca273e3dccad89de7c86599df89d53615d9438890ab663b403b3ead365e8657639b70b3aebd66ae006355a8dedbc140400  0034-arm64-dts-qcom-xiaomi-lithium-enable-IPA.patch
+a9fe013a9b757196ffb29b4ee87d254d3b2d89864fc86a5a0cffbfff34af1df303912ffb8e6a91d30ee1775ad65e86687fae9b79c561c608e2db3d780fdf088f  0035-leds-flash-add-torch-mode-for-the-PMI8994-flash-module.patch
+8bf36d65ea820fcf30006b6c957f1bbc4e7638c9d371b9269b25bc738a54e31ef57e211893b65ecfa8cde29e8373e42ce3cba89a803604dc865672c4271d2a03  0036-arm64-dts-qcom-xiaomi-lithium-add-the-flash-LED.patch
+ebb4532279949dc4769b8574fd1a0050b55a0e6caebda907a282102a8e240226f752793e9564ba347b1aa2ae3f01c16830f79acc1aa2e42edf4e8f172df979d3  0037-Input-qcom-spmi-haptics-support-ERM-actuators.patch
+5934df98160622085c05d1a1edfc25e0c30060ad84ddb11e3818781c2532a982d40d0b1ad4d3885a3bcd3efedbf0dfdb63dd0b78c7ddb665f2fcc1f8cddcae7e  0038-arm64-dts-qcom-xiaomi-lithium-enable-the-vibration-motor.patch
+9c91f4eee92ade79dfef14268334a7f644cee06e8e795833691bd34c82b4f2998e2c56f2fd5a41fe6f2c8693054c747c7d1bb6e3ff04a77b8dbbef5ada846ab0  0039-net-ipa2-lite-support-QMAPv4-checksum-offload.patch
 "

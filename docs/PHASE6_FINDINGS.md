@@ -197,6 +197,49 @@ Hardware facts found by testing, where the stock tree is wrong or silent:
   frame-based mode, which has no stride, so a fix means line-based RDI in CAMSS.
 
 
+## Torch and vibration (2026-10-19, kernel r40)
+
+- **Torch:** PMI8994's flash block reports type 0x18, subtype 0x01: the first-generation
+  register map, which mainline leds-qcom-flash (subtypes 0x03/0x04/0x07) does not drive. New
+  `leds-qcom-flash-v1` (patch 0035) implements torch mode with the downstream sequence (secure
+  unlock 0xd0 = 0xa5, torch 0xe4 = 0, channel current 0x42/0x43 at level 0-15, max current
+  0x41, module enable 0x46 = 0x80, strobe 0x47); LED `white:torch`, which Plasma Mobile's
+  flashlight finds by name. Verified with the face-down rear camera: raw mean 67 (black) with the
+  torch off, saturated (p99 = 1023) with it on. The driver lives in `drivers/leds/flash/`, which
+  is only built with `CONFIG_LEDS_CLASS_FLASH`: r37 dropped the module silently, r38 sets it to m.
+- **Vibration:** the tree's `qcom-spmi-haptics` only accepted LRA actuators; lithium's is an
+  ERM. Patch 0037 accepts ERM and limits the auto-resonance setup to LRAs; the DT (0038) takes
+  stock's square wave, 5263 us play rate and brake pattern, in the driver's buffer mode. The
+  driver's 400 mA current limit is too low for an ERM: its start-up current raised the
+  short-circuit interrupt ~3000 times a second and the driver then disabled the module ("Short
+  circuit persists"). r40 uses stock's 800 mA and caps vmax at stock's 3000 mV (the magnitude
+  scale reached 3.6 V): a 2 s feedbackd vibration now raises 10 short-circuit-status interrupts,
+  the normal ~50 ms status, and none at boot.
+
+## Mobile data (2026-10-19, kernel r39–r40, device r19–r20)
+
+- **Works**: Movistar Colombia (732123) over UMTS. NetworkManager profile with APN
+  `internet.movistar.com.co` (user/password `movistar`) connects at boot; ping ~70 ms, a 10 MB
+  download at 2.2 Mbit/s, browsing in Firefox and Angelfish.
+- **QMAPv4**: ModemManager offers the modem QMAPv5, QMAPv4, QMAP in turn and this modem takes
+  QMAPv4 (MAP checksum header on uplink, trailer on downlink). For IPA ports ModemManager takes
+  the rmnet checksum flags from `device/feature/{rx,tx}_offload` (mainline ipa sysfs); ipa2-lite
+  had none, so the link had no flags and the modem read the first 4 bytes of each IP packet as
+  the checksum header (its tx counter: 1024 bytes per 1028-byte packet; nothing came back).
+  Patch 0039 configures the endpoints as downstream rmnet_ipa does with checksums (uplink 8-byte
+  header + CS offload UL, metadata offset 1 word; downlink CS offload DL) and reports `MAPv4`.
+  Plain QMAP (forced with `qmicli --wda-set-data-format`) also worked, but ModemManager
+  switches back to QMAPv4 at the first connection after it starts.
+- **SIM slot**: lithium-modem provisions the USIM of whichever slot holds a card (it hard-coded
+  slot 1; the SIM sat in slot 2) and waits up to 30 s for the card to be read.
+- **LTE**: the modem prefers LTE, but LTE-only mode finds only Tigo (732103) cells; Movistar's
+  LTE appears to be on bands this China-market model lacks (it has 1/3/5/7/8/38-41).
+- **DNS over USB**: a hand-made `usb-internet.service` from early bring-up (not packaged) sent all
+  DNS over usb0 with routing domain `~.`; with Wi-Fi off and the cable in, no name resolved.
+  Disabled on the phone.
+- **Bluetooth address**: with Bluetooth soft-blocked at boot the controller is not registered
+  with mgmt and lithium-bt-address failed; it now unblocks for the moment and restores the block.
+
 ## The real display driver and the rest of the day (2026-10-18, kernel r5–r10)
 
 - **Panel** (patch 0003): `panel-xiaomi-lithium-fte716` (lmdpdg tables from stock) on DSI0,

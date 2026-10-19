@@ -1,0 +1,94 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] Input: qcom-spmi-haptics: support ERM actuators
+
+The Xiaomi Mi MIX has an ERM (eccentric rotating mass) vibration motor on
+PMI8994 (stock qcom,actuator-type = "erm"). The driver already writes the
+actuator type to HAP_CFG1 and keeps auto-resonance off for non-LRA
+actuators; accept HAP_TYPE_ERM and program the LRA auto-resonance
+register only for LRAs. Buffer play mode works for ERMs as well.
+
+An ERM also needs the drive limits downstream gives it (qcom,ilim-ma =
+800, qcom,vmax-mv = 3000): at the 400 mA current limit its start-up
+current raises the short-circuit interrupt thousands of times a second
+and the driver soon disables the module, and full magnitude drove it at
+3.6 V. Use 800 mA and cap vmax at 3000 mV for ERMs.
+
+Tested on the Xiaomi Mi MIX: a 2 s feedbackd vibration raises the play
+interrupt with no short-circuit interrupt (about 6000 before).
+
+---
+diff --git a/drivers/input/misc/qcom-spmi-haptics.c b/drivers/input/misc/qcom-spmi-haptics.c
+--- a/drivers/input/misc/qcom-spmi-haptics.c
++++ b/drivers/input/misc/qcom-spmi-haptics.c
+@@ -120,6 +120,8 @@
+ #define HAP_VMAX_MIN_MV			116
+ #define HAP_VMAX_MAX_MV			3596
+ #define HAP_VMAX_MAX_MV_STRONG		3596
++/* Rated drive of lithium's ERM (downstream qcom,vmax-mv) */
++#define HAP_VMAX_MAX_MV_ERM		3000
+ 
+ #define HAP_WAVE_PLAY_RATE_MIN_US	0
+ #define HAP_WAVE_PLAY_RATE_MAX_US	20475
+@@ -302,7 +304,9 @@ static int spmi_haptics_write_vmax(struct spmi_haptics *haptics)
+ 	u8 val = 0;
+ 	u32 vmax_mv = haptics->vmax;
+ 
+-	vmax_mv = clamp_t(u32, vmax_mv, HAP_VMAX_MIN_MV, HAP_VMAX_MAX_MV);
++	vmax_mv = clamp_t(u32, vmax_mv, HAP_VMAX_MIN_MV,
++			  haptics->actuator_type == HAP_TYPE_ERM ?
++			  HAP_VMAX_MAX_MV_ERM : HAP_VMAX_MAX_MV);
+ 
+ 	dev_dbg(haptics->dev, "Setting vmax to: %d", vmax_mv);
+ 
+@@ -527,18 +531,20 @@ static int spmi_haptics_init(struct spmi_haptics *haptics)
+ 		return ret;
+ 
+ 	/*
+-	 * Configure auto resonance
++	 * Configure auto resonance (LRA only)
+ 	 * see spmi_haptics_lra_auto_res_config downstream
+ 	 * This is greatly simplified.
+ 	 */
+-	val = FIELD_PREP(LRA_RES_CAL_MASK, ilog2(32 / HAP_RES_CAL_PERIOD_MIN)) |
+-	      FIELD_PREP(LRA_AUTO_RES_MODE_MASK, HAP_AUTO_RES_ZXD_EOP) |
+-	      FIELD_PREP(LRA_HIGH_Z_MASK, 1);
++	if (haptics->actuator_type == HAP_TYPE_LRA) {
++		val = FIELD_PREP(LRA_RES_CAL_MASK, ilog2(32 / HAP_RES_CAL_PERIOD_MIN)) |
++		      FIELD_PREP(LRA_AUTO_RES_MODE_MASK, HAP_AUTO_RES_ZXD_EOP) |
++		      FIELD_PREP(LRA_HIGH_Z_MASK, 1);
+ 
+-	mask = LRA_AUTO_RES_MODE_MASK | LRA_HIGH_Z_MASK | LRA_RES_CAL_MASK;
++		mask = LRA_AUTO_RES_MODE_MASK | LRA_HIGH_Z_MASK | LRA_RES_CAL_MASK;
+ 
+-	ret = spmi_haptics_write_masked(haptics, haptics->base + HAP_LRA_AUTO_RES_REG,
+-			mask, val);
++		ret = spmi_haptics_write_masked(haptics,
++				haptics->base + HAP_LRA_AUTO_RES_REG, mask, val);
++	}
+ 
+ 	/* Configure the PLAY MODE register */
+ 	ret = spmi_haptics_write_play_mode(haptics);
+@@ -817,11 +823,10 @@ static int spmi_haptics_probe(struct platform_device *pdev)
+ 		goto register_fail;
+ 	}
+ 
+-	// We only support LRAs for now
+ 	haptics->actuator_type = HAP_TYPE_LRA;
+ 	ret = of_property_read_u32(node, "qcom,actuator-type", &val);
+ 	if (!ret) {
+-		if (val != HAP_TYPE_LRA) {
++		if (val != HAP_TYPE_LRA && val != HAP_TYPE_ERM) {
+ 			dev_err(&pdev->dev, "qcom,actuator-type (%d) isn't supported\n", val);
+ 			ret = -EINVAL;
+ 			goto register_fail;
+@@ -875,7 +880,9 @@ static int spmi_haptics_probe(struct platform_device *pdev)
+ 		goto register_fail;
+ 	}
+ 
+-	haptics->current_limit = HAP_ILIM_400_MA;
++	/* An ERM's start-up current trips the 400 mA limit (downstream: 800 mA) */
++	haptics->current_limit = haptics->actuator_type == HAP_TYPE_ERM ?
++				 HAP_ILIM_800_MA : HAP_ILIM_400_MA;
+ 
+ 	for (i = 0; i < HAP_WAVE_SAMP_LEN; i++)
+ 		haptics->wave_samp[i] = HAP_WF_SAMP_MAX;
