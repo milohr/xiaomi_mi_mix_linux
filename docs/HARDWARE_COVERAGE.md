@@ -47,16 +47,13 @@ vdig L3 1.2 V, vana L17 2.95 V, vio LVS1 1.8 V, vaf L23 2.8 V, CSIPHY0; front MC
 reset GPIO 23, vdig L27 1.2 V, vana L29 2.7 V, vio LVS1, CSIPHY2. CCI reads are limited in
 length (the 16-byte EEPROM reads were refused by the adapter quirk, not by the EEPROM).
 
-
 - CAMSS supports MSM8996 in mainline. libcamera's software ISP can turn raw frames into images.
   No mainline driver exists for the hardware ISP, so expect modest preview resolution and frame
   rate, no 4K.
 - Missing pieces:
-  - Sensor drivers: neither OV16880 nor S5K3P3 is in mainline, and the front sensor is unidentified.
-  - Lithium DT nodes: CCI, the rails `cam_vana/vdig/vio/vaf`, reset GPIOs, MCLK and CSI lanes.
-  - The VCM (focus) driver.
-- Which rear variant a unit carries is decided at boot. Read the sensor chip-ID registers
-  over CCI to find out.
+  - A sensor driver for the rear OV16880 (none in mainline). The front OV5675 has one.
+  - Lithium DT nodes for the sensors and CAMSS ports (CCI, rails and pins exist since the probe).
+  - The VCM (focus) driver, once the chip at 0x0c is identified.
 - The vendor extract in `artifacts/p8` holds generic Qualcomm camera libraries, not lithium's
   OV16880/S5K3P3 ones. Register settings would need a full stock vendor image.
 
