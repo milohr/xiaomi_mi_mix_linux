@@ -3,7 +3,7 @@ maintainer="Yassine Oudjana (Tooniis) <y.oudjana@protonmail.com>"
 _flavor="postmarketos-qcom-msm8996"
 pkgname=linux-$_flavor
 pkgver=6.19.5
-pkgrel=41
+pkgrel=43
 pkgdesc="Kernel close to mainline with extra patches for Qualcomm MSM8996 devices"
 arch="aarch64"
 _carch="arm64"
@@ -71,6 +71,9 @@ source="
 	0037-Input-qcom-spmi-haptics-support-ERM-actuators.patch
 	0038-arm64-dts-qcom-xiaomi-lithium-enable-the-vibration-motor.patch
 	0039-net-ipa2-lite-support-QMAPv4-checksum-offload.patch
+	0040-arm64-dts-qcom-xiaomi-lithium-add-the-PMI8994-ADC.patch
+	0041-power-supply-qcom-smbchg-report-the-input-voltage-and-HVDCP-detection.patch
+	0042-arm64-dts-qcom-xiaomi-lithium-add-the-NFC-controller.patch
 "
 builddir="$srcdir/linux-$_tag"
 
@@ -141,4 +144,7 @@ a9fe013a9b757196ffb29b4ee87d254d3b2d89864fc86a5a0cffbfff34af1df303912ffb8e6a91d3
 ebb4532279949dc4769b8574fd1a0050b55a0e6caebda907a282102a8e240226f752793e9564ba347b1aa2ae3f01c16830f79acc1aa2e42edf4e8f172df979d3  0037-Input-qcom-spmi-haptics-support-ERM-actuators.patch
 5934df98160622085c05d1a1edfc25e0c30060ad84ddb11e3818781c2532a982d40d0b1ad4d3885a3bcd3efedbf0dfdb63dd0b78c7ddb665f2fcc1f8cddcae7e  0038-arm64-dts-qcom-xiaomi-lithium-enable-the-vibration-motor.patch
 9c91f4eee92ade79dfef14268334a7f644cee06e8e795833691bd34c82b4f2998e2c56f2fd5a41fe6f2c8693054c747c7d1bb6e3ff04a77b8dbbef5ada846ab0  0039-net-ipa2-lite-support-QMAPv4-checksum-offload.patch
+975e83acfcbf92e65089505fde7b14d0b6b8f126d1e7083c3ab9e36c6137bb4f792534f879d6a668818612b11a5b6150962ff7e1c37ecea8eee0c55a0b7ca55c  0040-arm64-dts-qcom-xiaomi-lithium-add-the-PMI8994-ADC.patch
+43c1567389bbc3f2c01e9fc516b0cd1d502ba8e5add63647a127a30e17539d3cc947dbc6bf04a1b75433bf83e0e6c4e2ac173709a10c132140819e9ed32273c2  0041-power-supply-qcom-smbchg-report-the-input-voltage-and-HVDCP-detection.patch
+6f22c18dba6ff651249b6f47e82b730d01ab50a7eddc76c131b791a24a8daafc6b4ebbdfd390945b03fe99cd9b041cefd5877517820e8018a551808806770252  0042-arm64-dts-qcom-xiaomi-lithium-add-the-NFC-controller.patch
 "

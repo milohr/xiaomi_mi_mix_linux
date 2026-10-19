@@ -1,7 +1,7 @@
 [Unit]
 Description=Set the Bluetooth address from persist
 Before=bluetooth.service
-After=sys-subsystem-bluetooth-devices-hci0.device
+After=sys-subsystem-bluetooth-devices-hci0.device systemd-rfkill.service
 BindsTo=sys-subsystem-bluetooth-devices-hci0.device
 
 [Service]

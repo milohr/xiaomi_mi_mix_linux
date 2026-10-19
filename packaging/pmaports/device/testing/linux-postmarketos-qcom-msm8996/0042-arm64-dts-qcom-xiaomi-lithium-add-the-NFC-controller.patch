@@ -1,0 +1,45 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] arm64: dts: qcom: xiaomi-lithium: add the NFC controller
+
+The Mi MIX has an NXP PN548 NFC controller on BLSP2 QUP2 at 0x28 (stock
+"nxp,nfc-548" on i2c@75b6000, 400 kHz): interrupt on GPIO 9, VEN on
+GPIO 12, firmware download on GPIO 21, the last two pulled up as in
+stock's nfc_active state. Mainline nxp-nci drives the PN54x family.
+
+---
+--- a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
++++ b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+@@ -1248,3 +1248,33 @@
+ 	io-channels = <&pmi8994_adc VADC_USBIN>;
+ 	io-channel-names = "usbin";
+ };
++
++/* NXP PN548 NFC controller (stock pn548 on i2c@75b6000, 400 kHz) */
++&blsp2_i2c2 {
++	clock-frequency = <400000>;
++	status = "okay";
++
++	nfc@28 {
++		compatible = "nxp,pn547", "nxp,nxp-nci-i2c";
++		reg = <0x28>;
++
++		interrupt-parent = <&tlmm>;
++		interrupts = <9 IRQ_TYPE_EDGE_RISING>;
++
++		enable-gpios = <&tlmm 12 GPIO_ACTIVE_HIGH>;
++		firmware-gpios = <&tlmm 21 GPIO_ACTIVE_HIGH>;
++
++		pinctrl-names = "default";
++		pinctrl-0 = <&nfc_default>;
++	};
++};
++
++&tlmm {
++	/* Stock nfc_active: VEN and firmware-download pins */
++	nfc_default: nfc-default-state {
++		pins = "gpio12", "gpio21";
++		function = "gpio";
++		drive-strength = <16>;
++		bias-pull-up;
++	};
++};

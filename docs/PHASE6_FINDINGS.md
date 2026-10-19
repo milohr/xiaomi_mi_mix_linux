@@ -216,6 +216,26 @@ Hardware facts found by testing, where the stock tree is wrong or silent:
   scale reached 3.6 V): a 2 s feedbackd vibration now raises 10 short-circuit-status interrupts,
   the normal ~50 ms status, and none at boot.
 
+## Quick Charge groundwork and NFC (2026-10-19, kernel r42–r43)
+
+- **PMI8994 ADC** (0040, stock vadc@3100): USB/DC input behind 1/20; the driver also needs the
+  625 mV/1.25 V/GND/VDD reference channels ("Please define 1.25V channel" without them). USBIN
+  reads 4.95 V on a 5 V DCP.
+- **Charger** (0041): `voltage_now` on qcom-smbchg-usb from the "usbin" channel, looked up on first
+  use so the built-in charger never waits for the ADC module; 2.5 s after a DCP the driver logs
+  `USBIN_HVDCP_STS`. Also fixes the AICL warning printing an uninitialized error.
+- **HVDCP state left by the bootloader**: `CHGPTH_CFG` 0x19 (HVDCP detection on, 9 V adapter
+  selected), `USBIN_CHGR_CFG` 0x02 (5 V/9 V continuous allowed), `USBIN_HVDCP_STS` 0x00 with the
+  current wall charger (a plain DCP). With a QC charger the PMIC may go to 9 V by itself; first
+  test with the user present.
+- **NFC** (0042): PN548 on BLSP2 QUP2 (0x75b6000) at 0x28, IRQ GPIO 9, VEN 12, firmware 21 (pulled
+  up as stock). `nxp-nci` binds; `nfctool -d nfc0 -1` powers it up (NCI init OK; MIFARE, FeliCa,
+  ISO-DEP, Jewel, NFC-DEP). Left powered off.
+- **Bluetooth address at boot** (device r21): the r20 script still failed at boot. systemd-rfkill
+  restores a saved Bluetooth block while the script runs, after its one check, and btmgmt's error
+  went to /dev/null. The unit now orders after systemd-rfkill, and the script rechecks the block
+  and retries for 10 s, logging btmgmt's message on failure.
+
 ## GPU buffer leak (2026-10-19, kernel r41)
 
 - Patch 0022 (r29) left global-VM mappings in place on handle close "until the object is freed",

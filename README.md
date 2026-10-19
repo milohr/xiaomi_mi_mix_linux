@@ -15,7 +15,7 @@ This repository is independent of the MediaTek Redmi `flare` project.
 | Display | ✅ | msm DRM + own FTE716 panel driver; brightness (PMI8994 WLED), screen off/on |
 | Touch | ✅ | FocalTech FT8716 (edt-ft5x06) |
 | Wi-Fi | ✅ | QCA6174 hw3.2 on PCIe, ath10k, lithium board file; 2.4 and 5 GHz |
-| Battery / charging | ✅ | PMI8996 fuel gauge + SMB charger, up to 3.2 A; input follows the USB-C current advertisement; no Quick Charge yet |
+| Battery / charging | ✅ | PMI8996 fuel gauge + SMB charger, up to 3.2 A; input follows the USB-C current advertisement; input voltage reported; Quick Charge detection logged, 9 V untested |
 | Headphones | ✅ | ADSP + WCD9335 over SLIMbus; switches to/from the speaker on plug/unplug (jack switch; no headset mic yet) |
 | UI | ✅ | Plasma Mobile (GPU-accelerated) with the KDE mobile apps |
 | Speaker | ✅ | TFA9891 (stock DT says TFA9890) on quaternary MI2S; tfa989x TFA9891 support added |
@@ -27,13 +27,14 @@ This repository is independent of the MediaTek Redmi `flare` project.
 | USB host / OTG | ✅ | automatic via TUSB320L (INT on TLMM 63): devices and unpowered docks get host + 5 V; powered docks only charge (no USB-PD) |
 | Suspend / CPU idle | ✅ | s2idle, wakes on Power key and RTC; PSCI CPU idle (≈ 80 mA less awake with the screen off) |
 | Earpiece (piezo, LM48560) | ❌ | no mainline driver |
+| NFC | ✅ | NXP PN548 through mainline nxp-nci; powers up and lists its protocols (neard/nfctool); tag reading not tried yet |
 | Torch / vibration | ✅ | PMI8994 flash LED as `white:torch` (own driver, torch only); ERM vibration motor through qcom-spmi-haptics |
 | Cameras | ✅ | front OV5675 and rear OV16880 (own driver) through libcamera's software ISP, stock colour matrices, manual focus |
 | Mobile data | ✅ | Movistar CO over UMTS: NetworkManager connects at boot (QMAPv4 through ipa2-lite), browsing works; LTE bands of this Chinese model miss the carrier's. Calls not planned |
 
 Details: [Phase 6 findings](docs/PHASE6_FINDINGS.md) (current), [handoff](docs/HANDOFF.md)
 (how to build, install and recover), [plan](docs/PLAN.md).
-Features not covered yet (cameras, fingerprint, NFC, vibration, flash, GPS, Quick Charge) and why: [docs/HARDWARE_COVERAGE.md](docs/HARDWARE_COVERAGE.md).
+Features not covered yet (fingerprint, GPS, Quick Charge at 9 V, headset microphone) and why: [docs/HARDWARE_COVERAGE.md](docs/HARDWARE_COVERAGE.md).
 
 
 ## How it is built

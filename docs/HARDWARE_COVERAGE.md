@@ -18,10 +18,10 @@ names (`artifacts/p3/stock-dtb5.dts`, line numbers below), and where the port st
 | Accelerometer, gyroscope, compass, barometer | SLPI | ✅ |
 | Light sensor | none | — not fitted; no auto-brightness |
 | Battery 4400 mAh, charging | PMI8994 | ✅ up to 3 A at 5 V |
-| Quick Charge 3.0 (18 W) | PMI8994 HVDCP | ❌ no fully sourced register sequence (`artifacts/p11/hvdcp-gap-analysis.md`) |
+| Quick Charge 3.0 (18 W) | PMI8994 HVDCP | 🔧 USB input voltage readable (PMI8994 ADC, patch 0040); the charger logs the HVDCP handshake result (0041). The PMIC is left with HVDCP detection on and 9 V selected, so it may negotiate 9 V by itself with a QC charger; not tried with one yet |
 | LTE, dual nano-SIM | modem (MSS) | ✅ data over UMTS (Movistar CO), either SIM slot; LTE-only finds no Movistar cell in the phone's bands (1/3/5/7/8/38-41) |
 | GPS / GLONASS / BeiDou | inside the modem | ❌ reachable through ModemManager once the modem runs |
-| NFC | NXP PN548, `nxp,nfc-548` | ❌ mainline `nxp-nci` covers PN54x; tags only on Linux |
+| NFC | NXP PN548, `nxp,nfc-548` | ✅ mainline `nxp-nci` (patch 0042): powers up, NCI init, protocols listed; tag reading needs neard and a card |
 | Vibration | PMI8994 haptics, ERM, `qcom,qpnp-haptic` (:17839) | ✅ in-tree qcom-spmi-haptics with ERM support and stock drive limits (patch 0037) |
 | Flash / torch | PMI8994 flash LED (type 0x18, subtype 0x01), `qcom,qpnp-flash-led` | ✅ torch only: new leds-qcom-flash-v1 (patch 0035), `white:torch`; camera flash strobe not supported |
 | Rear camera 16 MP, PDAF | **OV16880** (OFilm module on this unit), EEPROM, DW9763 VCM at 0x0c | ✅ new driver (patch 0029) with stock tables; manual focus only |

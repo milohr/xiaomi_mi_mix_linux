@@ -1,0 +1,199 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] power: supply: qcom-smbchg: report the input voltage and HVDCP detection
+
+Read the USB input voltage from an optional "usbin" IIO channel and
+report it as VOLTAGE_NOW. The channel is looked up on first use: the ADC
+driver may be a module, and the charger must not wait for it.
+
+After a DCP is detected, the PMIC runs the Quick Charge 2.0 (HVDCP)
+handshake by itself; 2.5 s later (as downstream does) read
+USBIN_HVDCP_STS and log whether an HVDCP adapter answered, the voltage
+the PMIC selected and the measured input voltage. No charger setting is
+changed.
+
+Also print the AICL read error from the right variable (it printed an
+uninitialized one).
+
+---
+--- a/drivers/power/supply/Kconfig
++++ b/drivers/power/supply/Kconfig
+@@ -728,6 +728,7 @@
+ 	depends on MFD_SPMI_PMIC || COMPILE_TEST
+ 	depends on OF
+ 	depends on EXTCON
++	depends on IIO
+ 	depends on REGULATOR
+ 	select QCOM_PMIC_SEC_WRITE
+ 	help
+--- a/drivers/power/supply/qcom-smbchg.h
++++ b/drivers/power/supply/qcom-smbchg.h
+@@ -42,6 +42,8 @@
+ #define SMBCHG_USB_CHGPTH_ICL_STS_2		0x309
+ #define SMBCHG_USB_CHGPTH_RID_STS		0x30b
+ #define SMBCHG_USB_CHGPTH_USBIN_HVDCP_STS	0x30c
++#define USBIN_HVDCP_SEL_9V_BIT			BIT(1)
++#define USBIN_HVDCP_SEL_BIT			BIT(4)
+ #define SMBCHG_USB_CHGPTH_INPUT_STS		0x30d
+ #define SMBCHG_USB_CHGPTH_USBID_MSB		0x30e
+ #define SMBCHG_USB_CHGPTH_RT_STS		0x310
+@@ -249,6 +251,9 @@
+ 
+ 	spinlock_t sec_access_lock;
+ 	struct work_struct otg_reset_work;
++	struct delayed_work hvdcp_work;
++
++	struct iio_channel *usbin_v;
+ 
+ 	const struct smbchg_data *data;
+ };
+--- a/drivers/power/supply/qcom-smbchg.c
++++ b/drivers/power/supply/qcom-smbchg.c
+@@ -6,9 +6,12 @@
+  * Copyright (c) 2021 Alejandro Tafalla <atafalla@dnyon.com>
+  */
+ 
++#include <linux/device.h>
++#include <linux/devm-helpers.h>
+ #include <linux/errno.h>
+ #include <linux/extcon-provider.h>
+ #include <linux/fwnode.h>
++#include <linux/iio/consumer.h>
+ #include <linux/interrupt.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+@@ -940,6 +943,69 @@
+ 	return IRQ_HANDLED;
+ }
+ 
++/*
++ * USB input voltage from the PMIC's ADC, if the DT provides it. Looked up
++ * on first use rather than at probe: the ADC driver may be a module, and
++ * charging must not wait for it.
++ */
++static int smbchg_usbin_read_uv(struct smbchg_chip *chip, int *uv)
++{
++	struct iio_channel *ch = READ_ONCE(chip->usbin_v);
++
++	if (!ch) {
++		ch = iio_channel_get(chip->dev, "usbin");
++		if (IS_ERR(ch))
++			return PTR_ERR(ch) == -EPROBE_DEFER ? -EAGAIN : -ENODATA;
++		if (cmpxchg(&chip->usbin_v, NULL, ch)) {
++			iio_channel_release(ch);
++			ch = chip->usbin_v;
++		}
++	}
++
++	return iio_read_channel_processed(ch, uv);
++}
++
++static void smbchg_usbin_release(void *data)
++{
++	struct smbchg_chip *chip = data;
++
++	if (chip->usbin_v)
++		iio_channel_release(chip->usbin_v);
++}
++
++/*
++ * The PMIC runs the Quick Charge 2.0 (HVDCP) handshake on its own after
++ * detecting a DCP; downstream reads the result 2.5 s after insertion.
++ */
++#define SMBCHG_HVDCP_DETECT_MS	2500
++
++static void smbchg_hvdcp_worker(struct work_struct *work)
++{
++	struct smbchg_chip *chip = container_of(to_delayed_work(work),
++						struct smbchg_chip, hvdcp_work);
++	unsigned int sts;
++	int ret, uv = 0;
++
++	if (!smbchg_usb_is_present(chip))
++		return;
++
++	ret = regmap_read(chip->regmap,
++			  chip->base + SMBCHG_USB_CHGPTH_USBIN_HVDCP_STS, &sts);
++	if (ret)
++		return;
++
++	smbchg_usbin_read_uv(chip, &uv);
++
++	if (sts & USBIN_HVDCP_SEL_BIT)
++		dev_info(chip->dev, "HVDCP adapter, %s selected, USBIN %d mV\n",
++			 sts & USBIN_HVDCP_SEL_9V_BIT ? "9 V" : "5 V", uv / 1000);
++	else
++		dev_info(chip->dev, "no HVDCP adapter (status %#x), USBIN %d mV\n",
++			 sts, uv / 1000);
++
++	power_supply_changed(chip->usb_psy);
++}
++
+ static irqreturn_t smbchg_handle_usb_source_detect(int irq, void *data)
+ {
+ 	struct smbchg_chip *chip = data;
+@@ -979,6 +1045,12 @@
+ 		}
+ 	}
+ 
++	if (usb_present && usb_type == POWER_SUPPLY_USB_TYPE_DCP)
++		mod_delayed_work(system_wq, &chip->hvdcp_work,
++				 msecs_to_jiffies(SMBCHG_HVDCP_DETECT_MS));
++	else if (!usb_present)
++		cancel_delayed_work(&chip->hvdcp_work);
++
+ 	smbchg_extcon_update(chip);
+ 	power_supply_changed(chip->usb_psy);
+ 
+@@ -1057,14 +1129,13 @@
+ {
+ 	struct smbchg_chip *chip = data;
+ 	int ilim;
+-	int ret;
+ 
+ 	dev_dbg(chip->dev, "AICL done");
+ 
+ 	ilim = smbchg_usb_get_ilim(chip);
+ 	if (ilim < 0)
+ 		dev_warn(chip->dev, "Failed to read AICL result: %pe\n",
+-			 ERR_PTR(ret));
++			 ERR_PTR(ilim));
+ 	else
+ 		dev_dbg(chip->dev, "AICL result: %uuA", ilim);
+ 
+@@ -1284,6 +1355,11 @@
+ 	case POWER_SUPPLY_PROP_USB_TYPE:
+ 		val->intval = smbchg_usb_get_type(chip);
+ 		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++		ret = smbchg_usbin_read_uv(chip, &val->intval);
++		if (ret < 0)
++			return ret;
++		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT:
+ 		ret = smbchg_charging_get_iterm(chip);
+ 		if (ret < 0)
+@@ -1358,7 +1434,8 @@
+ 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
+ 	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
+ 	POWER_SUPPLY_PROP_USB_TYPE,
+-	POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT
++	POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
++	POWER_SUPPLY_PROP_VOLTAGE_NOW
+ };
+ 
+ static const struct power_supply_desc smbchg_usb_psy_desc = {
+@@ -1532,6 +1609,14 @@
+ 
+ 	spin_lock_init(&chip->sec_access_lock);
+ 	INIT_WORK(&chip->otg_reset_work, smbchg_otg_reset_worker);
++	ret = devm_delayed_work_autocancel(chip->dev, &chip->hvdcp_work,
++					   smbchg_hvdcp_worker);
++	if (ret)
++		return ret;
++
++	ret = devm_add_action_or_reset(chip->dev, smbchg_usbin_release, chip);
++	if (ret)
++		return ret;
+ 
+ 	/* Initialize OTG regulator */
+ 	chip->otg_rdesc.id = -1;

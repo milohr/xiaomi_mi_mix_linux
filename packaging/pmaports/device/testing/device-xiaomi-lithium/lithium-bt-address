@@ -22,24 +22,40 @@ esac
 
 # A soft-blocked controller is not registered with the management interface,
 # so the address cannot be set: unblock it for the moment and restore the
-# user's choice afterwards.
+# user's choice afterwards. systemd-rfkill may restore a saved block while
+# this runs, so check again before every attempt; at boot the controller can
+# also still be settling, so retry for a few seconds.
 rfk=
 for r in /sys/class/rfkill/rfkill*; do
-	[ "$(cat "$r/type" 2>/dev/null)" = bluetooth ] && rfk=$r && break
+	if [ "$(cat "$r/type" 2>/dev/null)" = bluetooth ]; then
+		rfk=$r
+		break
+	fi
 done
-blocked=0
-if [ -n "$rfk" ] && [ "$(cat "$rfk/soft")" = 1 ]; then
-	blocked=1
-	echo 0 > "$rfk/soft"
-	i=0
-	until btmgmt --index 0 info >/dev/null 2>&1 || [ "$i" -ge 10 ]; do
-		i=$((i + 1))
-		sleep 0.5
-	done
-fi
 
-ret=0
-btmgmt --index 0 public-addr "$addr" >/dev/null || ret=$?
-[ "$blocked" = 1 ] && echo 1 > "$rfk/soft"
-[ "$ret" = 0 ] || exit "$ret"
+blocked=0
+ret=1
+out=
+i=0
+while [ "$i" -lt 10 ]; do
+	if [ -n "$rfk" ] && [ "$(cat "$rfk/soft")" = 1 ]; then
+		blocked=1
+		echo 0 > "$rfk/soft"
+		sleep 1
+	fi
+	if out=$(btmgmt --index 0 public-addr "$addr" 2>&1); then
+		ret=0
+		break
+	fi
+	i=$((i + 1))
+	sleep 1
+done
+
+if [ "$blocked" = 1 ]; then
+	echo 1 > "$rfk/soft"
+fi
+if [ "$ret" != 0 ]; then
+	logger -t lithium-bt-address "setting the address failed: $out"
+	exit 1
+fi
 logger -t lithium-bt-address "Bluetooth public address set from persist"
