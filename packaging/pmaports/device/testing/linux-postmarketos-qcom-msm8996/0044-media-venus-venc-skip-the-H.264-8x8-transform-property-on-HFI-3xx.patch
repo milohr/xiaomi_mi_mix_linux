@@ -1,0 +1,43 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] media: venus: venc: skip the H.264 8x8 transform property on HFI 3xx
+
+venc_set_properties() sets HFI_PROPERTY_PARAM_VENC_H264_TRANSFORM_8X8
+for every H.264 session, but only the 4xx and 6xx packers know that
+property; on HFI 1xx/3xx (MSM8996's Venus 3.43) packing it fails with
+-EINVAL, venc_init_session() fails and so does VIDIOC_REQBUFS on the
+encoder's OUTPUT queue: no H.264 hardware encoding at all. Set it on
+HFI 4xx and later only.
+
+Tested on the Xiaomi Mi MIX: ffmpeg h264_v4l2m2m encodes 10 s of 720p
+in 6.2 s (libx264: 10 s).
+
+---
+--- a/drivers/media/platform/qcom/venus/venc.c
++++ b/drivers/media/platform/qcom/venus/venc.c
+@@ -720,15 +720,18 @@
+ 		if (ret)
+ 			return ret;
+ 
+-		ptype = HFI_PROPERTY_PARAM_VENC_H264_TRANSFORM_8X8;
+-		h264_transform.enable_type = 0;
+-		if (ctr->profile.h264 == V4L2_MPEG_VIDEO_H264_PROFILE_HIGH ||
+-		    ctr->profile.h264 == V4L2_MPEG_VIDEO_H264_PROFILE_CONSTRAINED_HIGH)
+-			h264_transform.enable_type = ctr->h264_8x8_transform;
++		/* HFI 1xx/3xx firmware has no 8x8 transform property */
++		if (!IS_V1(inst->core) && !IS_V3(inst->core)) {
++			ptype = HFI_PROPERTY_PARAM_VENC_H264_TRANSFORM_8X8;
++			h264_transform.enable_type = 0;
++			if (ctr->profile.h264 == V4L2_MPEG_VIDEO_H264_PROFILE_HIGH ||
++			    ctr->profile.h264 == V4L2_MPEG_VIDEO_H264_PROFILE_CONSTRAINED_HIGH)
++				h264_transform.enable_type = ctr->h264_8x8_transform;
+ 
+-		ret = hfi_session_set_property(inst, ptype, &h264_transform);
+-		if (ret)
+-			return ret;
++			ret = hfi_session_set_property(inst, ptype, &h264_transform);
++			if (ret)
++				return ret;
++		}
+ 
+ 		if (ctr->layer_bitrate) {
+ 			unsigned int i;
