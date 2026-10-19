@@ -1,0 +1,25 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] arm64: dts: qcom: xiaomi-lithium: enable the Venus video codec
+
+Enable Venus with lithium's own signed firmware (from the stock NON-HLOS
+image, packaged as qcom/msm8996/lithium/venus.mbn + venus.bNN by
+firmware-xiaomi-lithium). On hardware the decoder and encoder register
+(/dev/video0, /dev/video1); a 720p H.264 clip decodes bit-exact against
+software decoding with about 13 times less CPU, and mpv plays 720p60
+YouTube through it at about 10-15 % CPU.
+
+---
+--- a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
++++ b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+@@ -803,6 +803,11 @@
+ 	};
+ };
+ 
++&venus {
++	firmware-name = "qcom/msm8996/lithium/venus.mbn";
++	status = "okay";
++};
++
+ &q6asmdai {
+ 	dai@0 { reg = <MSM_FRONTEND_DAI_MULTIMEDIA1>; };
+ 	dai@1 { reg = <MSM_FRONTEND_DAI_MULTIMEDIA2>; };

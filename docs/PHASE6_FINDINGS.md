@@ -83,8 +83,12 @@ Hardware facts found by testing, where the stock tree is wrong or silent:
   flush/noblit`, `QTWEBENGINE_FORCE_USE_GBM=0` and `--gpu-rasterization-msaa-sample-count=0`
   (single zero-fault runs were luck; counts are rate-limited at 10/20). Rendering looks
   right. Angelfish stays on the CPU; Firefox runs on the GPU.
-- **Venus**: lithium's signed firmware is on the modem partition, not yet in our firmware
-  package; enabling the node without it fails with -2.
+- **Venus works** (patch 0019, firmware r1): lithium's signed firmware from the stock
+  `NON-HLOS.bin` `/image` (venus.mdt + .b00–.b04, packaged as `venus.mbn`). Decoder and
+  encoder at /dev/video0 and /dev/video1. A 720p H.264 clip decodes bit-exact against
+  ffmpeg's software decoder (300/300 frames) with 0.33 s instead of 4.24 s of CPU; mpv with
+  `hwdec=v4l2m2m-copy` plays 720p60 YouTube (H.264 via yt-dlp) at about 10–15 % CPU. A
+  Wi-Fi failure seen once while testing was a coincidence on a truncated test image.
 
 ## The real display driver and the rest of the day (2026-10-18, kernel r5–r10)
 

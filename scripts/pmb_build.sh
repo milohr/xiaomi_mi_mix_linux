@@ -45,12 +45,17 @@ EOF
 pmb() { python3 "$PMB" -c "$CFG" "$@"; }
 
 # --kernel: rebuild only the kernel and device packages (no image, no install) and copy them out.
+# The firmware package too when its local tarball is staged (stage_pmaports.sh).
 if [ "${1:-}" = --kernel ]; then
-	pmb build --force linux-postmarketos-qcom-msm8996 device-xiaomi-lithium
+	set -- linux-postmarketos-qcom-msm8996 device-xiaomi-lithium
+	[ -d "$PROJECT_ROOT/sources/pmaports/device/testing/firmware-xiaomi-lithium" ] && set -- "$@" firmware-xiaomi-lithium
+	pmb build --force "$@"
 	mkdir -p "$PROJECT_ROOT/artifacts/kernel-build"
 	cp "$WORK"/packages/*/aarch64/linux-postmarketos-qcom-msm8996-*.apk \
 		"$WORK"/packages/*/aarch64/device-xiaomi-lithium-*.apk \
 		"$PROJECT_ROOT/artifacts/kernel-build/"
+	cp "$WORK"/packages/*/aarch64/firmware-xiaomi-lithium-*.apk \
+		"$PROJECT_ROOT/artifacts/kernel-build/" 2>/dev/null || :
 	cp "$WORK/log.txt" "$PROJECT_ROOT/artifacts/kernel-build/pmbootstrap.log"
 	(cd "$PROJECT_ROOT/artifacts/kernel-build" && sha256sum ./*.apk)
 	exit 0
