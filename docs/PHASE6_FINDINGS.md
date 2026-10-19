@@ -216,6 +216,18 @@ Hardware facts found by testing, where the stock tree is wrong or silent:
   scale reached 3.6 V): a 2 s feedbackd vibration now raises 10 short-circuit-status interrupts,
   the normal ~50 ms status, and none at boot.
 
+## GPU buffer leak (2026-10-19, kernel r41)
+
+- Patch 0022 (r29) left global-VM mappings in place on handle close "until the object is freed",
+  but each VMA holds a reference to its object, so no buffer drawn through the shared A5xx VM was
+  ever freed: 15,442 objects / 4.5 GB after 30 min, 26,194 / 8.3 GB after an hour, swap (5.4 GB
+  zram) full, 86 MB available. Browsing was sluggish from memory starvation, not CPU.
+- r41 tears the global-VM mapping down in `msm_gem_vma_put()` when `vma_ref` (open handles,
+  dma-buf exports, framebuffers) drops to zero, after waiting for the GPU. `scripts/soak.sh`
+  (5 rounds of opening/closing pages in Angelfish) now holds GPU memory at 392–396 MB.
+- The status-bar block corruption still appears on r41, so it is a separate bug. Under test: Mesa
+  with UBWC off (`FD_MESA_DEBUG=noubwc` for plasmashell and its apps).
+
 ## Mobile data (2026-10-19, kernel r39–r40, device r19–r20)
 
 - **Works**: Movistar Colombia (732123) over UMTS. NetworkManager profile with APN

@@ -15,12 +15,17 @@ GPU; each faulting address was inside a live buffer in one snapshot of
 the GEM list and unmapped in the next. Preemption is not involved (same
 faults with a single ring).
 
-Leave mappings in the global VM until the object is freed.
+Leave mappings in the global VM on handle close, and tear them down in
+msm_gem_vma_put() once no handle, dma-buf or framebuffer refers to the
+object (vma_ref drops to zero), after the GPU is done with it. The VMAs
+hold a reference to the object, so leaving them until the object is
+freed (the first version of this change) leaked every buffer: 26,000
+objects and 8 GB within an hour, the phone swapping itself to a crawl.
 
 ---
 --- a/drivers/gpu/drm/msm/msm_gem.c
 +++ b/drivers/gpu/drm/msm/msm_gem.c
-@@ -51,6 +51,7 @@
+@@ -51,6 +51,7 @@ static void put_iova_spaces(struct drm_gem_object *obj, struct drm_gpuvm *vm,
  
  static void msm_gem_close(struct drm_gem_object *obj, struct drm_file *file)
  {
@@ -28,21 +33,45 @@ Leave mappings in the global VM until the object is freed.
  	struct msm_context *ctx = file->driver_priv;
  	struct drm_exec exec;
  
-@@ -74,6 +75,17 @@
+@@ -73,6 +74,17 @@ static void msm_gem_close(struct drm_gem_object *obj, struct drm_file *file)
+ 	if (msm_context_is_vmbind(ctx))
  		return;
  
- 	/*
++	/*
 +	 * Without per-process address spaces (e.g. A5xx) every context
 +	 * uses the GPU's global VM. A buffer shared with another process
 +	 * through dma-buf is the same object there, still mapped and used
 +	 * by that process: tearing the mapping down here makes its GPU
-+	 * work fault on the stale address. Leave it until the object is
-+	 * freed.
++	 * work fault on the stale address. Leave it until the last handle
++	 * or dma-buf goes away (msm_gem_vma_put()).
 +	 */
 +	if (ctx->vm == priv->gpu->vm)
 +		return;
 +
-+	/*
+ 	/*
  	 * TODO we might need to kick this to a queue to avoid blocking
  	 * in CLOSE ioctl
- 	 */
+@@ -101,6 +113,23 @@ void msm_gem_vma_put(struct drm_gem_object *obj)
+ 	if (atomic_dec_return(&to_msm_bo(obj)->vma_ref))
+ 		return;
+ 
++	/*
++	 * No handle, dma-buf or framebuffer refers to the object any more.
++	 * Contexts without per-process address spaces leave their mappings
++	 * in the GPU's global VM on handle close (see msm_gem_close()), and
++	 * those VMAs hold a reference to the object: tear them down now, or
++	 * the object is never freed.
++	 */
++	if (priv->gpu && priv->gpu->vm) {
++		struct drm_exec exec;
++
++		dma_resv_wait_timeout(obj->resv, DMA_RESV_USAGE_BOOKKEEP, false,
++				      MAX_SCHEDULE_TIMEOUT);
++		msm_gem_lock_vm_and_obj(&exec, obj, priv->gpu->vm);
++		put_iova_spaces(obj, priv->gpu->vm, true, "vma_put");
++		drm_exec_fini(&exec);     /* drop locks */
++	}
++
+ 	if (!priv->kms)
+ 		return;
+ 
