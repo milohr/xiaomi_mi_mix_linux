@@ -100,13 +100,17 @@ Hardware facts found by testing, where the stock tree is wrong or silent:
   `qcom-smgr-accel/gyro/mag/pressure` as IIO devices. iio-sensor-proxy finds the
   accelerometer and Plasma Mobile shows auto-rotate, which follows the phone. No light or
   proximity sensor on the SLPI (lithium's proximity is ultrasonic).
-- **GPU translation faults are use-after-free reads**, not overruns: mapping fault addresses
-  across buffer snapshots taken around rotations (`kscreen-doctor`), every address lies in a
-  live buffer in one snapshot and unmapped in the next. Rotation reproduces it reliably
-  (~20 rate-limited faults per 4 rotations). **Not preemption**: with patch 0021 and
-  `msm.enable_preemption=0` (one ring) the count is the same. Next: tell Mesa from the
-  kernel (msm unmap timing) — e.g. keep freed iovas mapped for a grace period, or capture the
-  command stream (FD_RD_DUMP) at a fault.
+- **GPU faults found and fixed** (patch 0022, kernel r29): `msm_gem_close()` tore down an
+  object's mapping in the closing context's VM. A5xx has no per-process address spaces, so
+  that VM is the GPU's global one, and a buffer shared through dma-buf (a client's window
+  in the compositor, frames between a browser's processes) was unmapped while the other
+  process still used it at the old address. Seen as translation faults on every rotation
+  and whenever a browser drew on the GPU (each faulting address inside a live buffer in one
+  GEM-list snapshot, unmapped in the next), and as write-permission faults and misplaced
+  page content once the stale address went to a new read-only buffer. Preemption was ruled
+  out first (patch 0021, `msm.enable_preemption=0`: same faults). With 0022: 0 faults in 8
+  rotations (20 in 4 before), 0 in three QtWebEngine-on-GPU runs and in Firefox. Device r14
+  drops `--disable-gpu`: web views render on the GPU again. Worth sending upstream.
 - New this boot series, unexplained: two `pclk0_clk_src: rcg didn't update its configuration`
   warnings while the panel driver loads (screen works).
 

@@ -1,0 +1,48 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] drm/msm: don't unmap from the global VM on handle close
+
+msm_gem_close() tears down the object's mappings in the closing
+context's VM. GPUs without per-process address spaces (A5xx and older)
+give every context the GPU's global VM, so closing a handle in one
+process unmaps a buffer that another process still uses through dma-buf
+(the same object in the same VM): a compositor sampling a client's
+buffer, or a browser's GPU process sharing frames with its UI process.
+That process's GPU work then reads and writes the stale address.
+
+On the Mi MIX (Adreno 530) this shows as bursts of "gpu fault ...
+TRANSLATION" on every screen rotation and while browsers render on the
+GPU; each faulting address was inside a live buffer in one snapshot of
+the GEM list and unmapped in the next. Preemption is not involved (same
+faults with a single ring).
+
+Leave mappings in the global VM until the object is freed.
+
+---
+--- a/drivers/gpu/drm/msm/msm_gem.c
++++ b/drivers/gpu/drm/msm/msm_gem.c
+@@ -51,6 +51,7 @@
+ 
+ static void msm_gem_close(struct drm_gem_object *obj, struct drm_file *file)
+ {
++	struct msm_drm_private *priv = obj->dev->dev_private;
+ 	struct msm_context *ctx = file->driver_priv;
+ 	struct drm_exec exec;
+ 
+@@ -74,6 +75,17 @@
+ 		return;
+ 
+ 	/*
++	 * Without per-process address spaces (e.g. A5xx) every context
++	 * uses the GPU's global VM. A buffer shared with another process
++	 * through dma-buf is the same object there, still mapped and used
++	 * by that process: tearing the mapping down here makes its GPU
++	 * work fault on the stale address. Leave it until the object is
++	 * freed.
++	 */
++	if (ctx->vm == priv->gpu->vm)
++		return;
++
++	/*
+ 	 * TODO we might need to kick this to a queue to avoid blocking
+ 	 * in CLOSE ioctl
+ 	 */
