@@ -26,7 +26,6 @@ source="
 	ucm-HiFi.conf
 	wireplumber-51-lithium-audio.conf
 	lithium-usb-current
-	lithium-usb-current.service
 	90-lithium-usb-current.rules
 	lithium-bt-address
 	lithium-bt-address.service
@@ -59,8 +58,6 @@ package() {
 		"$pkgdir"/usr/share/wireplumber/wireplumber.conf.d/51-lithium-audio.conf
 	install -Dm755 "$srcdir"/lithium-usb-current \
 		"$pkgdir"/usr/libexec/lithium-usb-current
-	install -Dm644 "$srcdir"/lithium-usb-current.service \
-		"$pkgdir"/usr/lib/systemd/system/lithium-usb-current.service
 	install -Dm644 "$srcdir"/90-lithium-usb-current.rules \
 		"$pkgdir"/usr/lib/udev/rules.d/90-lithium-usb-current.rules
 	install -Dm755 "$srcdir"/lithium-bt-address \
@@ -100,9 +97,8 @@ sha512sums="
 3b035e3f5896b99d70b272bd5cfd0d709c2fed81e57a95000bc1162ce5aad88d3781dd810a0375d9f69fe1b0c6988520c06aa8f224ddb73afaee54e03ea3fd51  ucm-lithium.conf
 c583d9dcecd12b04a3e79f244e87a47391fb007948fce3c41d1aac8f55e1bdc97da35c5ac0b14bb8164b48139b2a46be869c3b9d15e0d1dc65c168d32a187805  ucm-HiFi.conf
 5a407ac2bbcd16d64a824a7ea47ea7467879087df6cd7cf0f4d9fcb1138a2577f7e84b9751f210f208fcd9be49bc1e3553c1fdf39601981a55e2478c4ad2490d  wireplumber-51-lithium-audio.conf
-6109e666245ebd3aaa4b05cd2ae89a4e763f2a5d6a8482d93b1641351cd7b82dfe1ade8072f92eeaac5b9bb47fc04084635e7bd56325378074bafb6442ea54d5  lithium-usb-current
-5f4b0b699e9a9bad29a9187c5b5dc6639d330128b7a996f6369218dfcee54e3e9138e0df38e38b8a1641adf6255856806234af3984658cdf98827d9a17ade79b  lithium-usb-current.service
-72e6ff76730b47b9bfe9f2ae6fc99c247bb9f14202c7207d1025b45ef6c44c4aa11e0ef9aef2a8914770e7d9343a9ab529e9bdf82ef187d5c2c3894ef46fe70e  90-lithium-usb-current.rules
+987c12f9bf92ee87ea59669ea6675df985f0b49939cd89ed413e5539e6d8964cb46720f60732780e949bfb6bf8523d3bda9ffa746c83644142bec79eda5768d1  lithium-usb-current
+6632d95ebaad6a0fa40b8fa893847cb067d0144389951b4f79a8827bacda4c60768d7bfe61cafc6cc5fd40bcbfaa2f79e539eeeada59121dab9afa3378df404e  90-lithium-usb-current.rules
 562036602708bd5fad27ca2a4e49fafee8acf88f17bf68005ded8e979f899a92fdaa59a2036c3767ed457123cc7e48184029e67065dbd9c4a7c9e5758d761ae0  lithium-bt-address
 5ad6a09e54074efb6821e6f713ce477666e1a6809b59efb5ec338543f4d3adfbf1ceaa54854d5e6d87d1ade62f92d396d090c7840af13176908ebf8661e5063a  lithium-bt-address.service
 9210ee8eb55c09511aea202ca17b3670dabcc06fdfac974c107b7d9ddf97100b85b554af84f9fa2efb2d164abf93ce3054e120be3e5992672971120644a2f8ee  90-lithium-mesa.conf

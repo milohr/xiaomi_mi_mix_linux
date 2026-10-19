@@ -5,15 +5,26 @@
 # 1.5 A or 3.0 A) into the typec port; the PMI8996 charger only knows the
 # BC1.2 type (SDP/DCP/CDP). Raise the input current limit to the advertised
 # value; never lower what the charger chose. Run on Type-C and USB power
-# supply changes (udev).
+# supply changes (udev RUN; it takes milliseconds).
 #
 # On a dedicated charger (BC1.2 DCP: D+ and D- shorted) there is no host, but
 # the gadget keeps its pull-up on and the controller reports an "Erratic
 # Error" event about 230 times a second. Disconnect the gadget there and
 # reconnect it for anything else (a computer, or nothing plugged in).
+#
+# Power-supply change events come every few seconds while charging; act only
+# when the inputs below change (state kept in /run).
 set -u
 
 USB=/sys/class/power_supply/qcom-smbchg-usb
+MODE=/sys/class/typec/port0/power_operation_mode
+ROLE=/sys/class/typec/port0/power_role
+STATE=/run/lithium-usb-current.state
+
+state="$(cat "$USB/online" "$USB/usb_type" "$MODE" "$ROLE" 2>/dev/null | tr '\n' ' ')"
+[ "$state" = "$(cat "$STATE" 2>/dev/null)" ] && exit 0
+echo "$state" > "$STATE"
+
 for udc in /sys/class/udc/*; do
 	[ -w "$udc/soft_connect" ] || continue
 	if [ "$(cat "$USB/online" 2>/dev/null)" = 1 ] &&
@@ -24,11 +35,10 @@ for udc in /sys/class/udc/*; do
 	fi
 done
 
-MODE=/sys/class/typec/port0/power_operation_mode
-ICL=/sys/class/power_supply/qcom-smbchg-usb/input_current_limit
+ICL=$USB/input_current_limit
 
 [ -r "$MODE" ] && [ -w "$ICL" ] || exit 0
-grep -q "\[sink\]" /sys/class/typec/port0/power_role 2>/dev/null || exit 0
+grep -q "\[sink\]" "$ROLE" 2>/dev/null || exit 0
 
 case "$(cat "$MODE")" in
 3.0A) want=3000000 ;;

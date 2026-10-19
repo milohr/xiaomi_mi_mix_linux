@@ -1,7 +1,0 @@
-[Unit]
-Description=Charge at the current a USB-C source advertises
-
-[Service]
-Type=oneshot
-ExecStartPre=/bin/sleep 1
-ExecStart=/usr/libexec/lithium-usb-current
