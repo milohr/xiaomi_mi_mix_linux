@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: CC0-1.0
+%YAML 1.1
+---
+# Xiaomi Mi MIX (lithium) OV5675. Black level from the sensor's BLC target (0x4003 =
+# 0x40 at 10 bits). Colour matrices from the stock Qualcomm tuning
+# (libchromatix_ov5675_primax_a3_default_preview.so), one per stock colour-temperature zone.
+version: 1
+algorithms:
+  - BlackLevel:
+      blackLevel: 4096
+  - Awb:
+  - Ccm:
+      ccms:
+        - ct: 7500
+          ccm: [ 2.05950, -1.17080, 0.13130,
+                 -0.12870, 1.38340, -0.25470,
+                 0.15930, -1.02880, 1.86950 ]
+        - ct: 6400
+          ccm: [ 2.15010, -1.22290, 0.07280,
+                 -0.14300, 1.34960, -0.24660,
+                 0.13230, -1.20210, 2.06980 ]
+        - ct: 5000
+          ccm: [ 1.87200, -1.12950, 0.25750,
+                 -0.11220, 1.02130, 0.09080,
+                 0.16600, -1.35770, 2.19170 ]
+        - ct: 3800
+          ccm: [ 1.91200, -1.12950, 0.25750,
+                 -0.13220, 1.03130, 0.11080,
+                 0.14600, -1.33770, 2.19170 ]
+        - ct: 2600
+          ccm: [ 1.99880, -1.36800, 0.36920,
+                 -0.28770, 1.09350, 0.19420,
+                 -0.12530, -1.63610, 2.76140 ]
+        - ct: 2200
+          ccm: [ 2.15140, -1.44460, 0.29320,
+                 -0.41300, 1.28000, 0.13300,
+                 -0.40760, -1.50180, 2.90930 ]
+  - Adjust:
+  - Agc:
+...

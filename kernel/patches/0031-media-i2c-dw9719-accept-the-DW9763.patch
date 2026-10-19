@@ -1,0 +1,40 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] media: i2c: dw9719: accept the DW9763
+
+The Xiaomi Mi MIX's rear camera focus motor is a DW9763 (ID 0xf9). The
+stock actuator library programs it with the DW9761 register map (control
+0x02, mode 0x06 = 0x41, prescale 0x07 = 0x3c), so treat it as a DW9761;
+the SAC mode and prescale come from the device tree.
+
+Also power the chip down when its ID is unknown: the probe failure path
+released the regulator while still enabled (WARNING in regulator_put()).
+
+---
+diff --git a/drivers/media/i2c/dw9719.c b/drivers/media/i2c/dw9719.c
+--- a/drivers/media/i2c/dw9719.c
++++ b/drivers/media/i2c/dw9719.c
+@@ -45,6 +45,8 @@
+ #define DW9719_INFO			CCI_REG8(0)
+ #define DW9719_ID			0xF1
+ #define DW9761_ID			0xF4
++/* DW9763: the DW9761 register map (Xiaomi Mi MIX rear camera) */
++#define DW9763_ID			0xF9
+ 
+ #define DW9719_CONTROL			CCI_REG8(2)
+ #define DW9719_STANDBY			0x00
+@@ -160,6 +162,7 @@
+ 			dw9719->vcm_freq = DW9719_DEFAULT_VCM_FREQ;
+ 			break;
+ 		case DW9761_ID:
++		case DW9763_ID:
+ 			dw9719->model = DW9761;
+ 			dw9719->mode_low_bits = 0x01;
+ 			dw9719->sac_mode = DW9761_DEFAULT_SAC;
+@@ -168,6 +171,7 @@
+ 		default:
+ 			dev_err(dw9719->dev,
+ 				"Error unknown device id 0x%02llx\n", val);
++			dw9719_power_down(dw9719);
+ 			return -ENXIO;
+ 		}
+ 

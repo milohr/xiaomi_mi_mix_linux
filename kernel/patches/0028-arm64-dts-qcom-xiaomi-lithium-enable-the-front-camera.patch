@@ -1,0 +1,184 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] arm64: dts: qcom: xiaomi-lithium: enable the front camera
+
+Front camera: OmniVision OV5675 on CCI1 at 0x36 (chip ID 0x5675 read on
+hardware), MCLK2 (GPIO 15, 19.2 MHz as the ov5675 driver requires; stock ran
+24 MHz), reset GPIO 23, vdig L27 1.2 V, vana L29 2.7 V, vio LVS1 1.8 V, two
+lanes into CSIPHY2. CAMSS uses L2 for vdda.
+
+Also defines the rear camera rails (L3 1.2 V, L17 2.95 V, L23 2.8 V) and pin
+state (MCLK0 GPIO 13, reset GPIO 86, standby GPIO 30) from stock, for the
+OV16880 that has no driver yet. libcamera's simple pipeline with the software
+ISP captures from the front camera.
+
+---
+diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+--- a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
++++ b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+@@ -598,12 +598,47 @@
+ 		};
+ 
+ 		/* Modem PLL (stock vdd_pll-supply = pm8994_l11, 1.1 V) */
++		/* Rear camera cam_vdig (stock) */
++		vreg_l3a_1p2: l3 {
++			regulator-name = "vreg_l3a_1p2";
++			regulator-min-microvolt = <1200000>;
++			regulator-max-microvolt = <1200000>;
++		};
++
+ 		vreg_l11a_1p1: l11 {
+ 			regulator-name = "vreg_l11a_1p1";
+ 			regulator-min-microvolt = <1100000>;
+ 			regulator-max-microvolt = <1100000>;
+ 		};
+ 
++		/* Rear camera cam_vana (stock) */
++		vreg_l17a_2p95: l17 {
++			regulator-name = "vreg_l17a_2p95";
++			regulator-min-microvolt = <2950000>;
++			regulator-max-microvolt = <2950000>;
++		};
++
++		/* Rear camera cam_vaf, focus motor (stock) */
++		vreg_l23a_2p8: l23 {
++			regulator-name = "vreg_l23a_2p8";
++			regulator-min-microvolt = <2800000>;
++			regulator-max-microvolt = <2800000>;
++		};
++
++		/* Front camera cam_vdig (stock) */
++		vreg_l27a_1p2: l27 {
++			regulator-name = "vreg_l27a_1p2";
++			regulator-min-microvolt = <1200000>;
++			regulator-max-microvolt = <1200000>;
++		};
++
++		/* Front camera cam_vana (stock) */
++		vreg_l29a_2p7: l29 {
++			regulator-name = "vreg_l29a_2p7";
++			regulator-min-microvolt = <2700000>;
++			regulator-max-microvolt = <2700000>;
++		};
++
+ 		vreg_l12a_1p8: l12 {
+ 			regulator-name = "vreg_l12a_1p8";
+ 			regulator-min-microvolt = <1800000>;
+@@ -656,6 +691,13 @@
+ 		};
+ 
+ 		/* SLPI vdd_px (stock pm8994 lvs2) */
++		/* Camera cam_vio, both cameras (stock) */
++		vreg_lvs1a_1p8: lvs1 {
++			regulator-name = "vreg_lvs1a_1p8";
++			regulator-min-microvolt = <1800000>;
++			regulator-max-microvolt = <1800000>;
++		};
++
+ 		vreg_lvs2a_1p8: lvs2 {
+ 			regulator-name = "vreg_lvs2a_1p8";
+ 			regulator-min-microvolt = <1800000>;
+@@ -665,6 +707,39 @@
+ };
+ 
+ &tlmm {
++	/* Stock lithium camera pins: rear MCLK0 13, reset 86, standby 30; front MCLK2 15, reset 23 */
++	cam_rear_default: cam-rear-default-state {
++		mclk-pins {
++			pins = "gpio13";
++			function = "cam_mclk";
++			drive-strength = <16>;
++			bias-disable;
++		};
++
++		ctrl-pins {
++			pins = "gpio30", "gpio86";
++			function = "gpio";
++			drive-strength = <2>;
++			bias-disable;
++		};
++	};
++
++	cam_front_default: cam-front-default-state {
++		mclk-pins {
++			pins = "gpio15";
++			function = "cam_mclk";
++			drive-strength = <16>;
++			bias-disable;
++		};
++
++		ctrl-pins {
++			pins = "gpio23";
++			function = "gpio";
++			drive-strength = <2>;
++			bias-disable;
++		};
++	};
++
+ 	/* Display pins: stock mdss_dsi_active/suspend, mdss_te_*, mdss_vddr_active. */
+ 	mdss_dsi_default: mdss-dsi-default-state {
+ 		pins = "gpio8";
+@@ -983,3 +1058,64 @@
+ 			"qcom/msm8996/lithium/modem.mbn";
+ 	status = "okay";
+ };
++
++&cci {
++	status = "okay";
++};
++
++/* Stock qcom,i2c-freq-mode = <1>: fast mode */
++&cci_i2c0 {
++	clock-frequency = <400000>;
++};
++
++&cci_i2c1 {
++	clock-frequency = <400000>;
++
++	/* Front camera, identified on hardware (chip ID 0x5675 at 0x36) */
++	camera-sensor@36 {
++		compatible = "ovti,ov5675";
++		reg = <0x36>;
++
++		/* The driver's register tables assume a 19.2 MHz XVCLK (stock ran 24 MHz) */
++		clocks = <&mmcc CAMSS_MCLK2_CLK>;
++		assigned-clocks = <&mmcc CAMSS_MCLK2_CLK>;
++		assigned-clock-rates = <19200000>;
++
++		avdd-supply = <&vreg_l29a_2p7>;
++		dvdd-supply = <&vreg_l27a_1p2>;
++		dovdd-supply = <&vreg_lvs1a_1p8>;
++
++		reset-gpios = <&tlmm 23 GPIO_ACTIVE_LOW>;
++
++		pinctrl-0 = <&cam_front_default>;
++		pinctrl-names = "default";
++
++		orientation = <0>;
++		rotation = <90>;
++
++		port {
++			ov5675_ep: endpoint {
++				data-lanes = <1 2>;
++				link-frequencies = /bits/ 64 <450000000>;
++				remote-endpoint = <&csiphy2_ep>;
++			};
++		};
++	};
++};
++
++&camss {
++	vdda-supply = <&vreg_l2a_1p25>;
++	status = "okay";
++
++	ports {
++		port@2 {
++			reg = <2>;
++
++			csiphy2_ep: endpoint {
++				clock-lanes = <7>;
++				data-lanes = <0 1>;
++				remote-endpoint = <&ov5675_ep>;
++			};
++		};
++	};
++};

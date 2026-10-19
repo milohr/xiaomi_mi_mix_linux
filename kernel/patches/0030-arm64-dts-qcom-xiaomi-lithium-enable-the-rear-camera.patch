@@ -1,0 +1,69 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] arm64: dts: qcom: xiaomi-lithium: enable the rear camera
+
+Rear camera: OmniVision OV16880 on CCI0 at 0x36 (chip ID 0x016880 read on
+hardware), MCLK0 at 24 MHz, reset GPIO 86 and power-down GPIO 30 (both
+driven high by stock to run), avdd L17 2.95 V, dvdd L3 1.2 V, dovdd LVS1,
+four lanes into CSIPHY0 at the stock modes' link frequencies (384 and
+636 MHz). The DW9763 focus motor at 0x0c is not described yet.
+
+---
+diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+--- a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
++++ b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+@@ -1066,6 +1066,38 @@
+ /* Stock qcom,i2c-freq-mode = <1>: fast mode */
+ &cci_i2c0 {
+ 	clock-frequency = <400000>;
++
++	/* Rear camera, identified on hardware (chip ID 0x016880 at 0x36, OFilm module) */
++	camera-sensor@36 {
++		compatible = "ovti,ov16880";
++		reg = <0x36>;
++
++		clocks = <&mmcc CAMSS_MCLK0_CLK>;
++		assigned-clocks = <&mmcc CAMSS_MCLK0_CLK>;
++		assigned-clock-rates = <24000000>;
++
++		avdd-supply = <&vreg_l17a_2p95>;
++		dvdd-supply = <&vreg_l3a_1p2>;
++		dovdd-supply = <&vreg_lvs1a_1p8>;
++
++		/* Stock drives both high to run the sensor */
++		reset-gpios = <&tlmm 86 GPIO_ACTIVE_LOW>;
++		powerdown-gpios = <&tlmm 30 GPIO_ACTIVE_LOW>;
++
++		pinctrl-0 = <&cam_rear_default>;
++		pinctrl-names = "default";
++
++		orientation = <1>;
++		rotation = <90>;
++
++		port {
++			ov16880_ep: endpoint {
++				data-lanes = <1 2 3 4>;
++				link-frequencies = /bits/ 64 <384000000 636000000>;
++				remote-endpoint = <&csiphy0_ep>;
++			};
++		};
++	};
+ };
+ 
+ &cci_i2c1 {
+@@ -1108,6 +1140,16 @@
+ 	status = "okay";
+ 
+ 	ports {
++		port@0 {
++			reg = <0>;
++
++			csiphy0_ep: endpoint {
++				clock-lanes = <7>;
++				data-lanes = <0 1 2 3>;
++				remote-endpoint = <&ov16880_ep>;
++			};
++		};
++
+ 		port@2 {
+ 			reg = <2>;
+ 

@@ -1,0 +1,2341 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] media: i2c: add an OmniVision OV16880 sensor driver
+
+The Mi MIX's rear camera is an OV16880 (OFilm module), which has no
+mainline driver. Modes and register tables come from the phone's stock
+camera library (libmmcamera_ov16880.so): stock init plus 2336x1752 (2x2
+binned, 4 lanes at 768 Mbps) and the full 4672x3504 (1272 Mbps), with a
+24 MHz XVCLK. The Rockchip ov16880 driver's register set produced no
+frames on this module. Power sequence after the Rockchip driver,
+structure after the mainline ov5675 driver.
+
+Controls: exposure (lines, the low 4 bits of 0x3500-0x3502 being a
+fraction), analogue gain, vertical/horizontal blanking, link frequency,
+pixel rate, test pattern, flips.
+
+---
+diff --git a/drivers/media/i2c/Kconfig b/drivers/media/i2c/Kconfig
+--- a/drivers/media/i2c/Kconfig
++++ b/drivers/media/i2c/Kconfig
+@@ -453,6 +453,15 @@
+ 	  This is a Video4Linux2 sensor driver for the OmniVision
+ 	  OV13B10 camera.
+ 
++config VIDEO_OV16880
++	tristate "OmniVision OV16880 sensor support"
++	help
++	  This is a Video4Linux2 sensor driver for the OmniVision
++	  OV16880 camera.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called ov16880.
++
+ config VIDEO_OV2640
+ 	tristate "OmniVision OV2640 sensor support"
+ 	help
+diff --git a/drivers/media/i2c/Makefile b/drivers/media/i2c/Makefile
+--- a/drivers/media/i2c/Makefile
++++ b/drivers/media/i2c/Makefile
+@@ -93,6 +93,7 @@
+ obj-$(CONFIG_VIDEO_OV08X40) += ov08x40.o
+ obj-$(CONFIG_VIDEO_OV13858) += ov13858.o
+ obj-$(CONFIG_VIDEO_OV13B10) += ov13b10.o
++obj-$(CONFIG_VIDEO_OV16880) += ov16880.o
+ obj-$(CONFIG_VIDEO_OV2640) += ov2640.o
+ obj-$(CONFIG_VIDEO_OV2659) += ov2659.o
+ obj-$(CONFIG_VIDEO_OV2680) += ov2680.o
+diff --git a/drivers/media/i2c/ov16880.c b/drivers/media/i2c/ov16880.c
+new file mode 100644
+--- /dev/null
++++ b/drivers/media/i2c/ov16880.c
+@@ -0,0 +1,2290 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * OmniVision OV16880 16 MP image sensor driver.
++ *
++ * Register tables from the Xiaomi Mi MIX (lithium) stock camera library
++ * (libmmcamera_ov16880.so); power sequence after the Rockchip ov16880 driver;
++ * driver structure after the mainline ov5675 driver.
++ */
++
++#include <linux/clk.h>
++#include <linux/delay.h>
++#include <linux/gpio/consumer.h>
++#include <linux/i2c.h>
++#include <linux/module.h>
++#include <linux/pm_runtime.h>
++#include <linux/regulator/consumer.h>
++#include <linux/unaligned.h>
++#include <media/v4l2-ctrls.h>
++#include <media/v4l2-device.h>
++#include <media/v4l2-fwnode.h>
++
++#define OV16880_XVCLK			24000000
++#define OV16880_DATA_LANES		4
++#define OV16880_BITS_PER_SAMPLE		10
++/* Highest link frequency of the modes (636 MHz) */
++#define OV16880_PIXEL_RATE_MAX		(636000000ULL * 2 * OV16880_DATA_LANES / \
++					 OV16880_BITS_PER_SAMPLE)
++
++#define OV16880_REG_CHIP_ID		0x300a
++#define OV16880_CHIP_ID			0x016880
++
++#define OV16880_REG_MODE_SELECT		0x0100
++#define OV16880_MODE_STANDBY		0x00
++#define OV16880_MODE_STREAMING		0x01
++#define OV16880_REG_SOFTWARE_RESET	0x0103
++
++/* Exposure in lines; the low 4 bits of 0x3500-0x3502 are a fraction */
++#define OV16880_REG_EXPOSURE		0x3500
++#define OV16880_EXPOSURE_MIN		8
++#define OV16880_EXPOSURE_MAX_MARGIN	8
++
++#define OV16880_REG_ANALOG_GAIN		0x350a
++#define OV16880_ANAL_GAIN_MIN		0x10
++#define OV16880_ANAL_GAIN_MAX		0xf8
++#define OV16880_ANAL_GAIN_DEFAULT	0x20
++
++#define OV16880_REG_VTS			0x380e
++#define OV16880_VTS_MAX			0x7fff
++
++#define OV16880_REG_TEST_PATTERN	0x5081
++#define OV16880_REG_FORMAT1		0x3820	/* vertical flip */
++#define OV16880_REG_FORMAT2		0x3821	/* horizontal mirror */
++#define OV16880_REG_BLC_CTRL		0x4000
++
++#define OV16880_REG_VALUE_08BIT		1
++#define OV16880_REG_VALUE_16BIT		2
++#define OV16880_REG_VALUE_24BIT		3
++
++#define OV16880_NATIVE_WIDTH		4672
++#define OV16880_NATIVE_HEIGHT		3504
++
++struct ov16880_reg {
++	u16 address;
++	u8 val;
++};
++
++static const struct ov16880_reg ov16880_stock_init_regs[] = {
++	{ 0x0300, 0x00 },
++	{ 0x0303, 0x00 },
++	{ 0x0304, 0x07 },
++	{ 0x030e, 0x02 },
++	{ 0x0312, 0x03 },
++	{ 0x0313, 0x03 },
++	{ 0x031e, 0x09 },
++	{ 0x3002, 0x00 },
++	{ 0x3009, 0x06 },
++	{ 0x3010, 0x00 },
++	{ 0x3011, 0x04 },
++	{ 0x3012, 0x41 },
++	{ 0x3013, 0xcc },
++	{ 0x3017, 0xf0 },
++	{ 0x3018, 0xda },
++	{ 0x3019, 0xf1 },
++	{ 0x301a, 0xf2 },
++	{ 0x301b, 0x96 },
++	{ 0x301d, 0x02 },
++	{ 0x3022, 0x0e },
++	{ 0x3023, 0xb0 },
++	{ 0x3028, 0xc3 },
++	{ 0x3031, 0x68 },
++	{ 0x3400, 0x08 },
++	{ 0x3507, 0x02 },
++	{ 0x3508, 0x00 },
++	{ 0x3509, 0x12 },
++	{ 0x350a, 0x00 },
++	{ 0x350b, 0x40 },
++	{ 0x3549, 0x12 },
++	{ 0x354e, 0x00 },
++	{ 0x354f, 0x10 },
++	{ 0x3600, 0x12 },
++	{ 0x3603, 0xc0 },
++	{ 0x3604, 0x2c },
++	{ 0x3606, 0x55 },
++	{ 0x3607, 0x05 },
++	{ 0x360a, 0x6d },
++	{ 0x360d, 0x05 },
++	{ 0x360e, 0x07 },
++	{ 0x360f, 0x44 },
++	{ 0x3622, 0x79 },
++	{ 0x3623, 0x57 },
++	{ 0x3624, 0x50 },
++	{ 0x362b, 0x77 },
++	{ 0x3641, 0x01 },
++	{ 0x3660, 0xc0 },
++	{ 0x3661, 0x04 },
++	{ 0x3661, 0x04 },
++	{ 0x3662, 0x00 },
++	{ 0x3663, 0x20 },
++	{ 0x3664, 0x08 },
++	{ 0x3667, 0x00 },
++	{ 0x366a, 0x54 },
++	{ 0x366c, 0x10 },
++	{ 0x3709, 0x1c },
++	{ 0x3718, 0x8c },
++	{ 0x3719, 0x00 },
++	{ 0x371a, 0x04 },
++	{ 0x3725, 0xf0 },
++	{ 0x3728, 0x22 },
++	{ 0x372a, 0x20 },
++	{ 0x372b, 0x40 },
++	{ 0x3730, 0x00 },
++	{ 0x3731, 0x00 },
++	{ 0x3732, 0x00 },
++	{ 0x3733, 0x00 },
++	{ 0x3748, 0x00 },
++	{ 0x3772, 0x00 },
++	{ 0x3773, 0x00 },
++	{ 0x3774, 0x40 },
++	{ 0x3775, 0x81 },
++	{ 0x3776, 0x31 },
++	{ 0x3777, 0x06 },
++	{ 0x3778, 0xa0 },
++	{ 0x377f, 0x31 },
++	{ 0x378d, 0x39 },
++	{ 0x3790, 0xcc },
++	{ 0x3791, 0xcc },
++	{ 0x379c, 0x02 },
++	{ 0x379d, 0x00 },
++	{ 0x379e, 0x00 },
++	{ 0x379f, 0x1e },
++	{ 0x37a0, 0x22 },
++	{ 0x37a4, 0x00 },
++	{ 0x37b0, 0x48 },
++	{ 0x37b3, 0x62 },
++	{ 0x37b6, 0x22 },
++	{ 0x37b9, 0x23 },
++	{ 0x37c3, 0x07 },
++	{ 0x37c6, 0x35 },
++	{ 0x37c8, 0x00 },
++	{ 0x37c9, 0x00 },
++	{ 0x37cc, 0x93 },
++	{ 0x3810, 0x00 },
++	{ 0x3812, 0x00 },
++	{ 0x3837, 0x02 },
++	{ 0x3d85, 0x17 },
++	{ 0x3d8c, 0x79 },
++	{ 0x3d8d, 0x7f },
++	{ 0x3f00, 0x50 },
++	{ 0x3f85, 0x00 },
++	{ 0x3f86, 0x00 },
++	{ 0x3f87, 0x05 },
++	{ 0x3f9e, 0x00 },
++	{ 0x3f9f, 0x00 },
++	{ 0x4000, 0x17 },
++	{ 0x4001, 0x60 },
++	{ 0x4003, 0x40 },
++	{ 0x4008, 0x00 },
++	{ 0x400f, 0x09 },
++	{ 0x4010, 0xf0 },
++	{ 0x4011, 0xf0 },
++	{ 0x4013, 0x02 },
++	{ 0x4018, 0x04 },
++	{ 0x4019, 0x04 },
++	{ 0x401a, 0x48 },
++	{ 0x4020, 0x08 },
++	{ 0x4022, 0x08 },
++	{ 0x4024, 0x08 },
++	{ 0x4026, 0x08 },
++	{ 0x4028, 0x08 },
++	{ 0x402a, 0x08 },
++	{ 0x402c, 0x08 },
++	{ 0x402e, 0x08 },
++	{ 0x4030, 0x08 },
++	{ 0x4032, 0x08 },
++	{ 0x4034, 0x08 },
++	{ 0x4036, 0x08 },
++	{ 0x4038, 0x08 },
++	{ 0x403a, 0x08 },
++	{ 0x403c, 0x08 },
++	{ 0x403e, 0x08 },
++	{ 0x4040, 0x00 },
++	{ 0x4041, 0x00 },
++	{ 0x4042, 0x00 },
++	{ 0x4043, 0x00 },
++	{ 0x4044, 0x00 },
++	{ 0x4045, 0x00 },
++	{ 0x4046, 0x00 },
++	{ 0x4047, 0x00 },
++	{ 0x40b0, 0x00 },
++	{ 0x40b1, 0x00 },
++	{ 0x40b2, 0x00 },
++	{ 0x40b3, 0x00 },
++	{ 0x40b4, 0x00 },
++	{ 0x40b5, 0x00 },
++	{ 0x40b6, 0x00 },
++	{ 0x40b7, 0x00 },
++	{ 0x4052, 0x00 },
++	{ 0x4053, 0x80 },
++	{ 0x4054, 0x00 },
++	{ 0x4055, 0x80 },
++	{ 0x4056, 0x00 },
++	{ 0x4057, 0x80 },
++	{ 0x4058, 0x00 },
++	{ 0x4059, 0x80 },
++	{ 0x4202, 0x00 },
++	{ 0x4203, 0x00 },
++	{ 0x4066, 0x02 },
++	{ 0x4509, 0x07 },
++	{ 0x4605, 0x00 },
++	{ 0x4641, 0x1e },
++	{ 0x4645, 0x00 },
++	{ 0x4800, 0x04 },
++	{ 0x4809, 0x2b },
++	{ 0x4812, 0x2b },
++	{ 0x4813, 0x90 },
++	{ 0x4833, 0x18 },
++	{ 0x484b, 0x01 },
++	{ 0x4850, 0x7c },
++	{ 0x4852, 0x06 },
++	{ 0x4856, 0x58 },
++	{ 0x4857, 0xaa },
++	{ 0x4862, 0x0a },
++	{ 0x4867, 0x02 },
++	{ 0x4869, 0x18 },
++	{ 0x486a, 0x6a },
++	{ 0x486e, 0x03 },
++	{ 0x486f, 0x55 },
++	{ 0x4875, 0xf0 },
++	{ 0x4b05, 0x93 },
++	{ 0x4b06, 0x00 },
++	{ 0x4c01, 0x5f },
++	{ 0x4d00, 0x04 },
++	{ 0x4d01, 0x22 },
++	{ 0x4d02, 0xb7 },
++	{ 0x4d03, 0xca },
++	{ 0x4d04, 0x30 },
++	{ 0x4d05, 0x1d },
++	{ 0x4f00, 0x1c },
++	{ 0x4f03, 0x50 },
++	{ 0x4f04, 0x01 },
++	{ 0x4f05, 0x7c },
++	{ 0x4f08, 0x00 },
++	{ 0x4f09, 0x60 },
++	{ 0x4f0a, 0x00 },
++	{ 0x4f0b, 0x30 },
++	{ 0x4f14, 0xf0 },
++	{ 0x4f15, 0xf0 },
++	{ 0x4f16, 0xf0 },
++	{ 0x4f17, 0xf0 },
++	{ 0x4f18, 0xf0 },
++	{ 0x4f19, 0x00 },
++	{ 0x4f1a, 0x00 },
++	{ 0x4f20, 0x07 },
++	{ 0x4f21, 0xd0 },
++	{ 0x5000, 0x9b },
++	{ 0x5001, 0x4e },
++	{ 0x5002, 0x0c },
++	{ 0x501d, 0x00 },
++	{ 0x5020, 0x03 },
++	{ 0x5022, 0x91 },
++	{ 0x5023, 0x00 },
++	{ 0x5030, 0x00 },
++	{ 0x5056, 0x00 },
++	{ 0x5063, 0x00 },
++	{ 0x5200, 0x02 },
++	{ 0x5202, 0x00 },
++	{ 0x5204, 0x00 },
++	{ 0x5209, 0x81 },
++	{ 0x520e, 0x31 },
++	{ 0x5280, 0x00 },
++	{ 0x5400, 0x01 },
++	{ 0x5401, 0x00 },
++	{ 0x5504, 0x00 },
++	{ 0x5505, 0x00 },
++	{ 0x5506, 0x00 },
++	{ 0x5507, 0x00 },
++	{ 0x550c, 0x00 },
++	{ 0x550d, 0x00 },
++	{ 0x550e, 0x00 },
++	{ 0x550f, 0x00 },
++	{ 0x5514, 0x00 },
++	{ 0x5515, 0x00 },
++	{ 0x5516, 0x00 },
++	{ 0x5517, 0x00 },
++	{ 0x551c, 0x00 },
++	{ 0x551d, 0x00 },
++	{ 0x551e, 0x00 },
++	{ 0x551f, 0x00 },
++	{ 0x5524, 0x00 },
++	{ 0x5525, 0x00 },
++	{ 0x5526, 0x00 },
++	{ 0x5527, 0x00 },
++	{ 0x552c, 0x00 },
++	{ 0x552d, 0x00 },
++	{ 0x552e, 0x00 },
++	{ 0x552f, 0x00 },
++	{ 0x5534, 0x00 },
++	{ 0x5535, 0x00 },
++	{ 0x5536, 0x00 },
++	{ 0x5537, 0x00 },
++	{ 0x553c, 0x00 },
++	{ 0x553d, 0x00 },
++	{ 0x553e, 0x00 },
++	{ 0x553f, 0x00 },
++	{ 0x5544, 0x00 },
++	{ 0x5545, 0x00 },
++	{ 0x5546, 0x00 },
++	{ 0x5547, 0x00 },
++	{ 0x554c, 0x00 },
++	{ 0x554d, 0x00 },
++	{ 0x554e, 0x00 },
++	{ 0x554f, 0x00 },
++	{ 0x5554, 0x00 },
++	{ 0x5555, 0x00 },
++	{ 0x5556, 0x00 },
++	{ 0x5557, 0x00 },
++	{ 0x555c, 0x00 },
++	{ 0x555d, 0x00 },
++	{ 0x555e, 0x00 },
++	{ 0x555f, 0x00 },
++	{ 0x5564, 0x00 },
++	{ 0x5565, 0x00 },
++	{ 0x5566, 0x00 },
++	{ 0x5567, 0x00 },
++	{ 0x556c, 0x00 },
++	{ 0x556d, 0x00 },
++	{ 0x556e, 0x00 },
++	{ 0x556f, 0x00 },
++	{ 0x5574, 0x00 },
++	{ 0x5575, 0x00 },
++	{ 0x5576, 0x00 },
++	{ 0x5577, 0x00 },
++	{ 0x557c, 0x00 },
++	{ 0x557d, 0x00 },
++	{ 0x557e, 0x00 },
++	{ 0x557f, 0x00 },
++	{ 0x5584, 0x00 },
++	{ 0x5585, 0x00 },
++	{ 0x5586, 0x00 },
++	{ 0x5587, 0x00 },
++	{ 0x558c, 0x00 },
++	{ 0x558d, 0x00 },
++	{ 0x558e, 0x00 },
++	{ 0x558f, 0x00 },
++	{ 0x5594, 0x00 },
++	{ 0x5595, 0x00 },
++	{ 0x5596, 0x00 },
++	{ 0x5597, 0x00 },
++	{ 0x559c, 0x00 },
++	{ 0x559d, 0x00 },
++	{ 0x559e, 0x00 },
++	{ 0x559f, 0x00 },
++	{ 0x55a4, 0x00 },
++	{ 0x55a5, 0x00 },
++	{ 0x55a6, 0x00 },
++	{ 0x55a7, 0x00 },
++	{ 0x55ac, 0x00 },
++	{ 0x55ad, 0x00 },
++	{ 0x55ae, 0x00 },
++	{ 0x55af, 0x00 },
++	{ 0x55b4, 0x00 },
++	{ 0x55b5, 0x00 },
++	{ 0x55b6, 0x00 },
++	{ 0x55b7, 0x00 },
++	{ 0x55bc, 0x00 },
++	{ 0x55bd, 0x00 },
++	{ 0x55be, 0x00 },
++	{ 0x55bf, 0x00 },
++	{ 0x55c4, 0x00 },
++	{ 0x55c5, 0x00 },
++	{ 0x55c6, 0x00 },
++	{ 0x55c7, 0x00 },
++	{ 0x55cc, 0x00 },
++	{ 0x55cd, 0x00 },
++	{ 0x55ce, 0x00 },
++	{ 0x55cf, 0x00 },
++	{ 0x55d4, 0x00 },
++	{ 0x55d5, 0x00 },
++	{ 0x55d6, 0x00 },
++	{ 0x55d7, 0x00 },
++	{ 0x55dc, 0x00 },
++	{ 0x55dd, 0x00 },
++	{ 0x55de, 0x00 },
++	{ 0x55df, 0x00 },
++	{ 0x55e4, 0x00 },
++	{ 0x55e5, 0x00 },
++	{ 0x55e6, 0x00 },
++	{ 0x55e7, 0x00 },
++	{ 0x55ec, 0x00 },
++	{ 0x55ed, 0x00 },
++	{ 0x55ee, 0x00 },
++	{ 0x55ef, 0x00 },
++	{ 0x55f4, 0x00 },
++	{ 0x55f5, 0x00 },
++	{ 0x55f6, 0x00 },
++	{ 0x55f7, 0x00 },
++	{ 0x55fc, 0x00 },
++	{ 0x55fd, 0x00 },
++	{ 0x55fe, 0x00 },
++	{ 0x55ff, 0x00 },
++	{ 0x5600, 0x30 },
++	{ 0x560f, 0xfc },
++	{ 0x5610, 0xf0 },
++	{ 0x5611, 0x10 },
++	{ 0x562f, 0xfc },
++	{ 0x5630, 0xf0 },
++	{ 0x5631, 0x10 },
++	{ 0x564f, 0xfc },
++	{ 0x5650, 0xf0 },
++	{ 0x5651, 0x10 },
++	{ 0x566f, 0xfc },
++	{ 0x5670, 0xf0 },
++	{ 0x5671, 0x10 },
++	{ 0x5694, 0xc0 },
++	{ 0x5695, 0x00 },
++	{ 0x5696, 0x00 },
++	{ 0x5697, 0x08 },
++	{ 0x5698, 0x00 },
++	{ 0x5699, 0x70 },
++	{ 0x569a, 0x11 },
++	{ 0x569b, 0xf0 },
++	{ 0x569c, 0x00 },
++	{ 0x569d, 0x68 },
++	{ 0x569e, 0x0d },
++	{ 0x569f, 0x68 },
++	{ 0x56a1, 0xff },
++	{ 0x5bd9, 0x01 },
++	{ 0x5d04, 0x01 },
++	{ 0x5d05, 0x00 },
++	{ 0x5d06, 0x01 },
++	{ 0x5d07, 0x00 },
++	{ 0x5d12, 0x38 },
++	{ 0x5d13, 0x38 },
++	{ 0x5d14, 0x38 },
++	{ 0x5d15, 0x38 },
++	{ 0x5d16, 0x38 },
++	{ 0x5d17, 0x38 },
++	{ 0x5d18, 0x38 },
++	{ 0x5d19, 0x38 },
++	{ 0x5d1a, 0x38 },
++	{ 0x5d1b, 0x38 },
++	{ 0x5d1c, 0x00 },
++	{ 0x5d1d, 0x00 },
++	{ 0x5d1e, 0x00 },
++	{ 0x5d1f, 0x00 },
++	{ 0x5d20, 0x16 },
++	{ 0x5d21, 0x20 },
++	{ 0x5d22, 0x10 },
++	{ 0x5d23, 0xa0 },
++	{ 0x5d28, 0xc0 },
++	{ 0x5d29, 0x80 },
++	{ 0x5d2a, 0x00 },
++	{ 0x5d2b, 0x70 },
++	{ 0x5d2c, 0x11 },
++	{ 0x5d2d, 0xf0 },
++	{ 0x5d2e, 0x00 },
++	{ 0x5d2f, 0x68 },
++	{ 0x5d30, 0x0d },
++	{ 0x5d31, 0x68 },
++	{ 0x5d32, 0x00 },
++	{ 0x5d38, 0x70 },
++	{ 0x5c80, 0x06 },
++	{ 0x5c81, 0x90 },
++	{ 0x5c82, 0x09 },
++	{ 0x5c83, 0x5f },
++	{ 0x5c85, 0x6c },
++	{ 0x5601, 0x04 },
++	{ 0x5602, 0x02 },
++	{ 0x5603, 0x01 },
++	{ 0x5604, 0x04 },
++	{ 0x5605, 0x02 },
++	{ 0x5606, 0x01 },
++	{ 0x5b80, 0x00 },
++	{ 0x5b81, 0x04 },
++	{ 0x5b82, 0x00 },
++	{ 0x5b83, 0x08 },
++	{ 0x5b84, 0x00 },
++	{ 0x5b85, 0x0c },
++	{ 0x5b86, 0x00 },
++	{ 0x5b87, 0x16 },
++	{ 0x5b88, 0x00 },
++	{ 0x5b89, 0x28 },
++	{ 0x5b8a, 0x00 },
++	{ 0x5b8b, 0x40 },
++	{ 0x5b8c, 0x1a },
++	{ 0x5b8d, 0x1a },
++	{ 0x5b8e, 0x1a },
++	{ 0x5b8f, 0x1a },
++	{ 0x5b90, 0x1a },
++	{ 0x5b91, 0x1a },
++	{ 0x5b92, 0x1a },
++	{ 0x5b93, 0x1a },
++	{ 0x5b94, 0x1a },
++	{ 0x5b95, 0x1a },
++	{ 0x5b96, 0x1a },
++	{ 0x5b97, 0x1a },
++	{ 0x2800, 0x60 },
++	{ 0x2801, 0x4c },
++	{ 0x2802, 0x45 },
++	{ 0x2803, 0x41 },
++	{ 0x2804, 0x3b },
++	{ 0x2805, 0x3a },
++	{ 0x2806, 0x39 },
++	{ 0x2807, 0x37 },
++	{ 0x2808, 0x36 },
++	{ 0x2809, 0x38 },
++	{ 0x280a, 0x3b },
++	{ 0x280b, 0x3d },
++	{ 0x280c, 0x43 },
++	{ 0x280d, 0x4a },
++	{ 0x280e, 0x52 },
++	{ 0x280f, 0x61 },
++	{ 0x2810, 0x47 },
++	{ 0x2811, 0x37 },
++	{ 0x2812, 0x33 },
++	{ 0x2813, 0x2e },
++	{ 0x2814, 0x2b },
++	{ 0x2815, 0x27 },
++	{ 0x2816, 0x26 },
++	{ 0x2817, 0x26 },
++	{ 0x2818, 0x26 },
++	{ 0x2819, 0x27 },
++	{ 0x281a, 0x29 },
++	{ 0x281b, 0x2c },
++	{ 0x281c, 0x30 },
++	{ 0x281d, 0x35 },
++	{ 0x281e, 0x3b },
++	{ 0x281f, 0x4c },
++	{ 0x2820, 0x3a },
++	{ 0x2821, 0x2d },
++	{ 0x2822, 0x29 },
++	{ 0x2823, 0x24 },
++	{ 0x2824, 0x20 },
++	{ 0x2825, 0x1d },
++	{ 0x2826, 0x1b },
++	{ 0x2827, 0x1a },
++	{ 0x2828, 0x1b },
++	{ 0x2829, 0x1c },
++	{ 0x282a, 0x1e },
++	{ 0x282b, 0x21 },
++	{ 0x282c, 0x26 },
++	{ 0x282d, 0x2b },
++	{ 0x282e, 0x30 },
++	{ 0x282f, 0x3f },
++	{ 0x2830, 0x2f },
++	{ 0x2831, 0x24 },
++	{ 0x2832, 0x20 },
++	{ 0x2833, 0x1a },
++	{ 0x2834, 0x16 },
++	{ 0x2835, 0x14 },
++	{ 0x2836, 0x12 },
++	{ 0x2837, 0x11 },
++	{ 0x2838, 0x11 },
++	{ 0x2839, 0x13 },
++	{ 0x283a, 0x15 },
++	{ 0x283b, 0x18 },
++	{ 0x283c, 0x1c },
++	{ 0x283d, 0x22 },
++	{ 0x283e, 0x27 },
++	{ 0x283f, 0x34 },
++	{ 0x2840, 0x28 },
++	{ 0x2841, 0x1d },
++	{ 0x2842, 0x18 },
++	{ 0x2843, 0x13 },
++	{ 0x2844, 0x0f },
++	{ 0x2845, 0x0d },
++	{ 0x2846, 0x0b },
++	{ 0x2847, 0x0a },
++	{ 0x2848, 0x0a },
++	{ 0x2849, 0x0b },
++	{ 0x284a, 0x0e },
++	{ 0x284b, 0x11 },
++	{ 0x284c, 0x15 },
++	{ 0x284d, 0x1a },
++	{ 0x284e, 0x20 },
++	{ 0x284f, 0x2c },
++	{ 0x2850, 0x21 },
++	{ 0x2851, 0x17 },
++	{ 0x2852, 0x12 },
++	{ 0x2853, 0x0e },
++	{ 0x2854, 0x0b },
++	{ 0x2855, 0x08 },
++	{ 0x2856, 0x06 },
++	{ 0x2857, 0x05 },
++	{ 0x2858, 0x05 },
++	{ 0x2859, 0x07 },
++	{ 0x285a, 0x09 },
++	{ 0x285b, 0x0c },
++	{ 0x285c, 0x10 },
++	{ 0x285d, 0x15 },
++	{ 0x285e, 0x1a },
++	{ 0x285f, 0x26 },
++	{ 0x2860, 0x1d },
++	{ 0x2861, 0x14 },
++	{ 0x2862, 0x10 },
++	{ 0x2863, 0x0b },
++	{ 0x2864, 0x07 },
++	{ 0x2865, 0x05 },
++	{ 0x2866, 0x03 },
++	{ 0x2867, 0x02 },
++	{ 0x2868, 0x02 },
++	{ 0x2869, 0x03 },
++	{ 0x286a, 0x05 },
++	{ 0x286b, 0x08 },
++	{ 0x286c, 0x0c },
++	{ 0x286d, 0x12 },
++	{ 0x286e, 0x17 },
++	{ 0x286f, 0x22 },
++	{ 0x2870, 0x1c },
++	{ 0x2871, 0x13 },
++	{ 0x2872, 0x0e },
++	{ 0x2873, 0x09 },
++	{ 0x2874, 0x06 },
++	{ 0x2875, 0x03 },
++	{ 0x2876, 0x01 },
++	{ 0x2877, 0x01 },
++	{ 0x2878, 0x01 },
++	{ 0x2879, 0x02 },
++	{ 0x287a, 0x04 },
++	{ 0x287b, 0x06 },
++	{ 0x287c, 0x0a },
++	{ 0x287d, 0x10 },
++	{ 0x287e, 0x15 },
++	{ 0x287f, 0x21 },
++	{ 0x2880, 0x1c },
++	{ 0x2881, 0x13 },
++	{ 0x2882, 0x0e },
++	{ 0x2883, 0x09 },
++	{ 0x2884, 0x06 },
++	{ 0x2885, 0x03 },
++	{ 0x2886, 0x01 },
++	{ 0x2887, 0x01 },
++	{ 0x2888, 0x01 },
++	{ 0x2889, 0x02 },
++	{ 0x288a, 0x03 },
++	{ 0x288b, 0x06 },
++	{ 0x288c, 0x0a },
++	{ 0x288d, 0x0f },
++	{ 0x288e, 0x15 },
++	{ 0x288f, 0x20 },
++	{ 0x2890, 0x1e },
++	{ 0x2891, 0x15 },
++	{ 0x2892, 0x10 },
++	{ 0x2893, 0x0b },
++	{ 0x2894, 0x08 },
++	{ 0x2895, 0x05 },
++	{ 0x2896, 0x03 },
++	{ 0x2897, 0x02 },
++	{ 0x2898, 0x03 },
++	{ 0x2899, 0x04 },
++	{ 0x289a, 0x06 },
++	{ 0x289b, 0x08 },
++	{ 0x289c, 0x0c },
++	{ 0x289d, 0x11 },
++	{ 0x289e, 0x16 },
++	{ 0x289f, 0x21 },
++	{ 0x28a0, 0x22 },
++	{ 0x28a1, 0x18 },
++	{ 0x28a2, 0x13 },
++	{ 0x28a3, 0x0f },
++	{ 0x28a4, 0x0b },
++	{ 0x28a5, 0x09 },
++	{ 0x28a6, 0x07 },
++	{ 0x28a7, 0x06 },
++	{ 0x28a8, 0x06 },
++	{ 0x28a9, 0x07 },
++	{ 0x28aa, 0x09 },
++	{ 0x28ab, 0x0c },
++	{ 0x28ac, 0x10 },
++	{ 0x28ad, 0x15 },
++	{ 0x28ae, 0x1b },
++	{ 0x28af, 0x26 },
++	{ 0x28b0, 0x29 },
++	{ 0x28b1, 0x1e },
++	{ 0x28b2, 0x19 },
++	{ 0x28b3, 0x14 },
++	{ 0x28b4, 0x11 },
++	{ 0x28b5, 0x0e },
++	{ 0x28b6, 0x0c },
++	{ 0x28b7, 0x0b },
++	{ 0x28b8, 0x0b },
++	{ 0x28b9, 0x0c },
++	{ 0x28ba, 0x0e },
++	{ 0x28bb, 0x11 },
++	{ 0x28bc, 0x16 },
++	{ 0x28bd, 0x1b },
++	{ 0x28be, 0x20 },
++	{ 0x28bf, 0x2d },
++	{ 0x28c0, 0x30 },
++	{ 0x28c1, 0x26 },
++	{ 0x28c2, 0x21 },
++	{ 0x28c3, 0x1b },
++	{ 0x28c4, 0x18 },
++	{ 0x28c5, 0x15 },
++	{ 0x28c6, 0x13 },
++	{ 0x28c7, 0x12 },
++	{ 0x28c8, 0x12 },
++	{ 0x28c9, 0x13 },
++	{ 0x28ca, 0x16 },
++	{ 0x28cb, 0x18 },
++	{ 0x28cc, 0x1d },
++	{ 0x28cd, 0x23 },
++	{ 0x28ce, 0x28 },
++	{ 0x28cf, 0x33 },
++	{ 0x28d0, 0x3c },
++	{ 0x28d1, 0x2f },
++	{ 0x28d2, 0x2a },
++	{ 0x28d3, 0x26 },
++	{ 0x28d4, 0x22 },
++	{ 0x28d5, 0x1e },
++	{ 0x28d6, 0x1c },
++	{ 0x28d7, 0x1c },
++	{ 0x28d8, 0x1c },
++	{ 0x28d9, 0x1d },
++	{ 0x28da, 0x1f },
++	{ 0x28db, 0x22 },
++	{ 0x28dc, 0x27 },
++	{ 0x28dd, 0x2c },
++	{ 0x28de, 0x31 },
++	{ 0x28df, 0x40 },
++	{ 0x28e0, 0x4a },
++	{ 0x28e1, 0x3a },
++	{ 0x28e2, 0x34 },
++	{ 0x28e3, 0x2f },
++	{ 0x28e4, 0x2c },
++	{ 0x28e5, 0x28 },
++	{ 0x28e6, 0x27 },
++	{ 0x28e7, 0x26 },
++	{ 0x28e8, 0x27 },
++	{ 0x28e9, 0x27 },
++	{ 0x28ea, 0x29 },
++	{ 0x28eb, 0x2d },
++	{ 0x28ec, 0x31 },
++	{ 0x28ed, 0x37 },
++	{ 0x28ee, 0x3d },
++	{ 0x28ef, 0x4e },
++	{ 0x28f0, 0x5c },
++	{ 0x28f1, 0x4d },
++	{ 0x28f2, 0x46 },
++	{ 0x28f3, 0x3d },
++	{ 0x28f4, 0x3a },
++	{ 0x28f5, 0x36 },
++	{ 0x28f6, 0x35 },
++	{ 0x28f7, 0x33 },
++	{ 0x28f8, 0x34 },
++	{ 0x28f9, 0x35 },
++	{ 0x28fa, 0x37 },
++	{ 0x28fb, 0x3a },
++	{ 0x28fc, 0x40 },
++	{ 0x28fd, 0x48 },
++	{ 0x28fe, 0x50 },
++	{ 0x28ff, 0x64 },
++	{ 0x2900, 0x74 },
++	{ 0x2901, 0x7d },
++	{ 0x2902, 0x7c },
++	{ 0x2903, 0x7b },
++	{ 0x2904, 0x7c },
++	{ 0x2905, 0x7b },
++	{ 0x2906, 0x7b },
++	{ 0x2907, 0x79 },
++	{ 0x2908, 0x7c },
++	{ 0x2909, 0x7a },
++	{ 0x290a, 0x79 },
++	{ 0x290b, 0x7b },
++	{ 0x290c, 0x7a },
++	{ 0x290d, 0x7b },
++	{ 0x290e, 0x79 },
++	{ 0x290f, 0x7d },
++	{ 0x2910, 0x7f },
++	{ 0x2911, 0x7d },
++	{ 0x2912, 0x7d },
++	{ 0x2913, 0x7d },
++	{ 0x2914, 0x7c },
++	{ 0x2915, 0x7c },
++	{ 0x2916, 0x7c },
++	{ 0x2917, 0x7c },
++	{ 0x2918, 0x7b },
++	{ 0x2919, 0x7c },
++	{ 0x291a, 0x7c },
++	{ 0x291b, 0x7d },
++	{ 0x291c, 0x7d },
++	{ 0x291d, 0x7c },
++	{ 0x291e, 0x7d },
++	{ 0x291f, 0x7c },
++	{ 0x2920, 0x7e },
++	{ 0x2921, 0x7d },
++	{ 0x2922, 0x7c },
++	{ 0x2923, 0x7d },
++	{ 0x2924, 0x7d },
++	{ 0x2925, 0x7d },
++	{ 0x2926, 0x7d },
++	{ 0x2927, 0x7c },
++	{ 0x2928, 0x7d },
++	{ 0x2929, 0x7d },
++	{ 0x292a, 0x7d },
++	{ 0x292b, 0x7d },
++	{ 0x292c, 0x7d },
++	{ 0x292d, 0x7d },
++	{ 0x292e, 0x7d },
++	{ 0x292f, 0x7f },
++	{ 0x2930, 0x80 },
++	{ 0x2931, 0x7d },
++	{ 0x2932, 0x7c },
++	{ 0x2933, 0x7d },
++	{ 0x2934, 0x7d },
++	{ 0x2935, 0x7e },
++	{ 0x2936, 0x7e },
++	{ 0x2937, 0x7e },
++	{ 0x2938, 0x7e },
++	{ 0x2939, 0x7e },
++	{ 0x293a, 0x7e },
++	{ 0x293b, 0x7e },
++	{ 0x293c, 0x7d },
++	{ 0x293d, 0x7d },
++	{ 0x293e, 0x7d },
++	{ 0x293f, 0x80 },
++	{ 0x2940, 0x80 },
++	{ 0x2941, 0x7d },
++	{ 0x2942, 0x7d },
++	{ 0x2943, 0x7d },
++	{ 0x2944, 0x7f },
++	{ 0x2945, 0x7f },
++	{ 0x2946, 0x80 },
++	{ 0x2947, 0x80 },
++	{ 0x2948, 0x80 },
++	{ 0x2949, 0x80 },
++	{ 0x294a, 0x7f },
++	{ 0x294b, 0x7f },
++	{ 0x294c, 0x7e },
++	{ 0x294d, 0x7e },
++	{ 0x294e, 0x7e },
++	{ 0x294f, 0x80 },
++	{ 0x2950, 0x7e },
++	{ 0x2951, 0x7d },
++	{ 0x2952, 0x7d },
++	{ 0x2953, 0x7e },
++	{ 0x2954, 0x7f },
++	{ 0x2955, 0x80 },
++	{ 0x2956, 0x81 },
++	{ 0x2957, 0x81 },
++	{ 0x2958, 0x81 },
++	{ 0x2959, 0x81 },
++	{ 0x295a, 0x81 },
++	{ 0x295b, 0x80 },
++	{ 0x295c, 0x7f },
++	{ 0x295d, 0x7e },
++	{ 0x295e, 0x7e },
++	{ 0x295f, 0x81 },
++	{ 0x2960, 0x80 },
++	{ 0x2961, 0x7c },
++	{ 0x2962, 0x7c },
++	{ 0x2963, 0x7e },
++	{ 0x2964, 0x7f },
++	{ 0x2965, 0x80 },
++	{ 0x2966, 0x81 },
++	{ 0x2967, 0x81 },
++	{ 0x2968, 0x81 },
++	{ 0x2969, 0x82 },
++	{ 0x296a, 0x81 },
++	{ 0x296b, 0x81 },
++	{ 0x296c, 0x80 },
++	{ 0x296d, 0x7e },
++	{ 0x296e, 0x7e },
++	{ 0x296f, 0x80 },
++	{ 0x2970, 0x7e },
++	{ 0x2971, 0x7c },
++	{ 0x2972, 0x7c },
++	{ 0x2973, 0x7e },
++	{ 0x2974, 0x7f },
++	{ 0x2975, 0x80 },
++	{ 0x2976, 0x81 },
++	{ 0x2977, 0x80 },
++	{ 0x2978, 0x81 },
++	{ 0x2979, 0x81 },
++	{ 0x297a, 0x81 },
++	{ 0x297b, 0x81 },
++	{ 0x297c, 0x80 },
++	{ 0x297d, 0x7e },
++	{ 0x297e, 0x7e },
++	{ 0x297f, 0x81 },
++	{ 0x2980, 0x7f },
++	{ 0x2981, 0x7b },
++	{ 0x2982, 0x7c },
++	{ 0x2983, 0x7d },
++	{ 0x2984, 0x7f },
++	{ 0x2985, 0x80 },
++	{ 0x2986, 0x81 },
++	{ 0x2987, 0x81 },
++	{ 0x2988, 0x81 },
++	{ 0x2989, 0x81 },
++	{ 0x298a, 0x81 },
++	{ 0x298b, 0x81 },
++	{ 0x298c, 0x80 },
++	{ 0x298d, 0x7e },
++	{ 0x298e, 0x7e },
++	{ 0x298f, 0x81 },
++	{ 0x2990, 0x7e },
++	{ 0x2991, 0x7c },
++	{ 0x2992, 0x7c },
++	{ 0x2993, 0x7d },
++	{ 0x2994, 0x7f },
++	{ 0x2995, 0x7f },
++	{ 0x2996, 0x80 },
++	{ 0x2997, 0x81 },
++	{ 0x2998, 0x81 },
++	{ 0x2999, 0x81 },
++	{ 0x299a, 0x81 },
++	{ 0x299b, 0x80 },
++	{ 0x299c, 0x80 },
++	{ 0x299d, 0x7e },
++	{ 0x299e, 0x7f },
++	{ 0x299f, 0x81 },
++	{ 0x29a0, 0x81 },
++	{ 0x29a1, 0x7b },
++	{ 0x29a2, 0x7c },
++	{ 0x29a3, 0x7d },
++	{ 0x29a4, 0x7e },
++	{ 0x29a5, 0x7e },
++	{ 0x29a6, 0x7f },
++	{ 0x29a7, 0x80 },
++	{ 0x29a8, 0x80 },
++	{ 0x29a9, 0x80 },
++	{ 0x29aa, 0x80 },
++	{ 0x29ab, 0x80 },
++	{ 0x29ac, 0x7f },
++	{ 0x29ad, 0x7e },
++	{ 0x29ae, 0x7e },
++	{ 0x29af, 0x81 },
++	{ 0x29b0, 0x7e },
++	{ 0x29b1, 0x7c },
++	{ 0x29b2, 0x7b },
++	{ 0x29b3, 0x7c },
++	{ 0x29b4, 0x7d },
++	{ 0x29b5, 0x7d },
++	{ 0x29b6, 0x7d },
++	{ 0x29b7, 0x7e },
++	{ 0x29b8, 0x7e },
++	{ 0x29b9, 0x7f },
++	{ 0x29ba, 0x7e },
++	{ 0x29bb, 0x7e },
++	{ 0x29bc, 0x7e },
++	{ 0x29bd, 0x7d },
++	{ 0x29be, 0x7e },
++	{ 0x29bf, 0x81 },
++	{ 0x29c0, 0x81 },
++	{ 0x29c1, 0x7c },
++	{ 0x29c2, 0x7c },
++	{ 0x29c3, 0x7c },
++	{ 0x29c4, 0x7c },
++	{ 0x29c5, 0x7c },
++	{ 0x29c6, 0x7c },
++	{ 0x29c7, 0x7c },
++	{ 0x29c8, 0x7d },
++	{ 0x29c9, 0x7d },
++	{ 0x29ca, 0x7d },
++	{ 0x29cb, 0x7d },
++	{ 0x29cc, 0x7d },
++	{ 0x29cd, 0x7d },
++	{ 0x29ce, 0x7e },
++	{ 0x29cf, 0x82 },
++	{ 0x29d0, 0x80 },
++	{ 0x29d1, 0x7d },
++	{ 0x29d2, 0x7c },
++	{ 0x29d3, 0x7c },
++	{ 0x29d4, 0x7c },
++	{ 0x29d5, 0x7c },
++};
++
++static const struct ov16880_reg ov16880_stock_4672x3504_regs[] = {
++	{ 0x0302, 0x35 },
++	{ 0x0303, 0x00 },
++	{ 0x030b, 0x02 },
++	{ 0x030d, 0x4d },
++	{ 0x030f, 0x03 },
++	{ 0x3501, 0x0e },
++	{ 0x3502, 0xea },
++	{ 0x3661, 0x04 },
++	{ 0x3661, 0x04 },
++	{ 0x3726, 0x00 },
++	{ 0x3727, 0x22 },
++	{ 0x3729, 0x00 },
++	{ 0x372f, 0x92 },
++	{ 0x3760, 0x92 },
++	{ 0x37a1, 0x02 },
++	{ 0x37a5, 0x96 },
++	{ 0x37a2, 0x04 },
++	{ 0x37a3, 0x23 },
++	{ 0x3800, 0x00 },
++	{ 0x3801, 0x00 },
++	{ 0x3802, 0x00 },
++	{ 0x3803, 0x08 },
++	{ 0x3804, 0x12 },
++	{ 0x3805, 0x5f },
++	{ 0x3806, 0x0d },
++	{ 0x3807, 0xc7 },
++	{ 0x3808, 0x12 },
++	{ 0x3809, 0x40 },
++	{ 0x380a, 0x0d },
++	{ 0x380b, 0xb0 },
++	{ 0x380c, 0x13 },
++	{ 0x380d, 0xa0 },
++	{ 0x380e, 0x0e },
++	{ 0x380f, 0xf0 },
++	{ 0x3810, 0x00 },
++	{ 0x3811, 0x10 },
++	{ 0x3812, 0x00 },
++	{ 0x3813, 0x08 },
++	{ 0x3814, 0x11 },
++	{ 0x3815, 0x11 },
++	{ 0x3820, 0x80 },
++	{ 0x3821, 0x04 },
++	{ 0x3834, 0x00 },
++	{ 0x3836, 0x14 },
++	{ 0x3841, 0x04 },
++	{ 0x4006, 0x00 },
++	{ 0x4007, 0x00 },
++	{ 0x4009, 0x0f },
++	{ 0x4050, 0x04 },
++	{ 0x4051, 0x0f },
++	{ 0x4501, 0x38 },
++	{ 0x4837, 0x0c },
++	{ 0x5201, 0x71 },
++	{ 0x5203, 0x10 },
++	{ 0x5205, 0x90 },
++	{ 0x5500, 0x00 },
++	{ 0x5501, 0x00 },
++	{ 0x5502, 0x00 },
++	{ 0x5503, 0x00 },
++	{ 0x5508, 0x20 },
++	{ 0x5509, 0x00 },
++	{ 0x550a, 0x20 },
++	{ 0x550b, 0x00 },
++	{ 0x5510, 0x00 },
++	{ 0x5511, 0x00 },
++	{ 0x5512, 0x00 },
++	{ 0x5513, 0x00 },
++	{ 0x5518, 0x20 },
++	{ 0x5519, 0x00 },
++	{ 0x551a, 0x20 },
++	{ 0x551b, 0x00 },
++	{ 0x5520, 0x00 },
++	{ 0x5521, 0x00 },
++	{ 0x5522, 0x00 },
++	{ 0x5523, 0x00 },
++	{ 0x5528, 0x00 },
++	{ 0x5529, 0x20 },
++	{ 0x552a, 0x00 },
++	{ 0x552b, 0x20 },
++	{ 0x5530, 0x00 },
++	{ 0x5531, 0x00 },
++	{ 0x5532, 0x00 },
++	{ 0x5533, 0x00 },
++	{ 0x5538, 0x00 },
++	{ 0x5539, 0x20 },
++	{ 0x553a, 0x00 },
++	{ 0x553b, 0x20 },
++	{ 0x5540, 0x00 },
++	{ 0x5541, 0x00 },
++	{ 0x5542, 0x00 },
++	{ 0x5543, 0x00 },
++	{ 0x5548, 0x20 },
++	{ 0x5549, 0x00 },
++	{ 0x554a, 0x20 },
++	{ 0x554b, 0x00 },
++	{ 0x5550, 0x00 },
++	{ 0x5551, 0x00 },
++	{ 0x5552, 0x00 },
++	{ 0x5553, 0x00 },
++	{ 0x5558, 0x20 },
++	{ 0x5559, 0x00 },
++	{ 0x555a, 0x20 },
++	{ 0x555b, 0x00 },
++	{ 0x5560, 0x00 },
++	{ 0x5561, 0x00 },
++	{ 0x5562, 0x00 },
++	{ 0x5563, 0x00 },
++	{ 0x5568, 0x00 },
++	{ 0x5569, 0x20 },
++	{ 0x556a, 0x00 },
++	{ 0x556b, 0x20 },
++	{ 0x5570, 0x00 },
++	{ 0x5571, 0x00 },
++	{ 0x5572, 0x00 },
++	{ 0x5573, 0x00 },
++	{ 0x5578, 0x00 },
++	{ 0x5579, 0x20 },
++	{ 0x557a, 0x00 },
++	{ 0x557b, 0x20 },
++	{ 0x5580, 0x00 },
++	{ 0x5581, 0x00 },
++	{ 0x5582, 0x00 },
++	{ 0x5583, 0x00 },
++	{ 0x5588, 0x20 },
++	{ 0x5589, 0x00 },
++	{ 0x558a, 0x20 },
++	{ 0x558b, 0x00 },
++	{ 0x5590, 0x00 },
++	{ 0x5591, 0x00 },
++	{ 0x5592, 0x00 },
++	{ 0x5593, 0x00 },
++	{ 0x5598, 0x20 },
++	{ 0x5599, 0x00 },
++	{ 0x559a, 0x20 },
++	{ 0x559b, 0x00 },
++	{ 0x55a0, 0x00 },
++	{ 0x55a1, 0x00 },
++	{ 0x55a2, 0x00 },
++	{ 0x55a3, 0x00 },
++	{ 0x55a8, 0x00 },
++	{ 0x55a9, 0x20 },
++	{ 0x55aa, 0x00 },
++	{ 0x55ab, 0x20 },
++	{ 0x55b0, 0x00 },
++	{ 0x55b1, 0x00 },
++	{ 0x55b2, 0x00 },
++	{ 0x55b3, 0x00 },
++	{ 0x55b8, 0x00 },
++	{ 0x55b9, 0x20 },
++	{ 0x55ba, 0x00 },
++	{ 0x55bb, 0x20 },
++	{ 0x55c0, 0x00 },
++	{ 0x55c1, 0x00 },
++	{ 0x55c2, 0x00 },
++	{ 0x55c3, 0x00 },
++	{ 0x55c8, 0x20 },
++	{ 0x55c9, 0x00 },
++	{ 0x55ca, 0x20 },
++	{ 0x55cb, 0x00 },
++	{ 0x55d0, 0x00 },
++	{ 0x55d1, 0x00 },
++	{ 0x55d2, 0x00 },
++	{ 0x55d3, 0x00 },
++	{ 0x55d8, 0x20 },
++	{ 0x55d9, 0x00 },
++	{ 0x55da, 0x20 },
++	{ 0x55db, 0x00 },
++	{ 0x55e0, 0x00 },
++	{ 0x55e1, 0x00 },
++	{ 0x55e2, 0x00 },
++	{ 0x55e3, 0x00 },
++	{ 0x55e8, 0x00 },
++	{ 0x55e9, 0x20 },
++	{ 0x55ea, 0x00 },
++	{ 0x55eb, 0x20 },
++	{ 0x55f0, 0x00 },
++	{ 0x55f1, 0x00 },
++	{ 0x55f2, 0x00 },
++	{ 0x55f3, 0x00 },
++	{ 0x55f8, 0x00 },
++	{ 0x55f9, 0x20 },
++	{ 0x55fa, 0x00 },
++	{ 0x55fb, 0x20 },
++	{ 0x5690, 0x00 },
++	{ 0x5691, 0x00 },
++	{ 0x5692, 0x00 },
++	{ 0x5693, 0x08 },
++	{ 0x5d24, 0x00 },
++	{ 0x5d25, 0x00 },
++	{ 0x5d26, 0x00 },
++	{ 0x5d27, 0x08 },
++	{ 0x5d3a, 0x58 },
++	{ 0x3820, 0x80 },
++	{ 0x3821, 0x04 },
++	{ 0x4000, 0x17 },
++	{ 0x5000, 0x9b },
++	{ 0x5002, 0x0c },
++	{ 0x5b85, 0x0c },
++	{ 0x5b87, 0x16 },
++	{ 0x5b89, 0x28 },
++	{ 0x5b8b, 0x40 },
++	{ 0x5b8f, 0x1a },
++	{ 0x5b90, 0x1a },
++	{ 0x5b91, 0x1a },
++	{ 0x5b95, 0x1a },
++	{ 0x5b96, 0x1a },
++	{ 0x5b97, 0x1a },
++	{ 0x5001, 0x4e },
++	{ 0x3018, 0xda },
++	{ 0x366c, 0x10 },
++	{ 0x3641, 0x01 },
++	{ 0x5d29, 0x80 },
++	{ 0x030a, 0x00 },
++	{ 0x0311, 0x00 },
++	{ 0x3606, 0x55 },
++	{ 0x3607, 0x05 },
++	{ 0x360b, 0x48 },
++	{ 0x360c, 0x18 },
++	{ 0x3720, 0x88 },
++	{ 0x3641, 0x00 },
++	{ 0x3661, 0x0d },
++	{ 0x4605, 0x03 },
++	{ 0x4643, 0x08 },
++	{ 0x4641, 0x23 },
++	{ 0x4645, 0x04 },
++	{ 0x4813, 0x98 },
++	{ 0x4809, 0x19 },
++	{ 0x486e, 0x0b },
++	{ 0x5001, 0x4a },
++	{ 0x5d29, 0x00 },
++};
++
++static const struct ov16880_reg ov16880_stock_2336x1752_regs[] = {
++	{ 0x0302, 0x20 },
++	{ 0x0303, 0x00 },
++	{ 0x030f, 0x07 },
++	{ 0x030b, 0x00 },
++	{ 0x030d, 0x30 },
++	{ 0x3501, 0x07 },
++	{ 0x3502, 0x72 },
++	{ 0x3661, 0x04 },
++	{ 0x3661, 0x04 },
++	{ 0x3726, 0x22 },
++	{ 0x3727, 0x44 },
++	{ 0x3729, 0x22 },
++	{ 0x372f, 0x89 },
++	{ 0x3760, 0x90 },
++	{ 0x37a1, 0x00 },
++	{ 0x37a5, 0xaa },
++	{ 0x37a2, 0x00 },
++	{ 0x37a3, 0x42 },
++	{ 0x3800, 0x00 },
++	{ 0x3801, 0x00 },
++	{ 0x3802, 0x00 },
++	{ 0x3803, 0x08 },
++	{ 0x3804, 0x12 },
++	{ 0x3805, 0x5f },
++	{ 0x3806, 0x0d },
++	{ 0x3807, 0xc7 },
++	{ 0x3808, 0x09 },
++	{ 0x3809, 0x20 },
++	{ 0x380a, 0x06 },
++	{ 0x380b, 0xd8 },
++	{ 0x380c, 0x09 },
++	{ 0x380d, 0xd0 },
++	{ 0x380e, 0x0e },
++	{ 0x380f, 0xf0 },
++	{ 0x3810, 0x00 },
++	{ 0x3811, 0x08 },
++	{ 0x3812, 0x00 },
++	{ 0x3813, 0x02 },
++	{ 0x3814, 0x31 },
++	{ 0x3815, 0x31 },
++	{ 0x3820, 0x81 },
++	{ 0x3821, 0x06 },
++	{ 0x3834, 0x00 },
++	{ 0x3836, 0x0c },
++	{ 0x3841, 0x02 },
++	{ 0x4006, 0x01 },
++	{ 0x4007, 0x80 },
++	{ 0x4009, 0x05 },
++	{ 0x4050, 0x00 },
++	{ 0x4051, 0x01 },
++	{ 0x4501, 0x3c },
++	{ 0x4837, 0x14 },
++	{ 0x5201, 0x62 },
++	{ 0x5203, 0x08 },
++	{ 0x5205, 0x48 },
++	{ 0x5500, 0x80 },
++	{ 0x5501, 0x80 },
++	{ 0x5502, 0x80 },
++	{ 0x5503, 0x80 },
++	{ 0x5508, 0x80 },
++	{ 0x5509, 0x80 },
++	{ 0x550a, 0x80 },
++	{ 0x550b, 0x80 },
++	{ 0x5510, 0x08 },
++	{ 0x5511, 0x08 },
++	{ 0x5512, 0x08 },
++	{ 0x5513, 0x08 },
++	{ 0x5518, 0x08 },
++	{ 0x5519, 0x08 },
++	{ 0x551a, 0x08 },
++	{ 0x551b, 0x08 },
++	{ 0x5520, 0x80 },
++	{ 0x5521, 0x80 },
++	{ 0x5522, 0x80 },
++	{ 0x5523, 0x80 },
++	{ 0x5528, 0x80 },
++	{ 0x5529, 0x80 },
++	{ 0x552a, 0x80 },
++	{ 0x552b, 0x80 },
++	{ 0x5530, 0x08 },
++	{ 0x5531, 0x08 },
++	{ 0x5532, 0x08 },
++	{ 0x5533, 0x08 },
++	{ 0x5538, 0x08 },
++	{ 0x5539, 0x08 },
++	{ 0x553a, 0x08 },
++	{ 0x553b, 0x08 },
++	{ 0x5540, 0x80 },
++	{ 0x5541, 0x80 },
++	{ 0x5542, 0x80 },
++	{ 0x5543, 0x80 },
++	{ 0x5548, 0x80 },
++	{ 0x5549, 0x80 },
++	{ 0x554a, 0x80 },
++	{ 0x554b, 0x80 },
++	{ 0x5550, 0x08 },
++	{ 0x5551, 0x08 },
++	{ 0x5552, 0x08 },
++	{ 0x5553, 0x08 },
++	{ 0x5558, 0x08 },
++	{ 0x5559, 0x08 },
++	{ 0x555a, 0x08 },
++	{ 0x555b, 0x08 },
++	{ 0x5560, 0x80 },
++	{ 0x5561, 0x80 },
++	{ 0x5562, 0x80 },
++	{ 0x5563, 0x80 },
++	{ 0x5568, 0x80 },
++	{ 0x5569, 0x80 },
++	{ 0x556a, 0x80 },
++	{ 0x556b, 0x80 },
++	{ 0x5570, 0x08 },
++	{ 0x5571, 0x08 },
++	{ 0x5572, 0x08 },
++	{ 0x5573, 0x08 },
++	{ 0x5578, 0x08 },
++	{ 0x5579, 0x08 },
++	{ 0x557a, 0x08 },
++	{ 0x557b, 0x08 },
++	{ 0x5580, 0x80 },
++	{ 0x5581, 0x80 },
++	{ 0x5582, 0x80 },
++	{ 0x5583, 0x80 },
++	{ 0x5588, 0x80 },
++	{ 0x5589, 0x80 },
++	{ 0x558a, 0x80 },
++	{ 0x558b, 0x80 },
++	{ 0x5590, 0x08 },
++	{ 0x5591, 0x08 },
++	{ 0x5592, 0x08 },
++	{ 0x5593, 0x08 },
++	{ 0x5598, 0x08 },
++	{ 0x5599, 0x08 },
++	{ 0x559a, 0x08 },
++	{ 0x559b, 0x08 },
++	{ 0x55a0, 0x80 },
++	{ 0x55a1, 0x80 },
++	{ 0x55a2, 0x80 },
++	{ 0x55a3, 0x80 },
++	{ 0x55a8, 0x80 },
++	{ 0x55a9, 0x80 },
++	{ 0x55aa, 0x80 },
++	{ 0x55ab, 0x80 },
++	{ 0x55b0, 0x08 },
++	{ 0x55b1, 0x08 },
++	{ 0x55b2, 0x08 },
++	{ 0x55b3, 0x08 },
++	{ 0x55b8, 0x08 },
++	{ 0x55b9, 0x08 },
++	{ 0x55ba, 0x08 },
++	{ 0x55bb, 0x08 },
++	{ 0x55c0, 0x80 },
++	{ 0x55c1, 0x80 },
++	{ 0x55c2, 0x80 },
++	{ 0x55c3, 0x80 },
++	{ 0x55c8, 0x80 },
++	{ 0x55c9, 0x80 },
++	{ 0x55ca, 0x80 },
++	{ 0x55cb, 0x80 },
++	{ 0x55d0, 0x08 },
++	{ 0x55d1, 0x08 },
++	{ 0x55d2, 0x08 },
++	{ 0x55d3, 0x08 },
++	{ 0x55d8, 0x08 },
++	{ 0x55d9, 0x08 },
++	{ 0x55da, 0x08 },
++	{ 0x55db, 0x08 },
++	{ 0x55e0, 0x80 },
++	{ 0x55e1, 0x80 },
++	{ 0x55e2, 0x80 },
++	{ 0x55e3, 0x80 },
++	{ 0x55e8, 0x80 },
++	{ 0x55e9, 0x80 },
++	{ 0x55ea, 0x80 },
++	{ 0x55eb, 0x80 },
++	{ 0x55f0, 0x08 },
++	{ 0x55f1, 0x08 },
++	{ 0x55f2, 0x08 },
++	{ 0x55f3, 0x08 },
++	{ 0x55f8, 0x08 },
++	{ 0x55f9, 0x08 },
++	{ 0x55fa, 0x08 },
++	{ 0x55fb, 0x08 },
++	{ 0x5690, 0x00 },
++	{ 0x5691, 0x00 },
++	{ 0x5692, 0x00 },
++	{ 0x5693, 0x04 },
++	{ 0x5d24, 0x00 },
++	{ 0x5d25, 0x00 },
++	{ 0x5d26, 0x00 },
++	{ 0x5d27, 0x04 },
++	{ 0x5d3a, 0x50 },
++	{ 0x3820, 0x81 },
++	{ 0x3821, 0x06 },
++	{ 0x4000, 0x17 },
++	{ 0x5000, 0x9f },
++	{ 0x5002, 0x1c },
++	{ 0x5b85, 0x10 },
++	{ 0x5b87, 0x20 },
++	{ 0x5b89, 0x40 },
++	{ 0x5b8b, 0x80 },
++	{ 0x5b8f, 0x18 },
++	{ 0x5b90, 0x18 },
++	{ 0x5b91, 0x18 },
++	{ 0x5b95, 0x18 },
++	{ 0x5b96, 0x18 },
++	{ 0x5b97, 0x18 },
++	{ 0x5001, 0x4a },
++	{ 0x3018, 0xda },
++	{ 0x366c, 0x10 },
++	{ 0x3641, 0x01 },
++	{ 0x5d29, 0x80 },
++	{ 0x030a, 0x00 },
++	{ 0x0311, 0x00 },
++	{ 0x3606, 0x55 },
++	{ 0x3607, 0x05 },
++	{ 0x360b, 0x48 },
++	{ 0x360c, 0x18 },
++	{ 0x3720, 0x88 },
++	{ 0x4605, 0x00 },
++	{ 0x4643, 0x00 },
++	{ 0x4641, 0x1e },
++	{ 0x4645, 0x00 },
++	{ 0x4813, 0x90 },
++	{ 0x4809, 0x2b },
++	{ 0x486e, 0x03 },
++};
++
++struct ov16880_mode {
++	u32 width;
++	u32 height;
++	u32 hts;
++	u32 vts_def;
++	u32 exp_def;
++	u32 link_freq_index;
++	const struct ov16880_reg *init_regs;
++	u32 num_init_regs;
++	const struct ov16880_reg *regs;
++	u32 num_regs;
++};
++
++enum {
++	OV16880_LINK_FREQ_384MHZ_INDEX,
++	OV16880_LINK_FREQ_636MHZ_INDEX,
++};
++
++/* Lane rate = 24 MHz * PLL multiplier (0x0302); link frequency is half */
++static const s64 link_freq_menu_items[] = {
++	[OV16880_LINK_FREQ_384MHZ_INDEX] = 384000000,	/* 0x0302 = 0x20 */
++	[OV16880_LINK_FREQ_636MHZ_INDEX] = 636000000,	/* 0x0302 = 0x35 */
++};
++
++/* Mode tables from the phone's stock camera library (libmmcamera_ov16880.so) */
++static const struct ov16880_mode supported_modes[] = {
++	{
++		.width = 2336,
++		.height = 1752,
++		.hts = 0x09d0,
++		.vts_def = 0x0ef0,
++		.exp_def = 0x0ee8,
++		.link_freq_index = OV16880_LINK_FREQ_384MHZ_INDEX,
++		.init_regs = ov16880_stock_init_regs,
++		.num_init_regs = ARRAY_SIZE(ov16880_stock_init_regs),
++		.regs = ov16880_stock_2336x1752_regs,
++		.num_regs = ARRAY_SIZE(ov16880_stock_2336x1752_regs),
++	},
++	{
++		.width = 4672,
++		.height = 3504,
++		.hts = 0x13a0,
++		.vts_def = 0x0ef0,
++		.exp_def = 0x0ee8,
++		.link_freq_index = OV16880_LINK_FREQ_636MHZ_INDEX,
++		.init_regs = ov16880_stock_init_regs,
++		.num_init_regs = ARRAY_SIZE(ov16880_stock_init_regs),
++		.regs = ov16880_stock_4672x3504_regs,
++		.num_regs = ARRAY_SIZE(ov16880_stock_4672x3504_regs),
++	},
++};
++
++static u64 ov16880_pixel_rate(const struct ov16880_mode *mode)
++{
++	return div_u64(link_freq_menu_items[mode->link_freq_index] * 2 *
++		       OV16880_DATA_LANES, OV16880_BITS_PER_SAMPLE);
++}
++
++static const char * const ov16880_test_pattern_menu[] = {
++	"Disabled",
++	"Color Bars",
++};
++
++static const char * const ov16880_supply_names[] = {
++	"avdd",		/* Analog power */
++	"dovdd",	/* Digital I/O power */
++	"dvdd",		/* Digital core power */
++};
++
++#define OV16880_NUM_SUPPLIES	ARRAY_SIZE(ov16880_supply_names)
++
++struct ov16880 {
++	struct device *dev;
++	struct v4l2_subdev sd;
++	struct media_pad pad;
++	struct v4l2_ctrl_handler ctrl_handler;
++
++	struct clk *xvclk;
++	struct gpio_desc *reset_gpio;
++	struct gpio_desc *powerdown_gpio;
++	struct regulator_bulk_data supplies[OV16880_NUM_SUPPLIES];
++
++	struct v4l2_ctrl *link_freq;
++	struct v4l2_ctrl *pixel_rate;
++	struct v4l2_ctrl *vblank;
++	struct v4l2_ctrl *hblank;
++	struct v4l2_ctrl *exposure;
++	struct v4l2_ctrl *hflip;
++	struct v4l2_ctrl *vflip;
++
++	const struct ov16880_mode *cur_mode;
++
++	/* Serializes register access, controls and streaming */
++	struct mutex mutex;
++	bool identified;
++};
++
++static inline struct ov16880 *to_ov16880(struct v4l2_subdev *sd)
++{
++	return container_of(sd, struct ov16880, sd);
++}
++
++static int ov16880_read_reg(struct ov16880 *ov16880, u16 reg, u16 len, u32 *val)
++{
++	struct i2c_client *client = v4l2_get_subdevdata(&ov16880->sd);
++	struct i2c_msg msgs[2];
++	u8 addr_buf[2];
++	u8 data_buf[4] = { 0 };
++	int ret;
++
++	if (len > 4)
++		return -EINVAL;
++
++	put_unaligned_be16(reg, addr_buf);
++	msgs[0].addr = client->addr;
++	msgs[0].flags = 0;
++	msgs[0].len = sizeof(addr_buf);
++	msgs[0].buf = addr_buf;
++	msgs[1].addr = client->addr;
++	msgs[1].flags = I2C_M_RD;
++	msgs[1].len = len;
++	msgs[1].buf = &data_buf[4 - len];
++
++	ret = i2c_transfer(client->adapter, msgs, ARRAY_SIZE(msgs));
++	if (ret != ARRAY_SIZE(msgs))
++		return -EIO;
++
++	*val = get_unaligned_be32(data_buf);
++
++	return 0;
++}
++
++static int ov16880_write_reg(struct ov16880 *ov16880, u16 reg, u16 len, u32 val)
++{
++	struct i2c_client *client = v4l2_get_subdevdata(&ov16880->sd);
++	u8 buf[6];
++
++	if (len > 4)
++		return -EINVAL;
++
++	put_unaligned_be16(reg, buf);
++	put_unaligned_be32(val << 8 * (4 - len), buf + 2);
++	if (i2c_master_send(client, buf, len + 2) != len + 2)
++		return -EIO;
++
++	return 0;
++}
++
++static int ov16880_write_reg_list(struct ov16880 *ov16880,
++				  const struct ov16880_reg *regs, u32 num)
++{
++	unsigned int i;
++	int ret;
++
++	for (i = 0; i < num; i++) {
++		ret = ov16880_write_reg(ov16880, regs[i].address, 1, regs[i].val);
++		if (ret) {
++			dev_err_ratelimited(ov16880->dev,
++					    "failed to write reg 0x%4.4x: %d\n",
++					    regs[i].address, ret);
++			return ret;
++		}
++	}
++
++	return 0;
++}
++
++static int ov16880_update_bits(struct ov16880 *ov16880, u16 reg, u8 mask, u8 val)
++{
++	u32 cur;
++	int ret;
++
++	ret = ov16880_read_reg(ov16880, reg, OV16880_REG_VALUE_08BIT, &cur);
++	if (ret)
++		return ret;
++
++	return ov16880_write_reg(ov16880, reg, OV16880_REG_VALUE_08BIT,
++				 (cur & ~mask) | (val & mask));
++}
++
++static int ov16880_set_ctrl(struct v4l2_ctrl *ctrl)
++{
++	struct ov16880 *ov16880 = container_of(ctrl->handler, struct ov16880,
++					       ctrl_handler);
++	s64 exposure_max;
++	int ret = 0;
++
++	/* Propagate change of current control to all related controls */
++	if (ctrl->id == V4L2_CID_VBLANK) {
++		exposure_max = ov16880->cur_mode->height + ctrl->val -
++			       OV16880_EXPOSURE_MAX_MARGIN;
++		__v4l2_ctrl_modify_range(ov16880->exposure,
++					 ov16880->exposure->minimum,
++					 exposure_max, ov16880->exposure->step,
++					 min(ov16880->exposure->default_value,
++					     exposure_max));
++	}
++
++	/* V4L2 controls values will be applied only when power is already up */
++	if (!pm_runtime_get_if_in_use(ov16880->dev))
++		return 0;
++
++	switch (ctrl->id) {
++	case V4L2_CID_ANALOGUE_GAIN:
++		ret = ov16880_write_reg(ov16880, OV16880_REG_ANALOG_GAIN,
++					OV16880_REG_VALUE_16BIT, ctrl->val & 0x7ff);
++		break;
++
++	case V4L2_CID_EXPOSURE:
++		ret = ov16880_write_reg(ov16880, OV16880_REG_EXPOSURE,
++					OV16880_REG_VALUE_24BIT,
++					(ctrl->val << 4) & 0xfffff);
++		break;
++
++	case V4L2_CID_VBLANK:
++		ret = ov16880_write_reg(ov16880, OV16880_REG_VTS,
++					OV16880_REG_VALUE_16BIT,
++					ov16880->cur_mode->height + ctrl->val);
++		break;
++
++	case V4L2_CID_TEST_PATTERN:
++		ret = ov16880_write_reg(ov16880, OV16880_REG_TEST_PATTERN,
++					OV16880_REG_VALUE_08BIT,
++					ctrl->val ? 0x01 : 0x00);
++		break;
++
++	case V4L2_CID_HFLIP:
++		ret = ov16880_update_bits(ov16880, OV16880_REG_FORMAT2, BIT(2),
++					  ctrl->val ? BIT(2) : 0);
++		break;
++
++	case V4L2_CID_VFLIP:
++		/* Flipping also moves the black level lines (Rockchip driver) */
++		ret = ov16880_update_bits(ov16880, OV16880_REG_FORMAT1,
++					  BIT(2) | BIT(6),
++					  ctrl->val ? BIT(2) | BIT(6) : 0);
++		if (!ret)
++			ret = ov16880_update_bits(ov16880, OV16880_REG_BLC_CTRL,
++						  BIT(6), ctrl->val ? BIT(6) : 0);
++		break;
++
++	default:
++		ret = -EINVAL;
++		break;
++	}
++
++	pm_runtime_put(ov16880->dev);
++
++	return ret;
++}
++
++static const struct v4l2_ctrl_ops ov16880_ctrl_ops = {
++	.s_ctrl = ov16880_set_ctrl,
++};
++
++static int ov16880_init_controls(struct ov16880 *ov16880)
++{
++	struct v4l2_ctrl_handler *ctrl_hdlr = &ov16880->ctrl_handler;
++	const struct ov16880_mode *mode = ov16880->cur_mode;
++	struct v4l2_fwnode_device_properties props;
++	s64 vblank_def, h_blank, exposure_max;
++	int ret;
++
++	ret = v4l2_ctrl_handler_init(ctrl_hdlr, 12);
++	if (ret)
++		return ret;
++
++	ctrl_hdlr->lock = &ov16880->mutex;
++
++	ov16880->link_freq = v4l2_ctrl_new_int_menu(ctrl_hdlr, &ov16880_ctrl_ops,
++						    V4L2_CID_LINK_FREQ,
++						    ARRAY_SIZE(link_freq_menu_items) - 1,
++						    mode->link_freq_index,
++						    link_freq_menu_items);
++	if (ov16880->link_freq)
++		ov16880->link_freq->flags |= V4L2_CTRL_FLAG_READ_ONLY;
++
++	ov16880->pixel_rate = v4l2_ctrl_new_std(ctrl_hdlr, &ov16880_ctrl_ops,
++						V4L2_CID_PIXEL_RATE, 0,
++						OV16880_PIXEL_RATE_MAX, 1,
++						ov16880_pixel_rate(mode));
++
++	vblank_def = mode->vts_def - mode->height;
++	ov16880->vblank = v4l2_ctrl_new_std(ctrl_hdlr, &ov16880_ctrl_ops,
++					    V4L2_CID_VBLANK, vblank_def,
++					    OV16880_VTS_MAX - mode->height, 1,
++					    vblank_def);
++
++	h_blank = mode->hts - mode->width;
++	ov16880->hblank = v4l2_ctrl_new_std(ctrl_hdlr, &ov16880_ctrl_ops,
++					    V4L2_CID_HBLANK, h_blank, h_blank,
++					    1, h_blank);
++	if (ov16880->hblank)
++		ov16880->hblank->flags |= V4L2_CTRL_FLAG_READ_ONLY;
++
++	v4l2_ctrl_new_std(ctrl_hdlr, &ov16880_ctrl_ops, V4L2_CID_ANALOGUE_GAIN,
++			  OV16880_ANAL_GAIN_MIN, OV16880_ANAL_GAIN_MAX, 1,
++			  OV16880_ANAL_GAIN_DEFAULT);
++
++	exposure_max = mode->vts_def - OV16880_EXPOSURE_MAX_MARGIN;
++	ov16880->exposure = v4l2_ctrl_new_std(ctrl_hdlr, &ov16880_ctrl_ops,
++					      V4L2_CID_EXPOSURE,
++					      OV16880_EXPOSURE_MIN, exposure_max,
++					      1, mode->exp_def);
++
++	v4l2_ctrl_new_std_menu_items(ctrl_hdlr, &ov16880_ctrl_ops,
++				     V4L2_CID_TEST_PATTERN,
++				     ARRAY_SIZE(ov16880_test_pattern_menu) - 1,
++				     0, 0, ov16880_test_pattern_menu);
++
++	ov16880->hflip = v4l2_ctrl_new_std(ctrl_hdlr, &ov16880_ctrl_ops,
++					   V4L2_CID_HFLIP, 0, 1, 1, 0);
++	ov16880->vflip = v4l2_ctrl_new_std(ctrl_hdlr, &ov16880_ctrl_ops,
++					   V4L2_CID_VFLIP, 0, 1, 1, 0);
++
++	if (ctrl_hdlr->error) {
++		ret = ctrl_hdlr->error;
++		goto err;
++	}
++
++	ret = v4l2_fwnode_device_parse(ov16880->dev, &props);
++	if (ret)
++		goto err;
++
++	ret = v4l2_ctrl_new_fwnode_properties(ctrl_hdlr, &ov16880_ctrl_ops,
++					      &props);
++	if (ret)
++		goto err;
++
++	ov16880->sd.ctrl_handler = ctrl_hdlr;
++
++	return 0;
++
++err:
++	v4l2_ctrl_handler_free(ctrl_hdlr);
++
++	return ret;
++}
++
++static void ov16880_update_pad_format(const struct ov16880_mode *mode,
++				      struct v4l2_mbus_framefmt *fmt)
++{
++	fmt->width = mode->width;
++	fmt->height = mode->height;
++	fmt->code = MEDIA_BUS_FMT_SBGGR10_1X10;
++	fmt->field = V4L2_FIELD_NONE;
++	fmt->colorspace = V4L2_COLORSPACE_RAW;
++	fmt->ycbcr_enc = V4L2_YCBCR_ENC_DEFAULT;
++	fmt->quantization = V4L2_QUANTIZATION_FULL_RANGE;
++	fmt->xfer_func = V4L2_XFER_FUNC_NONE;
++}
++
++static int ov16880_identify_module(struct ov16880 *ov16880)
++{
++	u32 val;
++	int ret;
++
++	if (ov16880->identified)
++		return 0;
++
++	ret = ov16880_read_reg(ov16880, OV16880_REG_CHIP_ID,
++			       OV16880_REG_VALUE_24BIT, &val);
++	if (ret)
++		return ret;
++
++	if (val != OV16880_CHIP_ID) {
++		dev_err(ov16880->dev, "chip id mismatch: %x != %x\n",
++			OV16880_CHIP_ID, val);
++		return -ENXIO;
++	}
++
++	ov16880->identified = true;
++
++	return 0;
++}
++
++static int ov16880_start_streaming(struct ov16880 *ov16880)
++{
++	const struct ov16880_mode *mode = ov16880->cur_mode;
++	int ret;
++
++	ret = ov16880_identify_module(ov16880);
++	if (ret)
++		return ret;
++
++	ret = ov16880_write_reg(ov16880, OV16880_REG_SOFTWARE_RESET,
++				OV16880_REG_VALUE_08BIT, 0x01);
++	if (ret)
++		return ret;
++	usleep_range(5000, 6000);
++
++	ret = ov16880_write_reg_list(ov16880, mode->init_regs,
++				     mode->num_init_regs);
++	if (ret) {
++		dev_err(ov16880->dev, "failed to set global registers\n");
++		return ret;
++	}
++
++	ret = ov16880_write_reg_list(ov16880, mode->regs, mode->num_regs);
++	if (ret) {
++		dev_err(ov16880->dev, "failed to set mode\n");
++		return ret;
++	}
++
++	ret = __v4l2_ctrl_handler_setup(ov16880->sd.ctrl_handler);
++	if (ret)
++		return ret;
++
++	ret = ov16880_write_reg(ov16880, OV16880_REG_MODE_SELECT,
++				OV16880_REG_VALUE_08BIT, OV16880_MODE_STREAMING);
++	if (ret) {
++		dev_err(ov16880->dev, "failed to start streaming\n");
++		return ret;
++	}
++
++	return 0;
++}
++
++static void ov16880_stop_streaming(struct ov16880 *ov16880)
++{
++	if (ov16880_write_reg(ov16880, OV16880_REG_MODE_SELECT,
++			      OV16880_REG_VALUE_08BIT, OV16880_MODE_STANDBY))
++		dev_err(ov16880->dev, "failed to stop streaming\n");
++}
++
++static int ov16880_set_stream(struct v4l2_subdev *sd, int enable)
++{
++	struct ov16880 *ov16880 = to_ov16880(sd);
++	int ret = 0;
++
++	mutex_lock(&ov16880->mutex);
++	if (enable) {
++		ret = pm_runtime_resume_and_get(ov16880->dev);
++		if (ret < 0) {
++			mutex_unlock(&ov16880->mutex);
++			return ret;
++		}
++
++		ret = ov16880_start_streaming(ov16880);
++		if (ret) {
++			ov16880_stop_streaming(ov16880);
++			pm_runtime_put(ov16880->dev);
++		}
++	} else {
++		ov16880_stop_streaming(ov16880);
++		pm_runtime_put(ov16880->dev);
++	}
++
++	/* vflip and hflip cannot change during streaming */
++	__v4l2_ctrl_grab(ov16880->vflip, enable);
++	__v4l2_ctrl_grab(ov16880->hflip, enable);
++
++	mutex_unlock(&ov16880->mutex);
++
++	return ret;
++}
++
++static int ov16880_power_off(struct device *dev)
++{
++	struct v4l2_subdev *sd = dev_get_drvdata(dev);
++	struct ov16880 *ov16880 = to_ov16880(sd);
++
++	gpiod_set_value_cansleep(ov16880->powerdown_gpio, 1);
++	gpiod_set_value_cansleep(ov16880->reset_gpio, 1);
++	regulator_bulk_disable(OV16880_NUM_SUPPLIES, ov16880->supplies);
++	clk_disable_unprepare(ov16880->xvclk);
++
++	return 0;
++}
++
++static int ov16880_power_on(struct device *dev)
++{
++	struct v4l2_subdev *sd = dev_get_drvdata(dev);
++	struct ov16880 *ov16880 = to_ov16880(sd);
++	int ret;
++
++	ret = clk_prepare_enable(ov16880->xvclk);
++	if (ret < 0) {
++		dev_err(dev, "failed to enable xvclk: %d\n", ret);
++		return ret;
++	}
++
++	gpiod_set_value_cansleep(ov16880->reset_gpio, 1);
++
++	ret = regulator_bulk_enable(OV16880_NUM_SUPPLIES, ov16880->supplies);
++	if (ret) {
++		clk_disable_unprepare(ov16880->xvclk);
++		return ret;
++	}
++
++	gpiod_set_value_cansleep(ov16880->reset_gpio, 0);
++	usleep_range(5000, 6000);
++	gpiod_set_value_cansleep(ov16880->powerdown_gpio, 0);
++
++	/* 8192 XVCLK cycles prior to the first SCCB transaction */
++	usleep_range(1000, 1500);
++
++	return 0;
++}
++
++static int ov16880_set_format(struct v4l2_subdev *sd,
++			      struct v4l2_subdev_state *sd_state,
++			      struct v4l2_subdev_format *fmt)
++{
++	struct ov16880 *ov16880 = to_ov16880(sd);
++	const struct ov16880_mode *mode;
++	s32 vblank_def, h_blank;
++
++	mode = v4l2_find_nearest_size(supported_modes,
++				      ARRAY_SIZE(supported_modes), width,
++				      height, fmt->format.width,
++				      fmt->format.height);
++
++	mutex_lock(&ov16880->mutex);
++	ov16880_update_pad_format(mode, &fmt->format);
++	if (fmt->which == V4L2_SUBDEV_FORMAT_TRY) {
++		*v4l2_subdev_state_get_format(sd_state, fmt->pad) = fmt->format;
++	} else {
++		ov16880->cur_mode = mode;
++		__v4l2_ctrl_s_ctrl(ov16880->link_freq, mode->link_freq_index);
++		__v4l2_ctrl_s_ctrl_int64(ov16880->pixel_rate,
++					 ov16880_pixel_rate(mode));
++
++		/* Update limits and set FPS to default */
++		vblank_def = mode->vts_def - mode->height;
++		__v4l2_ctrl_modify_range(ov16880->vblank, vblank_def,
++					 OV16880_VTS_MAX - mode->height, 1,
++					 vblank_def);
++		__v4l2_ctrl_s_ctrl(ov16880->vblank, vblank_def);
++		h_blank = mode->hts - mode->width;
++		__v4l2_ctrl_modify_range(ov16880->hblank, h_blank, h_blank, 1,
++					 h_blank);
++	}
++	mutex_unlock(&ov16880->mutex);
++
++	return 0;
++}
++
++static int ov16880_get_format(struct v4l2_subdev *sd,
++			      struct v4l2_subdev_state *sd_state,
++			      struct v4l2_subdev_format *fmt)
++{
++	struct ov16880 *ov16880 = to_ov16880(sd);
++
++	mutex_lock(&ov16880->mutex);
++	if (fmt->which == V4L2_SUBDEV_FORMAT_TRY)
++		fmt->format = *v4l2_subdev_state_get_format(sd_state, fmt->pad);
++	else
++		ov16880_update_pad_format(ov16880->cur_mode, &fmt->format);
++	mutex_unlock(&ov16880->mutex);
++
++	return 0;
++}
++
++static int ov16880_get_selection(struct v4l2_subdev *sd,
++				 struct v4l2_subdev_state *state,
++				 struct v4l2_subdev_selection *sel)
++{
++	switch (sel->target) {
++	case V4L2_SEL_TGT_CROP:
++	case V4L2_SEL_TGT_CROP_DEFAULT:
++	case V4L2_SEL_TGT_CROP_BOUNDS:
++	case V4L2_SEL_TGT_NATIVE_SIZE:
++		sel->r.top = 0;
++		sel->r.left = 0;
++		sel->r.width = OV16880_NATIVE_WIDTH;
++		sel->r.height = OV16880_NATIVE_HEIGHT;
++		return 0;
++	}
++
++	return -EINVAL;
++}
++
++static int ov16880_enum_mbus_code(struct v4l2_subdev *sd,
++				  struct v4l2_subdev_state *sd_state,
++				  struct v4l2_subdev_mbus_code_enum *code)
++{
++	if (code->index > 0)
++		return -EINVAL;
++
++	code->code = MEDIA_BUS_FMT_SBGGR10_1X10;
++
++	return 0;
++}
++
++static int ov16880_enum_frame_size(struct v4l2_subdev *sd,
++				   struct v4l2_subdev_state *sd_state,
++				   struct v4l2_subdev_frame_size_enum *fse)
++{
++	if (fse->index >= ARRAY_SIZE(supported_modes))
++		return -EINVAL;
++
++	if (fse->code != MEDIA_BUS_FMT_SBGGR10_1X10)
++		return -EINVAL;
++
++	fse->min_width = supported_modes[fse->index].width;
++	fse->max_width = fse->min_width;
++	fse->min_height = supported_modes[fse->index].height;
++	fse->max_height = fse->min_height;
++
++	return 0;
++}
++
++static int ov16880_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
++{
++	struct ov16880 *ov16880 = to_ov16880(sd);
++
++	mutex_lock(&ov16880->mutex);
++	ov16880_update_pad_format(&supported_modes[0],
++				  v4l2_subdev_state_get_format(fh->state, 0));
++	mutex_unlock(&ov16880->mutex);
++
++	return 0;
++}
++
++static const struct v4l2_subdev_video_ops ov16880_video_ops = {
++	.s_stream = ov16880_set_stream,
++};
++
++static const struct v4l2_subdev_pad_ops ov16880_pad_ops = {
++	.set_fmt = ov16880_set_format,
++	.get_fmt = ov16880_get_format,
++	.get_selection = ov16880_get_selection,
++	.enum_mbus_code = ov16880_enum_mbus_code,
++	.enum_frame_size = ov16880_enum_frame_size,
++};
++
++static const struct v4l2_subdev_ops ov16880_subdev_ops = {
++	.video = &ov16880_video_ops,
++	.pad = &ov16880_pad_ops,
++};
++
++static const struct media_entity_operations ov16880_subdev_entity_ops = {
++	.link_validate = v4l2_subdev_link_validate,
++};
++
++static const struct v4l2_subdev_internal_ops ov16880_internal_ops = {
++	.open = ov16880_open,
++};
++
++static int ov16880_get_hwcfg(struct ov16880 *ov16880)
++{
++	struct device *dev = ov16880->dev;
++	struct fwnode_handle *ep;
++	struct fwnode_handle *fwnode = dev_fwnode(dev);
++	struct v4l2_fwnode_endpoint bus_cfg = {
++		.bus_type = V4L2_MBUS_CSI2_DPHY
++	};
++	unsigned int i, j;
++	u32 xvclk_rate;
++	int ret;
++
++	if (!fwnode)
++		return -ENXIO;
++
++	ov16880->xvclk = devm_clk_get(dev, NULL);
++	if (IS_ERR(ov16880->xvclk))
++		return dev_err_probe(dev, PTR_ERR(ov16880->xvclk),
++				     "failed to get xvclk\n");
++
++	xvclk_rate = clk_get_rate(ov16880->xvclk);
++	if (xvclk_rate != OV16880_XVCLK) {
++		dev_err(dev, "xvclk is %u Hz, the register tables need %u\n",
++			xvclk_rate, OV16880_XVCLK);
++		return -EINVAL;
++	}
++
++	ov16880->reset_gpio = devm_gpiod_get_optional(dev, "reset",
++						      GPIOD_OUT_HIGH);
++	if (IS_ERR(ov16880->reset_gpio))
++		return dev_err_probe(dev, PTR_ERR(ov16880->reset_gpio),
++				     "failed to get reset gpio\n");
++
++	ov16880->powerdown_gpio = devm_gpiod_get_optional(dev, "powerdown",
++							  GPIOD_OUT_HIGH);
++	if (IS_ERR(ov16880->powerdown_gpio))
++		return dev_err_probe(dev, PTR_ERR(ov16880->powerdown_gpio),
++				     "failed to get powerdown gpio\n");
++
++	for (i = 0; i < OV16880_NUM_SUPPLIES; i++)
++		ov16880->supplies[i].supply = ov16880_supply_names[i];
++
++	ret = devm_regulator_bulk_get(dev, OV16880_NUM_SUPPLIES,
++				      ov16880->supplies);
++	if (ret)
++		return ret;
++
++	ep = fwnode_graph_get_next_endpoint(fwnode, NULL);
++	if (!ep)
++		return -ENXIO;
++
++	ret = v4l2_fwnode_endpoint_alloc_parse(ep, &bus_cfg);
++	fwnode_handle_put(ep);
++	if (ret)
++		return ret;
++
++	if (bus_cfg.bus.mipi_csi2.num_data_lanes != OV16880_DATA_LANES) {
++		dev_err(dev, "number of CSI2 data lanes %d is not supported\n",
++			bus_cfg.bus.mipi_csi2.num_data_lanes);
++		ret = -EINVAL;
++		goto check_hwcfg_error;
++	}
++
++	if (!bus_cfg.nr_of_link_frequencies) {
++		dev_err(dev, "no link frequencies defined\n");
++		ret = -EINVAL;
++		goto check_hwcfg_error;
++	}
++
++	for (i = 0; i < ARRAY_SIZE(link_freq_menu_items); i++) {
++		for (j = 0; j < bus_cfg.nr_of_link_frequencies; j++) {
++			if (link_freq_menu_items[i] == bus_cfg.link_frequencies[j])
++				break;
++		}
++
++		if (j == bus_cfg.nr_of_link_frequencies) {
++			dev_err(dev, "link frequency %lld not in the device tree\n",
++				link_freq_menu_items[i]);
++			ret = -EINVAL;
++			goto check_hwcfg_error;
++		}
++	}
++
++check_hwcfg_error:
++	v4l2_fwnode_endpoint_free(&bus_cfg);
++
++	return ret;
++}
++
++static void ov16880_remove(struct i2c_client *client)
++{
++	struct v4l2_subdev *sd = i2c_get_clientdata(client);
++	struct ov16880 *ov16880 = to_ov16880(sd);
++
++	v4l2_async_unregister_subdev(sd);
++	media_entity_cleanup(&sd->entity);
++	v4l2_ctrl_handler_free(sd->ctrl_handler);
++	pm_runtime_disable(ov16880->dev);
++	mutex_destroy(&ov16880->mutex);
++
++	if (!pm_runtime_status_suspended(ov16880->dev))
++		ov16880_power_off(ov16880->dev);
++	pm_runtime_set_suspended(ov16880->dev);
++}
++
++static int ov16880_probe(struct i2c_client *client)
++{
++	struct ov16880 *ov16880;
++	int ret;
++
++	ov16880 = devm_kzalloc(&client->dev, sizeof(*ov16880), GFP_KERNEL);
++	if (!ov16880)
++		return -ENOMEM;
++
++	ov16880->dev = &client->dev;
++
++	ret = ov16880_get_hwcfg(ov16880);
++	if (ret)
++		return ret;
++
++	v4l2_i2c_subdev_init(&ov16880->sd, client, &ov16880_subdev_ops);
++
++	ret = ov16880_power_on(&client->dev);
++	if (ret)
++		return dev_err_probe(&client->dev, ret, "failed to power on\n");
++
++	ret = ov16880_identify_module(ov16880);
++	if (ret) {
++		dev_err(&client->dev, "failed to find sensor: %d\n", ret);
++		goto probe_power_off;
++	}
++
++	mutex_init(&ov16880->mutex);
++	ov16880->cur_mode = &supported_modes[0];
++	ret = ov16880_init_controls(ov16880);
++	if (ret) {
++		dev_err(&client->dev, "failed to init controls: %d\n", ret);
++		goto probe_error_v4l2_ctrl_handler_free;
++	}
++
++	ov16880->sd.internal_ops = &ov16880_internal_ops;
++	ov16880->sd.flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
++	ov16880->sd.entity.ops = &ov16880_subdev_entity_ops;
++	ov16880->sd.entity.function = MEDIA_ENT_F_CAM_SENSOR;
++	ov16880->pad.flags = MEDIA_PAD_FL_SOURCE;
++	ret = media_entity_pads_init(&ov16880->sd.entity, 1, &ov16880->pad);
++	if (ret) {
++		dev_err(&client->dev, "failed to init entity pads: %d\n", ret);
++		goto probe_error_v4l2_ctrl_handler_free;
++	}
++
++	ret = v4l2_async_register_subdev_sensor(&ov16880->sd);
++	if (ret < 0) {
++		dev_err(&client->dev, "failed to register V4L2 subdev: %d\n",
++			ret);
++		goto probe_error_media_entity_cleanup;
++	}
++
++	/* Set the device's state to active if it's in D0 state. */
++	pm_runtime_set_active(&client->dev);
++	pm_runtime_enable(&client->dev);
++	pm_runtime_idle(&client->dev);
++
++	return 0;
++
++probe_error_media_entity_cleanup:
++	media_entity_cleanup(&ov16880->sd.entity);
++
++probe_error_v4l2_ctrl_handler_free:
++	v4l2_ctrl_handler_free(ov16880->sd.ctrl_handler);
++	mutex_destroy(&ov16880->mutex);
++probe_power_off:
++	ov16880_power_off(&client->dev);
++
++	return ret;
++}
++
++static DEFINE_RUNTIME_DEV_PM_OPS(ov16880_pm_ops, ov16880_power_off,
++				 ov16880_power_on, NULL);
++
++static const struct of_device_id ov16880_of_match[] = {
++	{ .compatible = "ovti,ov16880" },
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, ov16880_of_match);
++
++static struct i2c_driver ov16880_i2c_driver = {
++	.driver = {
++		.name = "ov16880",
++		.pm = pm_ptr(&ov16880_pm_ops),
++		.of_match_table = ov16880_of_match,
++	},
++	.probe = ov16880_probe,
++	.remove = ov16880_remove,
++};
++
++module_i2c_driver(ov16880_i2c_driver);
++
++MODULE_DESCRIPTION("OmniVision OV16880 sensor driver");
++MODULE_LICENSE("GPL");
