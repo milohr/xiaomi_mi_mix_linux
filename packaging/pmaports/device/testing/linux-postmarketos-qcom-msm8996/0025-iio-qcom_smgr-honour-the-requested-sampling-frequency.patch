@@ -1,0 +1,69 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] iio: qcom_smgr: honour the requested sampling frequency
+
+Writing sampling_frequency only set cur_sample_rate, which the next buffer
+enable overwrote with the sensor's maximum native rate. Every client got
+the maximum, e.g. the accelerometer streamed at 200 Hz for screen rotation,
+waking the CPU 200 times a second for as long as the phone was on.
+
+Keep the requested rate separately and use it when buffering starts,
+capped at the maximum; 0 (the default) still means the maximum. Reject
+rates outside 1..max_sample_rate. Reading the attribute returns the
+running rate, or the rate the next start will use.
+
+---
+diff --git a/drivers/iio/common/qcom_smgr/qcom_smgr.c b/drivers/iio/common/qcom_smgr/qcom_smgr.c
+--- a/drivers/iio/common/qcom_smgr/qcom_smgr.c
++++ b/drivers/iio/common/qcom_smgr/qcom_smgr.c
+@@ -204,6 +204,11 @@
+ 		    sample_rate > sensor->data_types[0].max_sample_rate)
+ 			sample_rate = sensor->data_types[0].max_sample_rate;
+ 
++		/* A client may ask for less, e.g. screen rotation needs ~10 Hz */
++		if (sensor->data_types[0].req_sample_rate &&
++		    sensor->data_types[0].req_sample_rate < sample_rate)
++			sample_rate = sensor->data_types[0].req_sample_rate;
++
+ 		req.report_rate = sample_rate * SMGR_REPORT_RATE_HZ;
+ 
+ 		req.item_len = 1;
+@@ -380,6 +385,10 @@
+ 	switch (mask) {
+ 	case IIO_CHAN_INFO_SAMP_FREQ:
+ 		*val = priv->sensor->data_types[0].cur_sample_rate;
++		if (!*val)
++			*val = priv->sensor->data_types[0].req_sample_rate;
++		if (!*val)
++			*val = priv->sensor->data_types[0].max_sample_rate;
+ 		return IIO_VAL_INT;
+ 	case IIO_CHAN_INFO_SCALE:
+ 		*val = 1;
+@@ -398,10 +407,13 @@
+ 
+ 	switch (mask) {
+ 	case IIO_CHAN_INFO_SAMP_FREQ:
++		if (val < 1 || val > priv->sensor->data_types[0].max_sample_rate)
++			return -EINVAL;
++
+ 		if (!iio_device_claim_direct(iio_dev))
+ 			return -EBUSY;
+ 
+-		priv->sensor->data_types[0].cur_sample_rate = val;
++		priv->sensor->data_types[0].req_sample_rate = val;
+ 
+ 		iio_device_release_direct(iio_dev);
+ 		return 0;
+diff --git a/include/linux/iio/common/qcom_smgr.h b/include/linux/iio/common/qcom_smgr.h
+--- a/include/linux/iio/common/qcom_smgr.h
++++ b/include/linux/iio/common/qcom_smgr.h
+@@ -37,7 +37,10 @@
+ 	u16 *native_sample_rates;
+ 
+ 	u16 max_sample_rate;
++	/* Rate the stream runs at; 0 while it is stopped */
+ 	u16 cur_sample_rate;
++	/* Rate asked for through sampling_frequency; 0 means the maximum */
++	u16 req_sample_rate;
+ };
+ 
+ struct qcom_smgr_sensor {

@@ -110,9 +110,42 @@ Hardware facts found by testing, where the stock tree is wrong or silent:
   page content once the stale address went to a new read-only buffer. Preemption was ruled
   out first (patch 0021, `msm.enable_preemption=0`: same faults). With 0022: 0 faults in 8
   rotations (20 in 4 before), 0 in three QtWebEngine-on-GPU runs and in Firefox. Device r14
-  drops `--disable-gpu`: web views render on the GPU again. Worth sending upstream.
+  drops `--disable-gpu`: web views render on the GPU again.
 - New this boot series, unexplained: two `pclk0_clk_src: rcg didn't update its configuration`
   warnings while the panel driver loads (screen works).
+
+## Microphones and idle wake-ups (2026-10-19, kernel r30–r31, device r15–r16)
+
+- **Microphones work** (patch 0024, UCM). Three faults stacked up:
+  - Capture recorded digital zeros: only playback pulled in the codec MCLK (via RX_BIAS), so the
+    decimators ran unclocked. The DT now routes `"AIF1 CAP", "MCLK"`.
+  - A capture on MultiMedia1 stopped the speaker playback on the same front end (I/O error).
+    Capture has its own front end now, MultiMedia3 (`hw:N,2`, capture only); MultiMedia1/2
+    are playback only.
+  - The mics are **ADC1 and ADC3** (AMIC1/AMIC3, MIC BIAS4), not the stock mixer's "main-mic"
+    ADC4: with the speaker playing a 1 kHz tone, ADC1/ADC3 record RMS ~1300–1800, ADC4/ADC5
+    stay at the noise floor. Both mics form one stereo source (SLIM TX7/TX8). The machine
+    driver runs SLIMBUS_0_TX as stereo regardless, and with only one codec TX port behind it the
+    DSP sometimes refused to start the port (`AFE enable for port 0x4001 failed`).
+  - The codec TX routing is set for the whole UCM verb: PipeWire probes the PCM before any
+    device EnableSequence runs.
+- **q6asm-dai reopened a stopped stream** (patch 0023): TRIGGER_STOP marks the stream STOPPED
+  but leaves it open in the DSP; `prepare()` only closed RUNNING streams, so stop → prepare
+  (PipeWire suspending/resuming a node) opened it again and the DSP answered ADSP_EALREADY
+  (error 9). Likely also behind the headphone-profile EINVAL seen with r23.
+- **Idle wake-ups:** a measured idle lock screen draws almost nothing (KWin/locker/plasmashell
+  ~0%); the 25% in the snapshot was the lock screen just appearing. Two constant sources:
+  - The accelerometer streamed at 200 Hz around the clock (≈200 SLPI messages/s plus the
+    kworker and schedutil wake-ups behind them): `qcom_smgr` ignored the requested rate and
+    always used the sensor maximum. Patch 0025 keeps the requested rate; `92-lithium-sensors.rules`
+    sets the accelerometer to 10 Hz before iio-sensor-proxy starts. Measured: 10 Hz, SLPI
+    interrupts below 30/s.
+  - On a wall charger (BC1.2 DCP) the USB gadget kept its pull-up on and dwc3 logged an
+    "Erratic Error" event 229 times a second. `lithium-usb-current` now soft-disconnects the
+    gadget on DCP and reconnects it otherwise: 0/s after replugging, charging unchanged.
+- Venus decodes VP9 as well as H.264 (mpv: ~20% CPU against 85% in software for 720p30);
+  `/etc/mpv/mpv.conf` (device r15) turns on `hwdec=v4l2m2m-copy` and skips AV1 for YouTube.
+- Wi-Fi power save is already on (NetworkManager default).
 
 ## The real display driver and the rest of the day (2026-10-18, kernel r5–r10)
 

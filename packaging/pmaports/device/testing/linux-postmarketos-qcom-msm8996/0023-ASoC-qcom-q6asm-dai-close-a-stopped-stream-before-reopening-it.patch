@@ -1,0 +1,39 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] ASoC: qcom: q6asm-dai: close a stopped stream before reopening it
+
+TRIGGER_STOP marks the stream STOPPED, but the stream stays open in the
+DSP until it is closed. prepare() closed the previous stream only when it
+was RUNNING, so a stop followed by prepare (what PipeWire does to suspend
+and resume a node, or to recover from an error) opened the stream again
+and the DSP answered ADSP_EALREADY (error 9):
+
+  q6asm-dai ...: DSP returned error[9]
+  q6asm-dai ...: q6asm_dai_prepare: q6asm_open_write failed
+
+Close any stream that is not IDLE, as q6asm_dai_close() already does.
+
+---
+diff --git a/sound/soc/qcom/qdsp6/q6asm-dai.c b/sound/soc/qcom/qdsp6/q6asm-dai.c
+--- a/sound/soc/qcom/qdsp6/q6asm-dai.c
++++ b/sound/soc/qcom/qdsp6/q6asm-dai.c
+@@ -225,14 +225,17 @@
+ 
+ 	prtd->pcm_count = snd_pcm_lib_period_bytes(substream);
+ 	/* rate and channels are sent to audio driver */
+-	if (prtd->state == Q6ASM_STREAM_RUNNING) {
+-		/* clear the previous setup if any  */
++	if (prtd->state != Q6ASM_STREAM_IDLE) {
++		/*
++		 * Clear the previous setup. A stopped stream is still open in the
++		 * DSP, which refuses a second open of it (ADSP_EALREADY).
++		 */
+ 		q6asm_cmd(prtd->audio_client, prtd->stream_id, CMD_CLOSE);
+ 		q6asm_unmap_memory_regions(substream->stream,
+ 					   prtd->audio_client);
+ 		q6routing_stream_close(soc_prtd->dai_link->id,
+ 					 substream->stream);
+-		prtd->state = Q6ASM_STREAM_STOPPED;
++		prtd->state = Q6ASM_STREAM_IDLE;
+ 	}
+ 
+ 	ret = q6asm_map_memory_regions(substream->stream, prtd->audio_client,

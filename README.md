@@ -23,7 +23,7 @@ This repository is independent of the MediaTek Redmi `flare` project.
 | Bluetooth | ✅ | QCA6174 (Rome 3.2) on BLSP1 UART2; address from persist; A2DP audio (AAC) to headphones |
 | Video decode (Venus) | ✅ | H.264/HEVC/VP8/VP9 via V4L2 (`/dev/video0`), lithium's firmware; mpv `hwdec=v4l2m2m-copy` plays 720p60 YouTube at ~10–15 % CPU |
 | Sensors / auto-rotate | ✅ | SLPI (slpi_a4 firmware, registry from persist); accelerometer, gyroscope, magnetometer, barometer as IIO; Plasma auto-rotate works |
-| Microphones | 🔧 | codec capture path present, untested |
+| Microphones | ✅ | both mics (ADC1, ADC3) as one stereo source through PipeWire; own capture stream (MultiMedia3); no headset mic yet |
 | USB host / OTG | ✅ | automatic via TUSB320L (INT on TLMM 63): devices and unpowered docks get host + 5 V; powered docks only charge (no USB-PD) |
 | Suspend / CPU idle | ✅ | s2idle, wakes on Power key and RTC; PSCI CPU idle (≈ 80 mA less awake with the screen off) |
 | Earpiece (piezo, LM48560) | ❌ | no mainline driver |

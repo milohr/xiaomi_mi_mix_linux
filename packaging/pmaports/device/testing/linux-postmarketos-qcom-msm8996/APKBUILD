@@ -3,7 +3,7 @@ maintainer="Yassine Oudjana (Tooniis) <y.oudjana@protonmail.com>"
 _flavor="postmarketos-qcom-msm8996"
 pkgname=linux-$_flavor
 pkgver=6.19.5
-pkgrel=29
+pkgrel=31
 pkgdesc="Kernel close to mainline with extra patches for Qualcomm MSM8996 devices"
 arch="aarch64"
 _carch="arm64"
@@ -54,6 +54,9 @@ source="
 	0020-arm64-dts-qcom-xiaomi-lithium-enable-the-slpi-sensors.patch
 	0021-drm-msm-a5xx-honour-enable_preemption-0.patch
 	0022-drm-msm-keep-shared-global-vm-mappings-on-handle-close.patch
+	0023-ASoC-qcom-q6asm-dai-close-a-stopped-stream-before-reopening-it.patch
+	0024-arm64-dts-qcom-xiaomi-lithium-enable-the-internal-microphone.patch
+	0025-iio-qcom_smgr-honour-the-requested-sampling-frequency.patch
 "
 builddir="$srcdir/linux-$_tag"
 
@@ -107,4 +110,7 @@ f3ec0d3aacb1ff62903e242e26658609bacc31ec7b49a58eb1fe6df07a5afe1ab62155925718a890
 6a4431db6fcbaa0e65cae7b3ad9f3ba173351a67efad7402bc2bc28a8e58a4a92a1cf418cc836f5152db2e68b3da4cc439a85cd81e45cd085c745fc66c0f971f  0020-arm64-dts-qcom-xiaomi-lithium-enable-the-slpi-sensors.patch
 c2ee8df2f2a28a2ff4591960694ec28c89d68f5b6f63bcf52061082920e4d8d1727de2cc98e632e169c46e153625b8bda46074ea71fc4b3a78dcee4af2f00304  0021-drm-msm-a5xx-honour-enable_preemption-0.patch
 1f03e9d0179628f3a118f2d6a82c198eebed512d12532f41e39585d133349c338113284a0d435934a7641e8a7bc366936cde9b41d6e1c118534a187bc46b8ae8  0022-drm-msm-keep-shared-global-vm-mappings-on-handle-close.patch
+04cb247e987a547c75c5ffbacb4a3a79258b063cf2e028f8107352bf3722ec1c64480eb03d5e4b8886bd980a08ca74bcdb3c22074c85a7c3535fdaa9d3ec2141  0023-ASoC-qcom-q6asm-dai-close-a-stopped-stream-before-reopening-it.patch
+59a75db50424a110b7125c72074867dabe8eb640c577d0e74d23b312e6f4a041f5d3c75b618ae498de64f6b1bacd3fe55686d24fc4dbf8422b9f44b47a93fbbb  0024-arm64-dts-qcom-xiaomi-lithium-enable-the-internal-microphone.patch
+76f23bcaa04148e945d5c61c71d52f880105ee30166af3cee5e36ddebfd7cb1755726c3ff1f86f809126ee4f5f5b8a8f16b3e451503cb7b00a0e3fa253d89ce0  0025-iio-qcom_smgr-honour-the-requested-sampling-frequency.patch
 "

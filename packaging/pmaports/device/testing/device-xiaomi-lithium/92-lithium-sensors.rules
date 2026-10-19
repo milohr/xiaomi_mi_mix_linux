@@ -1,0 +1,5 @@
+# The SLPI accelerometer streams at its maximum (200 Hz) unless asked for less, which
+# wakes the CPU 200 times a second while iio-sensor-proxy holds it for auto-rotation.
+# Screen orientation needs far less. Needs kernel patch 0025 (qcom_smgr honours the
+# rate); set before iio-sensor-proxy, which udev starts after this event.
+ACTION=="add", SUBSYSTEM=="iio", ATTR{name}=="qcom-smgr-accel", ATTR{in_accel_sampling_frequency}="10"

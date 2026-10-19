@@ -1,0 +1,53 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] arm64: dts: qcom: xiaomi-lithium: enable the internal microphone
+
+Record from the two microphones (AMIC1/ADC1 and AMIC3/ADC3, MIC BIAS4, over
+SLIM TX7/TX8 -> AIF1_CAP -> SLIMBUS_0_TX; the codec routing is in UCM).
+ADC4/ADC5 are not connected on lithium.
+
+- Route MCLK to AIF1 CAP. Only playback (RX_BIAS) pulled in the codec MCLK,
+  so a recording on its own ran the decimators without a clock and the DSP
+  received digital silence.
+- Capture gets its own front end, MultiMedia3 (capture only). Opening a
+  capture on MultiMedia1 next to the speaker playback stopped the speaker
+  with an I/O error. MultiMedia1 and MultiMedia2 become playback only.
+
+---
+diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+--- a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
++++ b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+@@ -825,8 +825,10 @@
+ };
+ 
+ &q6asmdai {
+-	dai@0 { reg = <MSM_FRONTEND_DAI_MULTIMEDIA1>; };
+-	dai@1 { reg = <MSM_FRONTEND_DAI_MULTIMEDIA2>; };
++	dai@0 { reg = <MSM_FRONTEND_DAI_MULTIMEDIA1>; direction = <Q6ASM_DAI_RX>; };
++	dai@1 { reg = <MSM_FRONTEND_DAI_MULTIMEDIA2>; direction = <Q6ASM_DAI_RX>; };
++	/* Capture on its own stream: sharing MultiMedia1 broke speaker playback */
++	dai@2 { reg = <MSM_FRONTEND_DAI_MULTIMEDIA3>; direction = <Q6ASM_DAI_TX>; };
+ };
+ 
+ &sound {
+@@ -836,7 +838,8 @@
+ 			"AMIC1", "MIC BIAS4",
+ 			"AMIC2", "MIC BIAS2",
+ 			"AMIC3", "MIC BIAS4",
+-			"AMIC4", "MIC BIAS1";
++			"AMIC4", "MIC BIAS1",
++			"AIF1 CAP", "MCLK";
+ 
+ 	mm1-dai-link {
+ 		link-name = "MultiMedia1";
+@@ -849,6 +852,11 @@
+ 		cpu { sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA2>; };
+ 	};
+ 
++	mm3-dai-link {
++		link-name = "MultiMedia3";
++		cpu { sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA3>; };
++	};
++
+ 	wcd-aif1-pb-dai-link {
+ 		link-name = "AIF1_PB";
+ 		cpu { sound-dai = <&q6afedai SLIMBUS_4_RX>; };

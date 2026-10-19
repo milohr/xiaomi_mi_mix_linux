@@ -6,7 +6,23 @@
 # BC1.2 type (SDP/DCP/CDP). Raise the input current limit to the advertised
 # value; never lower what the charger chose. Run on Type-C and USB power
 # supply changes (udev).
+#
+# On a dedicated charger (BC1.2 DCP: D+ and D- shorted) there is no host, but
+# the gadget keeps its pull-up on and the controller reports an "Erratic
+# Error" event about 230 times a second. Disconnect the gadget there and
+# reconnect it for anything else (a computer, or nothing plugged in).
 set -u
+
+USB=/sys/class/power_supply/qcom-smbchg-usb
+for udc in /sys/class/udc/*; do
+	[ -w "$udc/soft_connect" ] || continue
+	if [ "$(cat "$USB/online" 2>/dev/null)" = 1 ] &&
+		grep -q "\[DCP\]" "$USB/usb_type" 2>/dev/null; then
+		echo disconnect > "$udc/soft_connect"
+	else
+		echo connect > "$udc/soft_connect"
+	fi
+done
 
 MODE=/sys/class/typec/port0/power_operation_mode
 ICL=/sys/class/power_supply/qcom-smbchg-usb/input_current_limit
