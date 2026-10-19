@@ -7,7 +7,7 @@ names (`artifacts/p3/stock-dtb5.dts`, line numbers below), and where the port st
 | Feature | Hardware (stock) | Status |
 |---|---|---|
 | CPU, Snapdragon 821, up to 2.35 GHz | MSM8996 Pro, speed bin 0 | ✅ all OPPs (P13 audit) |
-| GPU, Adreno 530 | | ✅ (patch 0022); icon/status-bar garbage during video still open |
+| GPU, Adreno 530 | | ✅ (patch 0022); Mesa a5xx binning overflow worked around (`FD_MESA_DEBUG=nobin`, browsers `sysmem`) |
 | Display 6.4" 1080×2040, touch | | ✅ |
 | Speaker, 3.5 mm jack | TFA9891, WCD9335 | ✅ |
 | Microphones | WCD9335 ADC1/ADC3 | ✅ |

@@ -3,7 +3,7 @@ maintainer="Camilo Higuita <milo.h@aol.com>"
 pkgname=device-xiaomi-lithium
 pkgdesc="Xiaomi Mi MIX"
 pkgver=1
-pkgrel=21
+pkgrel=22
 url="https://postmarketos.org"
 license="MIT"
 arch="aarch64"
@@ -30,6 +30,7 @@ source="
 	90-lithium-usb-current.rules
 	lithium-bt-address
 	lithium-bt-address.service
+	90-lithium-mesa.conf
 	91-lithium-bt-address.rules
 	92-lithium-sensors.rules
 	mpv.conf
@@ -66,6 +67,8 @@ package() {
 		"$pkgdir"/usr/libexec/lithium-bt-address
 	install -Dm644 "$srcdir"/lithium-bt-address.service \
 		"$pkgdir"/usr/lib/systemd/system/lithium-bt-address.service
+	install -Dm644 "$srcdir"/90-lithium-mesa.conf \
+		"$pkgdir"/usr/lib/environment.d/90-lithium-mesa.conf
 	install -Dm644 "$srcdir"/91-lithium-bt-address.rules \
 		"$pkgdir"/usr/lib/udev/rules.d/91-lithium-bt-address.rules
 	install -Dm644 "$srcdir"/92-lithium-sensors.rules \
@@ -102,6 +105,7 @@ c583d9dcecd12b04a3e79f244e87a47391fb007948fce3c41d1aac8f55e1bdc97da35c5ac0b14bb8
 72e6ff76730b47b9bfe9f2ae6fc99c247bb9f14202c7207d1025b45ef6c44c4aa11e0ef9aef2a8914770e7d9343a9ab529e9bdf82ef187d5c2c3894ef46fe70e  90-lithium-usb-current.rules
 562036602708bd5fad27ca2a4e49fafee8acf88f17bf68005ded8e979f899a92fdaa59a2036c3767ed457123cc7e48184029e67065dbd9c4a7c9e5758d761ae0  lithium-bt-address
 5ad6a09e54074efb6821e6f713ce477666e1a6809b59efb5ec338543f4d3adfbf1ceaa54854d5e6d87d1ade62f92d396d090c7840af13176908ebf8661e5063a  lithium-bt-address.service
+9210ee8eb55c09511aea202ca17b3670dabcc06fdfac974c107b7d9ddf97100b85b554af84f9fa2efb2d164abf93ce3054e120be3e5992672971120644a2f8ee  90-lithium-mesa.conf
 7670ea39761911544bd409b6546b96db54cd42cb820b98ee897b975265413165026b4456d8b3221fbaf32d5b73071ce8c6fd778efe3caf3cdc6442bb3a325b3c  91-lithium-bt-address.rules
 27a9e2b9c3fb7fb07b186f8e22f57318c7729738096da75e663303f2d3ae7d12b020f0c85dbc0c5f1169830632f5d4441edae218d41d6b5823d70d854499bf84  92-lithium-sensors.rules
 98dd625b55022f95bfaddf4bbbcc4d2111329433de73fedc57b15e7e3a842c603196f79da116806375f189fad5263aaa155a692fcff89499b6ca9993395b3d4c  mpv.conf

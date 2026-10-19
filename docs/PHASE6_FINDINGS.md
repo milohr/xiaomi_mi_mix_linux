@@ -216,6 +216,27 @@ Hardware facts found by testing, where the stock tree is wrong or silent:
   scale reached 3.6 V): a 2 s feedbackd vibration now raises 10 short-circuit-status interrupts,
   the normal ~50 ms status, and none at boot.
 
+## Status-bar and icon corruption: Mesa a5xx tiled rendering (2026-10-19, device r22)
+
+- Reproduced without a person: `scripts`-less harness in the session scratchpad: a local page
+  with a looping video and 36 SVG icons re-rasterised every 150 ms, opened in a throwaway-profile
+  Angelfish (transient user unit, raised through a KWin script), scanout captured with fbgrab and
+  scored for broken icon cells (speckled/filled) and status-bar corruption.
+- The corrupted status bar showed the **browser's video**, live: one process's GPU writes landing
+  in another's buffer. Ruled out: UBWC (`noubwc`), GPU buffer eviction (`msm.enable_eviction=N`,
+  fresh plasmashell), the GPU blitter (`noblit`).
+- Only Angelfish's Mesa setting mattered (16 frames each): normal 15/16 status-bar corruption and
+  broken icons; `nobin` 0/16 corruption but icons still broken; `sysmem` 0/16 and no broken icons.
+- Cause of the corruption: fd5_gmem.c programs fixed 128 KiB visibility-stream buffers per pipe
+  and never checks for overflow ("TODO CP_COND_WRITE's for all the vsc buffers (check for
+  overflow??)"); busy frames overflow and, in the A5xx shared address space, overwrite the
+  neighbouring buffer. This is also the old "280 rows past the browser's tiles" write that faulted
+  before patch 0022 kept neighbouring mappings alive. The broken icons are a second GMEM-mode
+  problem (stencil-based path fills), gone only in sysmem.
+- glmark2: normal 146, nobin 116, sysmem 75; but the 2D desktop/blur scene is 46/46/55 fps.
+- Mitigation: `FD_MESA_DEBUG=nobin` for every session (device r22, `/usr/lib/environment.d`), and
+  `sysmem` for the browsers (user desktop-file overrides for Angelfish and Firefox for now).
+
 ## Quick Charge groundwork and NFC (2026-10-19, kernel r42–r43)
 
 - **PMI8994 ADC** (0040, stock vadc@3100): USB/DC input behind 1/20; the driver also needs the
