@@ -59,6 +59,25 @@ Hardware facts found by testing, where the stock tree is wrong or silent:
   - Harmless: `qcom-wled` warns "Unbalanced enable for IRQ" once per boot (the bootloader
     leaves WLED on, the driver's brightness starts at 0, so the OVP IRQ is enabled twice).
 
+## Headphone jack, browser GPU faults (2026-10-18, kernel r23–r24, device r12)
+
+- **Jack detection works by the jack switch** (patch 0017). WCD9335 has no MBHC ADC, and
+  mainline's generic `wcd-mbhc-v2` only classifies plugs with it: every measurement timed
+  out and the state flapped. A `mech_only` config reports headphones straight from the
+  mechanical switch. Stock's `msm-mbhc-hphl-swh = 1` / `gnd-swh = 1` read **inverted** as
+  mainline's "normally closed" properties; the defaults are right. UCM: Headphones
+  priority 300 with `JackControl "Headphone Jack"`, so they win while plugged. Headset mic
+  detection (downstream "legacy" detection) and button thresholds are still open.
+- **Browser GPU faults are not Chromium's**: Firefox (WebRender) triggers the same
+  translation faults. They come from the browser's GPU process (none with Chromium on the
+  CPU, none from KWin), run 0.8–1 MB past the end of a 2.5 MiB buffer (a 1088×544 BGRA
+  raster tile, bucket-rounded), and survive `FD_MESA_DEBUG=sysmem/noubwc/nobin/nolrz/
+  flush/noblit`, `QTWEBENGINE_FORCE_USE_GBM=0` and `--gpu-rasterization-msaa-sample-count=0`
+  (single zero-fault runs were luck; counts are rate-limited at 10/20). Rendering looks
+  right. Angelfish stays on the CPU; Firefox runs on the GPU.
+- **Venus**: lithium's signed firmware is on the modem partition, not yet in our firmware
+  package; enabling the node without it fails with -2.
+
 ## The real display driver and the rest of the day (2026-10-18, kernel r5–r10)
 
 - **Panel** (patch 0003): `panel-xiaomi-lithium-fte716` (lmdpdg tables from stock) on DSI0,

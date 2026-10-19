@@ -1,0 +1,505 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] ASoC: wcd9335: add headset detection (MBHC); apq8096: headset jack
+
+Mainline WCD9335 has the MBHC registers but no detection. Hook it to the
+generic wcd-mbhc-v2 code, as WCD934x does: the MBHC register field table
+and callbacks (from the downstream msm-3.18 WCD9335 driver), the MBHC and
+HPH over-current interrupts in the regmap IRQ chip, and component
+set_jack. Defaults follow WCD934x; the board's HPHL and ground switch
+types come from DT (new binding properties).
+
+The generic plug-type detection measures the mic line with the MBHC ADC,
+which WCD9335 does not have (downstream used a separate legacy method):
+on hardware every measurement timed out and the jack state flapped. A new
+wcd_mbhc_config.mech_only makes the generic code report headphones from
+the mechanical jack switch alone; WCD9335 sets it. No headset mic
+detection yet. MICBIAS2 stays at its 1.8 V
+reset value (0x10) in this driver. Button thresholds are unknown for any
+WCD9335 board yet, so no buttons are configured. A failed MBHC init only
+warns: playback and capture keep working.
+
+apq8096 creates one "Headset Jack" (pins "Headphone Jack" and "Headset
+Mic") for the first codec back end that supports set_jack; the init runs
+for every back end, so the jack lives in per-card data and is set up once.
+
+Mi MIX (lithium): stock sets msm-mbhc-hphl-swh = 1 and msm-mbhc-gnd-swh = 1
+(stock DT lines 18835-18836), but with those as "normally closed" the jack
+read inverted on hardware; the defaults read correctly, so the DT sets
+neither. Headset mic on MICBIAS2 (18832-18833).
+
+Based on a draft by the offline agent (artifacts/p11), reviewed and fixed.
+
+---
+--- a/sound/soc/codecs/wcd-mbhc-v2.h
++++ b/sound/soc/codecs/wcd-mbhc-v2.h
+@@ -210,6 +210,8 @@
+ 	u32 moist_vref;
+ 	u32 moist_iref;
+ 	u32 moist_rref;
++	/* No plug-type ADC: report headphones from the mechanical switch alone */
++	bool mech_only;
+ };
+ 
+ struct wcd_mbhc_intr {
+--- a/sound/soc/codecs/wcd-mbhc-v2.c
++++ b/sound/soc/codecs/wcd-mbhc-v2.c
+@@ -538,6 +538,10 @@
+ 		/* Make sure MASTER_BIAS_CTL is enabled */
+ 		mbhc->mbhc_cb->mbhc_bias(component, true);
+ 		mbhc->is_btn_press = false;
++		if (mbhc->cfg->mech_only) {
++			wcd_mbhc_report_plug(mbhc, 1, SND_JACK_HEADPHONE);
++			goto exit;
++		}
+ 		wcd_mbhc_adc_detect_plug_type(mbhc);
+ 	} else {
+ 		/* Disable HW FSM */
+@@ -569,10 +573,13 @@
+ 				mbhc->current_plug);
+ 			goto exit;
+ 		}
+-		disable_irq_nosync(mbhc->intr_ids->mbhc_hs_rem_intr);
+-		disable_irq_nosync(mbhc->intr_ids->mbhc_hs_ins_intr);
+-		wcd_mbhc_write_field(mbhc, WCD_MBHC_ELECT_DETECTION_TYPE, 1);
+-		wcd_mbhc_write_field(mbhc, WCD_MBHC_ELECT_SCHMT_ISRC, 0);
++		/* The electrical detection only runs after an ADC plug check */
++		if (!mbhc->cfg->mech_only) {
++			disable_irq_nosync(mbhc->intr_ids->mbhc_hs_rem_intr);
++			disable_irq_nosync(mbhc->intr_ids->mbhc_hs_ins_intr);
++			wcd_mbhc_write_field(mbhc, WCD_MBHC_ELECT_DETECTION_TYPE, 1);
++			wcd_mbhc_write_field(mbhc, WCD_MBHC_ELECT_SCHMT_ISRC, 0);
++		}
+ 		wcd_mbhc_report_plug(mbhc, 0, jack_type);
+ 	}
+ 
+--- a/sound/soc/codecs/wcd9335.c
++++ b/sound/soc/codecs/wcd9335.c
+@@ -23,6 +23,7 @@
+ #include <sound/tlv.h>
+ #include <sound/info.h>
+ #include "wcd9335.h"
++#include "wcd-mbhc-v2.h"
+ #include "wcd-clsh-v2.h"
+ 
+ #include <dt-bindings/sound/qcom,wcd9335.h>
+@@ -97,6 +98,8 @@
+ 
+ /* vout step value */
+ #define WCD9335_CALCULATE_VOUT_D(req_mv) (((req_mv - 650) * 10) / 25)
++#define WCD9335_MICBIAS2_DEFAULT_MV 1800
++#define WCD_MBHC_HS_V_MAX 1600
+ 
+ #define WCD9335_INTERPOLATOR_PATH(id)			\
+ 	{"RX INT" #id "_1 MIX1 INP0", "RX0", "SLIM RX0"},	\
+@@ -269,20 +272,6 @@
+ 	WCD_CLK_MCLK,
+ };
+ 
+-enum {
+-	MIC_BIAS_1 = 1,
+-	MIC_BIAS_2,
+-	MIC_BIAS_3,
+-	MIC_BIAS_4
+-};
+-
+-enum {
+-	MICB_PULLUP_ENABLE,
+-	MICB_PULLUP_DISABLE,
+-	MICB_ENABLE,
+-	MICB_DISABLE,
+-};
+-
+ struct wcd9335_slim_ch {
+ 	u32 ch_num;
+ 	u16 port;
+@@ -346,6 +335,11 @@
+ 	int dmic_0_1_clk_cnt;
+ 	int dmic_2_3_clk_cnt;
+ 	int dmic_4_5_clk_cnt;
++
++	struct wcd_mbhc *mbhc;
++	struct wcd_mbhc_config mbhc_cfg;
++	struct wcd_mbhc_intr mbhc_intr;
++	bool mbhc_started;
+ };
+ 
+ struct wcd9335_irq {
+@@ -4016,6 +4010,188 @@
+ 	return ret;
+ }
+ 
++
++static int wcd9335_micbias_control(struct snd_soc_component *component,
++				   int micb_num, int req, bool is_dapm);
++
++static const struct wcd_mbhc_field wcd9335_mbhc_fields[WCD_MBHC_REG_FUNC_MAX] = {
++	WCD_MBHC_FIELD(WCD_MBHC_L_DET_EN, WCD9335_ANA_MBHC_MECH, 0x80),
++	WCD_MBHC_FIELD(WCD_MBHC_GND_DET_EN, WCD9335_ANA_MBHC_MECH, 0x40),
++	WCD_MBHC_FIELD(WCD_MBHC_MECH_DETECTION_TYPE, WCD9335_ANA_MBHC_MECH, 0x20),
++	WCD_MBHC_FIELD(WCD_MBHC_MIC_CLAMP_CTL, WCD9335_MBHC_PLUG_DETECT_CTL, 0x30),
++	WCD_MBHC_FIELD(WCD_MBHC_ELECT_DETECTION_TYPE, WCD9335_ANA_MBHC_ELECT, 0x08),
++	WCD_MBHC_FIELD(WCD_MBHC_HS_L_DET_PULL_UP_CTRL, WCD9335_MBHC_PLUG_DETECT_CTL, 0xc0),
++	WCD_MBHC_FIELD(WCD_MBHC_HS_L_DET_PULL_UP_COMP_CTRL, WCD9335_ANA_MBHC_MECH, 0x04),
++	WCD_MBHC_FIELD(WCD_MBHC_HPHL_PLUG_TYPE, WCD9335_ANA_MBHC_MECH, 0x10),
++	WCD_MBHC_FIELD(WCD_MBHC_GND_PLUG_TYPE, WCD9335_ANA_MBHC_MECH, 0x08),
++	WCD_MBHC_FIELD(WCD_MBHC_SW_HPH_LP_100K_TO_GND, WCD9335_ANA_MBHC_MECH, 0x01),
++	WCD_MBHC_FIELD(WCD_MBHC_ELECT_SCHMT_ISRC, WCD9335_ANA_MBHC_ELECT, 0x06),
++	WCD_MBHC_FIELD(WCD_MBHC_FSM_EN, WCD9335_ANA_MBHC_ELECT, 0x80),
++	WCD_MBHC_FIELD(WCD_MBHC_INSREM_DBNC, WCD9335_MBHC_PLUG_DETECT_CTL, 0x0f),
++	WCD_MBHC_FIELD(WCD_MBHC_BTN_DBNC, WCD9335_MBHC_CTL_1, 0x03),
++	WCD_MBHC_FIELD(WCD_MBHC_HS_VREF, WCD9335_MBHC_CTL_2, 0x03),
++	WCD_MBHC_FIELD(WCD_MBHC_HS_COMP_RESULT, WCD9335_ANA_MBHC_RESULT_3, 0x08),
++	WCD_MBHC_FIELD(WCD_MBHC_MIC_SCHMT_RESULT, WCD9335_ANA_MBHC_RESULT_3, 0x20),
++	WCD_MBHC_FIELD(WCD_MBHC_HPHL_SCHMT_RESULT, WCD9335_ANA_MBHC_RESULT_3, 0x80),
++	WCD_MBHC_FIELD(WCD_MBHC_HPHR_SCHMT_RESULT, WCD9335_ANA_MBHC_RESULT_3, 0x40),
++	WCD_MBHC_FIELD(WCD_MBHC_OCP_FSM_EN, WCD9335_HPH_OCP_CTL, 0x10),
++	WCD_MBHC_FIELD(WCD_MBHC_BTN_RESULT, WCD9335_ANA_MBHC_RESULT_3, 0x07),
++	WCD_MBHC_FIELD(WCD_MBHC_BTN_ISRC_CTL, WCD9335_ANA_MBHC_ELECT, 0x70),
++	WCD_MBHC_FIELD(WCD_MBHC_ELECT_RESULT, WCD9335_ANA_MBHC_RESULT_3, 0xff),
++	WCD_MBHC_FIELD(WCD_MBHC_MICB_CTRL, WCD9335_ANA_MICB2, 0xc0),
++	WCD_MBHC_FIELD(WCD_MBHC_HPHR_PA_EN, WCD9335_ANA_HPH, 0x40),
++	WCD_MBHC_FIELD(WCD_MBHC_HPHL_PA_EN, WCD9335_ANA_HPH, 0x80),
++	WCD_MBHC_FIELD(WCD_MBHC_HPH_PA_EN, WCD9335_ANA_HPH, 0xc0),
++	WCD_MBHC_FIELD(WCD_MBHC_SWCH_LEVEL_REMOVE, WCD9335_ANA_MBHC_RESULT_3, 0x10),
++	WCD_MBHC_FIELD(WCD_MBHC_MUX_CTL, WCD9335_MBHC_CTL_2, 0x70),
++};
++
++static void wcd9335_mbhc_clk_setup(struct snd_soc_component *component, bool enable)
++{
++	snd_soc_component_update_bits(component, WCD9335_MBHC_CTL_1,
++				      WCD9335_MBHC_CTL_RCO_EN_MASK,
++				      enable ? WCD9335_MBHC_CTL_RCO_EN : 0);
++}
++
++static void wcd9335_mbhc_bias(struct snd_soc_component *component, bool enable)
++{
++	snd_soc_component_update_bits(component, WCD9335_ANA_MBHC_ELECT,
++				      WCD9335_ANA_MBHC_BIAS_EN_MASK,
++				      enable ? WCD9335_ANA_MBHC_BIAS_EN : 0);
++}
++
++static void wcd9335_mbhc_set_btn_thr(struct snd_soc_component *component,
++				    int *btn_low, int *btn_high,
++				    int num_btn, bool is_micbias)
++{
++	int i;
++
++	for (i = 0; i < min(num_btn, WCD_MBHC_DEF_BUTTONS); i++)
++		snd_soc_component_update_bits(component, WCD9335_ANA_MBHC_BTN0 + i,
++					      0x3f, ((btn_high[i] * 2) / 25) & 0x3f);
++}
++
++static bool wcd9335_mbhc_micbias_enabled(struct snd_soc_component *component,
++					 int micb_num)
++{
++	return micb_num == MIC_BIAS_2 &&
++		(snd_soc_component_read(component, WCD9335_ANA_MICB2) & 0xc0) == 0x40;
++}
++
++static void wcd9335_mbhc_hph_pull_up(struct snd_soc_component *component,
++				    enum mbhc_hs_pullup_iref pull_up)
++{
++	if (pull_up < I_OFF || pull_up > I_3P0_UA || pull_up == I_DEFAULT)
++		pull_up = I_2P0_UA;
++	snd_soc_component_update_bits(component, WCD9335_MBHC_PLUG_DETECT_CTL,
++				      0xc0, pull_up << 6);
++}
++
++static int wcd9335_mbhc_micbias(struct snd_soc_component *component,
++				int micb_num, int req)
++{
++	return wcd9335_micbias_control(component, micb_num, req, false);
++}
++
++static void wcd9335_mbhc_micb_ramp(struct snd_soc_component *component, bool enable)
++{
++	snd_soc_component_update_bits(component, WCD9335_ANA_MICB2_RAMP,
++				      0x1c, enable ? 0x1c : 0);
++}
++
++static int wcd9335_mbhc_threshold_mic(struct snd_soc_component *component,
++				     int micb_num, bool enable)
++{
++	return micb_num == MIC_BIAS_2 ? 0 : -EINVAL;
++}
++
++static void wcd9335_mbhc_gnd_det(struct snd_soc_component *component, bool enable)
++{
++	snd_soc_component_update_bits(component, WCD9335_ANA_MBHC_MECH,
++				      0x42, enable ? 0x42 : 0);
++}
++
++static void wcd9335_mbhc_hph_pull_down(struct snd_soc_component *component,
++				      bool enable)
++{
++	snd_soc_component_update_bits(component, WCD9335_HPH_PA_CTL2,
++				      0x50, enable ? 0x50 : 0);
++}
++
++static const struct wcd_mbhc_cb wcd9335_mbhc_cb = {
++	.clk_setup = wcd9335_mbhc_clk_setup,
++	.mbhc_bias = wcd9335_mbhc_bias,
++	.set_btn_thr = wcd9335_mbhc_set_btn_thr,
++	.micbias_enable_status = wcd9335_mbhc_micbias_enabled,
++	.hph_pull_up_control = wcd9335_mbhc_hph_pull_up,
++	.mbhc_micbias_control = wcd9335_mbhc_micbias,
++	.mbhc_micb_ramp_control = wcd9335_mbhc_micb_ramp,
++	.mbhc_micb_ctrl_thr_mic = wcd9335_mbhc_threshold_mic,
++	.mbhc_gnd_det_ctrl = wcd9335_mbhc_gnd_det,
++	.hph_pull_down_ctrl = wcd9335_mbhc_hph_pull_down,
++};
++
++static void wcd9335_mbhc_init(struct snd_soc_component *component)
++{
++	struct wcd9335_codec *wcd = snd_soc_component_get_drvdata(component);
++	struct wcd_mbhc_intr *intr = &wcd->mbhc_intr;
++	struct wcd_mbhc_config *cfg = &wcd->mbhc_cfg;
++
++	intr->mbhc_sw_intr = regmap_irq_get_virq(wcd->irq_data, WCD9335_IRQ_MBHC_SW_DET);
++	intr->mbhc_btn_press_intr = regmap_irq_get_virq(wcd->irq_data, WCD9335_IRQ_MBHC_BUTTON_PRESS_DET);
++	intr->mbhc_btn_release_intr = regmap_irq_get_virq(wcd->irq_data, WCD9335_IRQ_MBHC_BUTTON_RELEASE_DET);
++	intr->mbhc_hs_ins_intr = regmap_irq_get_virq(wcd->irq_data, WCD9335_IRQ_MBHC_ELECT_INS_REM_LEG_DET);
++	intr->mbhc_hs_rem_intr = regmap_irq_get_virq(wcd->irq_data, WCD9335_IRQ_MBHC_ELECT_INS_REM_DET);
++	intr->hph_left_ocp = regmap_irq_get_virq(wcd->irq_data, WCD9335_IRQ_HPH_PA_OCPL_FAULT);
++	intr->hph_right_ocp = regmap_irq_get_virq(wcd->irq_data, WCD9335_IRQ_HPH_PA_OCPR_FAULT);
++
++	/* Defaults as for WCD934x; the board's switch types come from DT. */
++	cfg->mbhc_micbias = MIC_BIAS_2;
++	cfg->anc_micbias = MIC_BIAS_2;
++	cfg->v_hs_max = WCD_MBHC_HS_V_MAX;
++	/* No button thresholds are known for any WCD9335 board yet. */
++	cfg->num_btn = 0;
++	/* This driver leaves MICBIAS2 at its 1.8 V reset value. */
++	cfg->micb_mv = WCD9335_MICBIAS2_DEFAULT_MV;
++	cfg->linein_th = 5000;
++	cfg->hs_thr = 1700;
++	cfg->hph_thr = 50;
++	/*
++	 * WCD9335 has no MBHC ADC, which the generic plug-type detection
++	 * needs (downstream used a separate legacy method): detect
++	 * headphones by the jack switch only; no headset mic yet.
++	 */
++	cfg->mech_only = true;
++	wcd_dt_parse_mbhc_data(component->dev, cfg);
++
++	wcd->mbhc = wcd_mbhc_init(component, &wcd9335_mbhc_cb, intr,
++				  wcd9335_mbhc_fields, false);
++	if (IS_ERR(wcd->mbhc)) {
++		dev_warn(component->dev, "no headset detection: %pe\n",
++			 wcd->mbhc);
++		wcd->mbhc = NULL;
++	}
++}
++
++static int wcd9335_codec_set_jack(struct snd_soc_component *component,
++				  struct snd_soc_jack *jack, void *data)
++{
++	struct wcd9335_codec *wcd = snd_soc_component_get_drvdata(component);
++	int ret = 0;
++
++	if (!wcd->mbhc)
++		return -ENOTSUPP;
++	if (jack && !wcd->mbhc_started) {
++		ret = wcd_mbhc_start(wcd->mbhc, &wcd->mbhc_cfg, jack);
++		if (!ret)
++			wcd->mbhc_started = true;
++	} else if (!jack && wcd->mbhc_started) {
++		wcd_mbhc_stop(wcd->mbhc);
++		wcd->mbhc_started = false;
++	}
++	return ret;
++}
++
+ static const struct wcd9335_irq wcd9335_irqs[] = {
+ 	{
+ 		.irq = WCD9335_IRQ_SLIMBUS,
+@@ -4860,6 +5036,8 @@
+ 	if (ret)
+ 		goto free_clsh_ctrl;
+ 
++	wcd9335_mbhc_init(component);
++
+ 	return 0;
+ 
+ free_clsh_ctrl:
+@@ -4871,6 +5049,8 @@
+ {
+ 	struct wcd9335_codec *wcd = dev_get_drvdata(comp->dev);
+ 
++	if (wcd->mbhc)
++		wcd_mbhc_deinit(wcd->mbhc);
+ 	wcd_clsh_ctrl_free(wcd->clsh_ctrl);
+ 	wcd9335_teardown_irqs(wcd);
+ }
+@@ -4901,6 +5081,7 @@
+ 	.probe = wcd9335_codec_probe,
+ 	.remove = wcd9335_codec_remove,
+ 	.set_sysclk = wcd9335_codec_set_sysclk,
++	.set_jack = wcd9335_codec_set_jack,
+ 	.controls = wcd9335_snd_controls,
+ 	.num_controls = ARRAY_SIZE(wcd9335_snd_controls),
+ 	.dapm_widgets = wcd9335_dapm_widgets,
+@@ -4990,6 +5171,13 @@
+ };
+ 
+ static const struct regmap_irq wcd9335_codec_irqs[] = {
++	[WCD9335_IRQ_HPH_PA_OCPL_FAULT] = { .reg_offset = 0, .mask = BIT(2) },
++	[WCD9335_IRQ_HPH_PA_OCPR_FAULT] = { .reg_offset = 0, .mask = BIT(3) },
++	[WCD9335_IRQ_MBHC_SW_DET] = { .reg_offset = 1, .mask = BIT(0) },
++	[WCD9335_IRQ_MBHC_ELECT_INS_REM_DET] = { .reg_offset = 1, .mask = BIT(1) },
++	[WCD9335_IRQ_MBHC_BUTTON_PRESS_DET] = { .reg_offset = 1, .mask = BIT(2) },
++	[WCD9335_IRQ_MBHC_BUTTON_RELEASE_DET] = { .reg_offset = 1, .mask = BIT(3) },
++	[WCD9335_IRQ_MBHC_ELECT_INS_REM_LEG_DET] = { .reg_offset = 1, .mask = BIT(4) },
+ 	/* INTR_REG 0 */
+ 	[WCD9335_IRQ_SLIMBUS] = {
+ 		.reg_offset = 0,
+--- a/sound/soc/codecs/wcd9335.h
++++ b/sound/soc/codecs/wcd9335.h
+@@ -626,6 +626,8 @@
+ #define WCD9335_SLIM_PGD_RX_PORT_MULTI_CHNL_0(p) WCD9335_REG(0, (0x140 + 4 * p))
+ 
+ #define	WCD9335_IRQ_SLIMBUS			0
++#define WCD9335_IRQ_HPH_PA_OCPL_FAULT		2
++#define WCD9335_IRQ_HPH_PA_OCPR_FAULT		3
+ #define	WCD9335_IRQ_MBHC_SW_DET			8
+ #define	WCD9335_IRQ_MBHC_ELECT_INS_REM_DET	9
+ #define	WCD9335_IRQ_MBHC_BUTTON_PRESS_DET	10
+--- a/sound/soc/codecs/Kconfig
++++ b/sound/soc/codecs/Kconfig
+@@ -2342,6 +2342,7 @@
+ 	select REGMAP_SLIMBUS
+ 	select REGMAP_IRQ
+ 	select SND_SOC_WCD_CLASSH
++	select SND_SOC_WCD_MBHC
+ 	help
+ 	  The WCD9335 is a standalone Hi-Fi audio CODEC IC, supports
+ 	  Qualcomm Technologies, Inc. (QTI) multimedia solutions,
+--- a/sound/soc/qcom/apq8096.c
++++ b/sound/soc/qcom/apq8096.c
+@@ -5,6 +5,7 @@
+ #include <linux/mod_devicetable.h>
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
++#include <sound/jack.h>
+ #include <sound/soc.h>
+ #include <sound/soc-dapm.h>
+ #include <sound/pcm.h>
+@@ -16,6 +17,22 @@
+ #define WCD9335_DEFAULT_MCLK_RATE	9600000
+ #define MI2S_BCLK_RATE			1536000
+ 
++struct apq8096_card_data {
++	struct snd_soc_card card;
++	struct snd_soc_jack jack;
++	bool jack_setup;
++};
++
++static const struct snd_soc_dapm_widget apq8096_widgets[] = {
++	SND_SOC_DAPM_HP("Headphone Jack", NULL),
++	SND_SOC_DAPM_MIC("Headset Mic", NULL),
++};
++
++static struct snd_soc_jack_pin apq8096_headset_pins[] = {
++	{ .pin = "Headphone Jack", .mask = SND_JACK_HEADPHONE },
++	{ .pin = "Headset Mic", .mask = SND_JACK_MICROPHONE },
++};
++
+ static int apq8096_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
+ 				      struct snd_pcm_hw_params *params)
+ {
+@@ -123,7 +140,12 @@
+ 
+ static int apq8096_init(struct snd_soc_pcm_runtime *rtd)
+ {
++	struct apq8096_card_data *data = container_of(rtd->card,
++						      struct apq8096_card_data,
++						      card);
+ 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
++	struct snd_soc_component *component = codec_dai->component;
++	int ret;
+ 
+ 	/*
+ 	 * Codec SLIMBUS configuration
+@@ -143,6 +165,29 @@
+ 	snd_soc_dai_set_sysclk(codec_dai, 0, WCD9335_DEFAULT_MCLK_RATE,
+ 				SNDRV_PCM_STREAM_PLAYBACK);
+ 
++	/*
++	 * Every back end of a codec runs this; the headset jack is created
++	 * once, for the first codec that can detect it.
++	 */
++	if (!component->driver->set_jack || data->jack_setup)
++		return 0;
++
++	ret = snd_soc_card_jack_new_pins(rtd->card, "Headset Jack",
++					 SND_JACK_HEADSET | SND_JACK_BTN_0 |
++					 SND_JACK_BTN_1 | SND_JACK_BTN_2 |
++					 SND_JACK_BTN_3 | SND_JACK_BTN_4,
++					 &data->jack, apq8096_headset_pins,
++					 ARRAY_SIZE(apq8096_headset_pins));
++	if (ret)
++		return ret;
++
++	data->jack_setup = true;
++
++	/* Without jack detection the card still plays and records. */
++	ret = snd_soc_component_set_jack(component, &data->jack, NULL);
++	if (ret)
++		dev_warn(rtd->card->dev, "no headset detection: %d\n", ret);
++
+ 	return 0;
+ }
+ 
+@@ -162,17 +207,22 @@
+ 
+ static int apq8096_platform_probe(struct platform_device *pdev)
+ {
++	struct apq8096_card_data *data;
+ 	struct snd_soc_card *card;
+ 	struct device *dev = &pdev->dev;
+ 	int ret;
+ 
+-	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
+-	if (!card)
++	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
++	if (!data)
+ 		return -ENOMEM;
+ 
++	card = &data->card;
++
+ 	card->driver_name = "apq8096";
+ 	card->dev = dev;
+ 	card->owner = THIS_MODULE;
++	card->dapm_widgets = apq8096_widgets;
++	card->num_dapm_widgets = ARRAY_SIZE(apq8096_widgets);
+ 	dev_set_drvdata(dev, card);
+ 	ret = qcom_snd_parse_of(card);
+ 	if (ret)
+--- a/Documentation/devicetree/bindings/sound/qcom,wcd9335.yaml
++++ b/Documentation/devicetree/bindings/sound/qcom,wcd9335.yaml
+@@ -73,6 +73,14 @@
+   vdd-vbat-supply:
+     description: vbat supply
+ 
++  qcom,hphl-jack-type-normally-closed:
++    description: Indicates that HPHL jack switch type is normally closed
++    type: boolean
++
++  qcom,ground-jack-type-normally-closed:
++    description: Indicates that Headset Ground switch type is normally closed
++    type: boolean
++
+ required:
+   - compatible
+   - reg
+--- a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
++++ b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+@@ -789,6 +789,8 @@
+ 			vdd-vbat-supply = <&vph_pwr>;
+ 			vdd-micbias-supply = <&vph_pwr_bbyp>;
+ 			vdd-io-supply = <&vreg_s4a_1p8>;
++
++			/* Jack switches: the defaults, measured (stock hphl/gnd-swh = 1 inverts them) */
+ 		};
+ 	};
+ };

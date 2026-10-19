@@ -16,7 +16,7 @@ This repository is independent of the MediaTek Redmi `flare` project.
 | Touch | ✅ | FocalTech FT8716 (edt-ft5x06) |
 | Wi-Fi | ✅ | QCA6174 hw3.2 on PCIe, ath10k, lithium board file; 2.4 and 5 GHz |
 | Battery / charging | ✅ | PMI8996 fuel gauge + SMB charger, up to 3.2 A; input follows the USB-C current advertisement; no Quick Charge yet |
-| Headphones | ✅ | ADSP + WCD9335 over SLIMbus; UCM Speaker/Headphones, chosen by hand (no jack detection yet) |
+| Headphones | ✅ | ADSP + WCD9335 over SLIMbus; switches to/from the speaker on plug/unplug (jack switch; no headset mic yet) |
 | UI | ✅ | Plasma Mobile (GPU-accelerated) with the KDE mobile apps |
 | Speaker | ✅ | TFA9891 (stock DT says TFA9890) on quaternary MI2S; tfa989x TFA9891 support added |
 | GPU (Adreno 530) | ✅ | lithium's signed zap shader; GPU_GX supplied from PMI8994 S2; Plasma Mobile (KWin) renders on the GPU |
@@ -37,7 +37,7 @@ Details: [Phase 6 findings](docs/PHASE6_FINDINGS.md) (current), [handoff](docs/H
   battery/charger (0005), audio codec (0006), apq8096 MI2S clocks (0007),
   fuel-gauge current sign (0008), GPU (0009), TFA9891 driver (0010), speaker (0011),
   automatic USB host mode (0012), OTG VBUS guard (0013), Bluetooth (0014), mdp5 resume
-  fix (0015), PCIe power domain kept on in suspend (0016). Every board value is traced to
+  fix (0015), PCIe power domain kept on in suspend (0016), headphone jack detection (0017). Every board value is traced to
   lithium's stock device tree.
 - **Packages**: [`packaging/pmaports/`](packaging/pmaports) — `linux-postmarketos-qcom-msm8996`,
   `device-xiaomi-lithium` (deviceinfo, UCM, WirePlumber rule, USB-C current, Bluetooth address) and
