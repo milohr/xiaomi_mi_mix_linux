@@ -1,0 +1,131 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] arm64: dts: qcom: xiaomi-lithium: enable the modem, describe IPA
+
+- Reserved memory follows stock: TZ assigns the modem only its stock range
+  (0x89c00000, 0x6200000); the SoC dtsi's 0x88800000 lies in the stock
+  removed region and fails with "assigning Q6 access to mpss memory
+  failed: -22". ADSP, SLPI, Venus and the GPU zap region move into stock's
+  peripheral region (0x8fe00000-0x92900000, all relocatable images), MBA to
+  the 2 MiB after it, and the rest of the removed region stays reserved.
+- MSS: pll-supply is PM8994 L11 at 1.1 V (stock vdd_pll-supply), firmware
+  from qcom/msm8996/lithium/.
+- IPA v2.5 at 0x680000 (stock qcom,ipa-hw-ver = 5) for ipa2-lite, disabled:
+  loading ipa2-lite resets the SoC about 20 s into boot.
+
+---
+diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+--- a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
++++ b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+@@ -25,6 +25,13 @@
+  * stock DTB (boot.img.dtb-5, the one the live unit selects) or the live DT.
+  */
+ 
++/delete-node/ &mpss_mem;
++/delete-node/ &adsp_mem;
++/delete-node/ &slpi_mem;
++/delete-node/ &venus_mem;
++/delete-node/ &gpu_mem;
++/delete-node/ &mba_mem;
++
+ / {
+ 	model = "Xiaomi Mi MIX";
+ 	compatible = "xiaomi,lithium", "qcom,msm8996pro", "qcom,msm8996";
+@@ -186,12 +193,45 @@
+ 
+ 	reserved-memory {
+ 		/*
+-		 * The SoC carveouts cover 0x85800000-0x91700000, all inside the
+-		 * stock removed/modem/peripheral regions. Reserve the rest of the
+-		 * stock peripheral region until the PIL layout is mapped.
++		 * Stock layout: removed 0x85800000-0x89c00000, modem 0x89c00000
++		 * (0x6200000), peripheral 0x8fe00000-0x92900000. TZ only assigns
++		 * the modem its stock range (the SoC dtsi's 0x88800000 lies in
++		 * the removed region: "assigning Q6 access to mpss memory failed:
++		 * -22"). The peripheral images are relocatable and fill stock's
++		 * peripheral region; MBA takes the 2 MiB of RAM after it.
+ 		 */
+-		memory@91700000 {
+-			reg = <0x0 0x91700000 0x0 0x1200000>;
++		memory@88800000 {
++			reg = <0x0 0x88800000 0x0 0x1400000>;
++			no-map;
++		};
++
++		mpss_mem: mpss@89c00000 {
++			reg = <0x0 0x89c00000 0x0 0x6200000>;
++			no-map;
++		};
++
++		adsp_mem: adsp@8fe00000 {
++			reg = <0x0 0x8fe00000 0x0 0x1b00000>;
++			no-map;
++		};
++
++		slpi_mem: slpi@91900000 {
++			reg = <0x0 0x91900000 0x0 0xa00000>;
++			no-map;
++		};
++
++		venus_mem: venus@92300000 {
++			reg = <0x0 0x92300000 0x0 0x500000>;
++			no-map;
++		};
++
++		gpu_mem: gpu@92800000 {
++			reg = <0x0 0x92800000 0x0 0x100000>;
++			no-map;
++		};
++
++		mba_mem: mba@92900000 {
++			reg = <0x0 0x92900000 0x0 0x200000>;
+ 			no-map;
+ 		};
+ 
+@@ -557,6 +597,13 @@
+ 			regulator-max-microvolt = <1250000>;
+ 		};
+ 
++		/* Modem PLL (stock vdd_pll-supply = pm8994_l11, 1.1 V) */
++		vreg_l11a_1p1: l11 {
++			regulator-name = "vreg_l11a_1p1";
++			regulator-min-microvolt = <1100000>;
++			regulator-max-microvolt = <1100000>;
++		};
++
+ 		vreg_l12a_1p8: l12 {
+ 			regulator-name = "vreg_l12a_1p8";
+ 			regulator-min-microvolt = <1800000>;
+@@ -906,3 +953,33 @@
+ 		regulator-enable-ramp-delay = <500>;
+ 	};
+ };
++
++/*
++ * Modem data path: IPA v2.5 (stock qcom,ipa-hw-ver = 5 at 0x680000, IRQ 333,
++ * BAM IRQ 432), driven by ipa2-lite. Stock uses no SMMU for it (32-bit DMA).
++ * Disabled: loading ipa2-lite resets the SoC about 20 s into boot (r32).
++ */
++&soc {
++	ipa: ipa@680000 {
++		compatible = "qcom,ipa-v2.5";
++		reg = <0x00680000 0x4effc>;
++		clocks = <&rpmcc RPM_SMD_IPA_CLK>;
++		interrupts = <GIC_SPI 333 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 432 IRQ_TYPE_LEVEL_HIGH>;
++		interrupt-names = "ipa", "dma";
++		modem-remoteproc = <&mss_pil>;
++		status = "disabled";
++	};
++};
++
++/*
++ * Modem (MSS). The stock image is relocatable (ELF flag bit 27) and its size
++ * (0x6200000) matches the SoC dtsi's mpss carveout, so it loads there instead of
++ * stock's 0x89c00000. EFS comes from rmtfs on file copies of modemst1/2 and fsg.
++ */
++&mss_pil {
++	pll-supply = <&vreg_l11a_1p1>;
++	firmware-name = "qcom/msm8996/lithium/mba.mbn",
++			"qcom/msm8996/lithium/modem.mbn";
++	status = "okay";
++};

@@ -1,0 +1,32 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] arm64: dts: qcom: xiaomi-lithium: enable IPA
+
+Enable the IPA v2.5 data path for the modem, with qcom,bam-remote-mode:
+the modem/TZ own the IPA BAM on MSM8996 (stock qcom,ipa-bam-remote-mode).
+ipa2-lite then creates rmnet_ipa0, which ModemManager pairs with the
+QRTR modem.
+
+---
+diff --git a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+--- a/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
++++ b/arch/arm64/boot/dts/qcom/msm8996pro-xiaomi-lithium.dts
+@@ -1034,7 +1034,8 @@
+ /*
+  * Modem data path: IPA v2.5 (stock qcom,ipa-hw-ver = 5 at 0x680000, IRQ 333,
+  * BAM IRQ 432), driven by ipa2-lite. Stock uses no SMMU for it (32-bit DMA).
+- * Disabled: loading ipa2-lite resets the SoC about 20 s into boot (r32).
++ * The BAM is owned by the modem/TZ (stock qcom,ipa-bam-remote-mode): Linux
++ * resetting it reset the SoC (r32), so ipa2-lite leaves its globals alone.
+  */
+ &soc {
+ 	ipa: ipa@680000 {
+@@ -1045,7 +1046,8 @@
+ 			     <GIC_SPI 432 IRQ_TYPE_LEVEL_HIGH>;
+ 		interrupt-names = "ipa", "dma";
+ 		modem-remoteproc = <&mss_pil>;
+-		status = "disabled";
++		qcom,bam-remote-mode;
++		status = "okay";
+ 	};
+ };
+ 

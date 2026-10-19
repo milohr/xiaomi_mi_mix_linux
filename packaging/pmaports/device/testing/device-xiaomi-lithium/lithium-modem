@@ -1,0 +1,35 @@
+#!/bin/sh
+# Xiaomi Mi MIX (lithium): bring up mobile data once rmtfs has started the modem.
+# - The IPA data path (ipa2-lite) may only touch the hardware while the modem
+#   runs (loading it earlier resets the SoC), so it is blacklisted and loaded here.
+# - The USIM stays "detected" until a provisioning session is activated, which
+#   Android's radio stack does at boot; ModemManager otherwise fails with
+#   "GW primary session index unknown".
+set -u
+
+mss=
+for r in /sys/class/remoteproc/remoteproc*; do
+	[ "$(cat "$r/name" 2>/dev/null)" = 2080000.remoteproc ] && mss=$r
+done
+[ -n "$mss" ] || exit 0
+
+# Wait for the modem and its QMI services
+i=0
+until [ "$(cat "$mss/state")" = running ] && qmicli -d qrtr://0 --uim-get-card-status >/dev/null 2>&1; do
+	i=$((i + 1))
+	[ "$i" -gt 60 ] && { echo "modem not up" >&2; exit 1; }
+	sleep 1
+done
+
+status=$(qmicli -d qrtr://0 --uim-get-card-status 2>/dev/null)
+if echo "$status" | grep -q "Primary GW:   session doesn't exist"; then
+	aid=$(echo "$status" | awk '/Application type:  .usim/ {u=1} u && /Application ID:/ {getline; gsub(/[ \t]/, ""); print; exit}')
+	if [ -n "$aid" ]; then
+		qmicli -d qrtr://0 --uim-change-provisioning-session="slot=1,activate=yes,session-type=primary-gw-provisioning,aid=$aid" ||
+			echo "SIM provisioning failed" >&2
+	fi
+fi
+
+modprobe ipa2-lite 2>/dev/null || modprobe --ignore-install ipa2_lite
+# ModemManager probed before the data port existed (and the SIM session): start over
+systemctl try-restart ModemManager.service

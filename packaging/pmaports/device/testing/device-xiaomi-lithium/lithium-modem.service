@@ -1,0 +1,13 @@
+[Unit]
+Description=Mobile data bring-up (SIM provisioning, IPA) once the modem runs
+After=rmtfs.service ModemManager.service
+Wants=ModemManager.service
+BindsTo=rmtfs.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/libexec/lithium-modem
+
+[Install]
+WantedBy=rmtfs.service

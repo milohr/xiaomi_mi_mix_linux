@@ -27,7 +27,8 @@ This repository is independent of the MediaTek Redmi `flare` project.
 | USB host / OTG | ✅ | automatic via TUSB320L (INT on TLMM 63): devices and unpowered docks get host + 5 V; powered docks only charge (no USB-PD) |
 | Suspend / CPU idle | ✅ | s2idle, wakes on Power key and RTC; PSCI CPU idle (≈ 80 mA less awake with the screen off) |
 | Earpiece (piezo, LM48560) | ❌ | no mainline driver |
-| Mobile data | 🔧 | modem boots and registers on the network (file-backed EFS); data path (IPA v2.5) in progress. Calls not planned |
+| Cameras | ✅ | front OV5675 and rear OV16880 (own driver) through libcamera's software ISP, stock colour matrices, manual focus |
+| Mobile data | 🔧 | modem boots and registers (file-backed EFS); IPA v2.5 data path probes, ModemManager sees the modem; data untested. Calls not planned |
 
 Details: [Phase 6 findings](docs/PHASE6_FINDINGS.md) (current), [handoff](docs/HANDOFF.md)
 (how to build, install and recover), [plan](docs/PLAN.md).

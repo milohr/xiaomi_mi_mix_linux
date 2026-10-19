@@ -13,6 +13,9 @@ system_img="$root/artifacts/p8/extract/system.raw.img"
 [ -f "$stock/adsp/adsp.mdt" ]
 [ -f "$stock/slpi_a4/slpi_a4.mdt" ]
 [ -f "$stock/venus/venus.mdt" ]
+[ -f "$stock/modem/modem.mdt" ]
+[ -f "$stock/modem/mba.mbn" ]
+[ -d "$stock/modem_pr/mcfg" ]
 [ -f "$stock/sensors/sns.reg" ]
 [ -f "$system_img" ]
 command -v debugfs >/dev/null
@@ -45,6 +48,18 @@ install -m644 "$stock/venus/venus.mdt" \
 for src in "$stock"/venus/venus.b??; do
   install -m644 "$src" "$stage/$name/firmware/qcom/msm8996/lithium/$(basename "$src")"
 done
+
+# Modem (MSS): MBA, the relocatable modem image and its segments, and the carrier
+# configurations that tqftpserv serves next to the modem firmware.
+install -m644 "$stock/modem/mba.mbn" "$stage/$name/firmware/qcom/msm8996/lithium/mba.mbn"
+install -m644 "$stock/modem/modem.mdt" \
+  "$stage/$name/firmware/qcom/msm8996/lithium/modem.mbn"
+for src in "$stock"/modem/modem.b??; do
+  install -m644 "$src" "$stage/$name/firmware/qcom/msm8996/lithium/$(basename "$src")"
+done
+cp -r "$stock/modem_pr" "$stage/$name/firmware/qcom/msm8996/lithium/modem_pr"
+find "$stage/$name/firmware/qcom/msm8996/lithium/modem_pr" -type d -exec chmod 755 {} +
+find "$stage/$name/firmware/qcom/msm8996/lithium/modem_pr" -type f -exec chmod 644 {} +
 
 # The sensor registry the SLPI asks for (qcom_sns_reg): this phone's own, from persist.
 install -m644 "$stock/sensors/sns.reg" \

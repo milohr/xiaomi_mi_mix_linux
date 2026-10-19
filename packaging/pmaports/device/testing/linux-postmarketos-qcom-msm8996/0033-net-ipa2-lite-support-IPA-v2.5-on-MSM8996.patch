@@ -1,0 +1,89 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] net: ipa2-lite: support IPA v2.5 on MSM8996
+
+Two gaps showed up bringing up IPA v2.5 on the Xiaomi Mi MIX (MSM8996):
+
+- On MSM8996 the IPA BAM is owned by the modem/TrustZone (downstream DT
+  qcom,ipa-bam-remote-mode; the downstream driver registers it as
+  SPS_BAM_MGR_DEVICE_REMOTE). Resetting or reconfiguring its global
+  registers from Linux reset the SoC about 20 s into boot. With the new
+  qcom,bam-remote-mode property, only the pipes are set up.
+- The v2.5 layout has a header processing-context partition
+  (MEM_MDM_HDR_PCTX) that ipa_init_sram_part() did not handle (WARN and
+  -EINVAL). Zero it like the modem headers and program
+  IPA_LOCAL_PKT_PROC_CNTXT_BASE, as the downstream v2.5 driver does.
+
+With both, the driver probes and creates rmnet_ipa0 once the modem runs.
+
+---
+diff --git a/drivers/net/ipa2-lite/ipa.c b/drivers/net/ipa2-lite/ipa.c
+--- a/drivers/net/ipa2-lite/ipa.c
++++ b/drivers/net/ipa2-lite/ipa.c
+@@ -82,6 +82,8 @@
+ struct ipa {
+ 	atomic_t uc_cmd_busy;
+ 	bool test_mode;
++	/* The BAM is owned by the modem/TZ (qcom,bam-remote-mode, MSM8996) */
++	bool bam_remote;
+ 	struct clk *clk;
+ 	struct device *dev;
+ 	struct ipa_ep ep[EP_NUM];
+@@ -173,14 +175,22 @@
+ 	if (ipa->version >= 25)
+ 		iowrite32(0x1fff7f, ipa->mmio + REG_IPA_BCR_OFST);
+ 
+-	iowrite32(BAM_SW_RST, ipa->mmio + REG_BAM_CTRL);
+-	iowrite32(0, ipa->mmio + REG_BAM_CTRL);
++	/*
++	 * In remote mode the modem/TZ initialises the BAM; resetting or
++	 * reconfiguring its global registers from here resets the SoC.
++	 * Only the pipes are ours to set up.
++	 */
++	if (!ipa->bam_remote) {
++		iowrite32(BAM_SW_RST, ipa->mmio + REG_BAM_CTRL);
++		iowrite32(0, ipa->mmio + REG_BAM_CTRL);
++
++		iowrite32(0x10, ipa->mmio + REG_BAM_DESC_CNT_TRSHLD);
++		iowrite32((u32)~BIT(11), ipa->mmio + REG_BAM_CNFG_BITS);
++		rmw32(ipa->mmio + REG_BAM_CTRL, BAM_EN, BAM_EN);
+ 
+-	iowrite32(0x10, ipa->mmio + REG_BAM_DESC_CNT_TRSHLD);
+-	iowrite32((u32)~BIT(11), ipa->mmio + REG_BAM_CNFG_BITS);
+-	rmw32(ipa->mmio + REG_BAM_CTRL, BAM_EN, BAM_EN);
+-
+-	iowrite32(BAM_ERROR_EN | BAM_HRESP_ERR_EN, ipa->mmio + REG_BAM_IRQ_EN);
++		iowrite32(BAM_ERROR_EN | BAM_HRESP_ERR_EN,
++			  ipa->mmio + REG_BAM_IRQ_EN);
++	}
+ 	iowrite32(BAM_IRQ, ipa->mmio + REG_BAM_IRQ_SRCS_MSK_EE0);
+ }
+ 
+@@ -566,6 +576,7 @@
+ 		ipa_setup_cmd_desc(desc++, IPA_CMD_HDR_LOCAL_INIT, &cmd_args, cmd++);
+ 
+ 		fallthrough;
++	case MEM_MDM_HDR_PCTX:	/* IPA v2.5: zeroed like the modem headers */
+ 	case MEM_MDM_COMP:
+ 	case MEM_MDM:
+ 	case MEM_DRV:
+@@ -600,6 +611,11 @@
+ 
+ 	ret = ipa_submit_sync(ep, descs, desc - &descs[0]);
+ 
++	/* As the downstream IPA v2.5 driver: tell the IPA where the contexts are */
++	if (!ret && mem_id == MEM_MDM_HDR_PCTX)
++		iowrite32(part_offset,
++			  ipa->mmio + REG_IPA_LOCAL_PKT_PROC_CNTXT_BASE_OFST);
++
+ free_pld:
+ 	ipa_dma_free(&pld);
+ 
+@@ -1130,6 +1146,8 @@
+ 		return -ENOMEM;
+ 
+ 	ipa->version = (long)of_device_get_match_data(dev);
++	ipa->bam_remote = of_property_read_bool(dev->of_node,
++						"qcom,bam-remote-mode");
+ 	ipa->dev = dev;
+ 	ipa->ssr_nb.notifier_call = ipa_ssr_notifier;
+ 	ipa->test_mode = test_mode;

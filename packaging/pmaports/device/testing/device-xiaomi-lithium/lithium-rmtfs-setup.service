@@ -1,0 +1,8 @@
+[Unit]
+Description=Copy the modem EFS partitions to files for rmtfs (read-only, once)
+ConditionPathExists=!/var/lib/rmtfs/modem_fs1
+Before=rmtfs.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/lithium-rmtfs-setup

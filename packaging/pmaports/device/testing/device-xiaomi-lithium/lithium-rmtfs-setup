@@ -1,0 +1,20 @@
+#!/bin/sh
+# Xiaomi Mi MIX (lithium): rmtfs serves the modem's EFS from files, never from
+# the partitions. Copy modemst1/modemst2/fsg once (read-only), and give the
+# modem a blank fsc cookie (lithium has no fsc partition; without it the modem
+# crashes at boot).
+set -eu
+
+dir=/var/lib/rmtfs
+tmp=$dir.tmp
+rm -rf "$tmp"
+mkdir -p "$tmp"
+chmod 700 "$tmp"
+for p in modemst1:modem_fs1 modemst2:modem_fs2 fsg:modem_fsg; do
+	dev=/dev/disk/by-partlabel/${p%%:*}
+	[ -e "$dev" ] || { echo "missing $dev" >&2; exit 1; }
+	dd if="$dev" of="$tmp/${p##*:}" bs=1M status=none
+done
+dd if=/dev/zero of="$tmp/modem_fsc" bs=1024 count=1 status=none
+sync
+mv "$tmp" "$dir"

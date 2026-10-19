@@ -165,6 +165,38 @@ Hardware facts found by testing, where the stock tree is wrong or silent:
   (`/etc/modprobe.d/zz-no-ipa2-lite.conf`) until its probe is understood.
 - **Cameras identified** (see docs/HARDWARE_COVERAGE.md): rear OV16880 (OFilm), front OV5675.
 
+## IPA fixed, both cameras, colour tuning (2026-10-19, kernel r36, device r18, firmware r3)
+
+- **The IPA boot loop was the BAM:** stock DT has `qcom,ipa-bam-remote-mode`, and downstream
+  registers the IPA BAM as `SPS_BAM_MGR_DEVICE_REMOTE` (owned by the modem/TZ). ipa2-lite reset
+  and reprogrammed the BAM's global registers, which resets the SoC. Patch 0033 adds
+  `qcom,bam-remote-mode` (skip the BAM globals) and the IPA v2.5 header processing-context
+  partition (zeroed, `IPA_LOCAL_PKT_PROC_CNTXT_BASE` = its offset, as downstream v2.5). The
+  driver then probes and creates `rmnet_ipa0`; ModemManager builds the modem from qrtr0 and
+  rmnet_ipa0.
+- **ipa2-lite must load only while the modem runs:** loading it with the modem stopped resets
+  the SoC (the BAM is unpowered). It stays blacklisted; `lithium-modem.service` (device r18)
+  waits for the modem, activates the USIM provisioning session, loads ipa2-lite and restarts
+  ModemManager. rmtfs runs file-backed through a drop-in on the packaged `rmtfs.service`;
+  `lithium-rmtfs-setup` copies modemst1/modemst2/fsg once and creates the zero `modem_fsc`.
+  Modem firmware and `modem_pr` are in firmware r3. Data itself is untested (no SIM inserted).
+- **Front camera (OV5675):** mainline driver at 19.2 MHz MCLK; libcamera's simple pipeline with
+  the GPU software ISP (patch 0028).
+- **Rear camera (OV16880):** new driver (patch 0029). Rockchip's register set produced no frames
+  on this module (no SOF at any lane rate); the stock library's tables do: init plus 2336x1752
+  binned (768 Mbps/lane) and 4672x3504 (1272 Mbps/lane), 24 MHz MCLK, 4 lanes (patch 0030).
+- **Focus motor:** DW9763, ID 0xf9, the DW9761 register map; dw9719 accepts it (patch 0031),
+  stock SAC mode 4 and prescale 0x3c from DT (patch 0032), positions 0-1023. libcamera's simple
+  pipeline has no autofocus algorithm.
+- **Colour tuning** (`/usr/share/libcamera/ipa/simple/{ov16880,ov5675}.yaml`, device r17):
+  black level 4096 (BLC target 0x40, confirmed by a dark rear frame: median 65), and the six
+  colour matrices of each stock `libchromatix_*_default_preview_3a.so` (zones 7000/6500,
+  6200/6100, 4600/4300, 2950/2700, 2400/2300 K).
+- **Speed:** frames reach about 15 fps after the software ISP because the GPU cannot import the
+  CAMSS buffers (`eglCreateImageKHR` fails on the 3240-byte stride); CAMSS writes RDI frames in
+  frame-based mode, which has no stride, so a fix means line-based RDI in CAMSS.
+
+
 ## The real display driver and the rest of the day (2026-10-18, kernel r5–r10)
 
 - **Panel** (patch 0003): `panel-xiaomi-lithium-fte716` (lmdpdg tables from stock) on DSI0,

@@ -3,7 +3,7 @@ maintainer="Yassine Oudjana (Tooniis) <y.oudjana@protonmail.com>"
 _flavor="postmarketos-qcom-msm8996"
 pkgname=linux-$_flavor
 pkgver=6.19.5
-pkgrel=31
+pkgrel=36
 pkgdesc="Kernel close to mainline with extra patches for Qualcomm MSM8996 devices"
 arch="aarch64"
 _carch="arm64"
@@ -57,6 +57,15 @@ source="
 	0023-ASoC-qcom-q6asm-dai-close-a-stopped-stream-before-reopening-it.patch
 	0024-arm64-dts-qcom-xiaomi-lithium-enable-the-internal-microphone.patch
 	0025-iio-qcom_smgr-honour-the-requested-sampling-frequency.patch
+	0026-net-add-the-ipa2-lite-driver-for-IPA-v2.x.patch
+	0027-arm64-dts-qcom-xiaomi-lithium-enable-the-modem-and-IPA.patch
+	0028-arm64-dts-qcom-xiaomi-lithium-enable-the-front-camera.patch
+	0029-media-i2c-add-an-OmniVision-OV16880-sensor-driver.patch
+	0030-arm64-dts-qcom-xiaomi-lithium-enable-the-rear-camera.patch
+	0031-media-i2c-dw9719-accept-the-DW9763.patch
+	0032-arm64-dts-qcom-xiaomi-lithium-add-the-rear-camera-focus-motor.patch
+	0033-net-ipa2-lite-support-IPA-v2.5-on-MSM8996.patch
+	0034-arm64-dts-qcom-xiaomi-lithium-enable-IPA.patch
 "
 builddir="$srcdir/linux-$_tag"
 
@@ -87,7 +96,7 @@ package() {
 }
 sha512sums="
 dd30dd113ad9f0b4ab3771ea655de2becce7ddaf5066d2f860b7bb1eb78573137313191d9da740b152348f9f89894ace2bb94fb195e340f7b6dabedeebbc929f  linux-v6.19.5-msm8996.tar.gz
-69545e569315af67bb9ac7837d2f9fde468c1c0e0aa3aa07268a19f214442177666f96d7cb3dcf899b2c64e35bd82b6f3492af96758e8a6a23f90b4334cfa955  config-postmarketos-qcom-msm8996.aarch64
+9c0bffaa43087b47b781d74989a007cd805f7838d9e4e345df68fb5ddb935c1999a7ed0db1a917ddec1211096ae496520c10a88ac0551afbfec2792b8880a7de  config-postmarketos-qcom-msm8996.aarch64
 876c3d43827bba055beda882e7a017b9efe900e5c54ec0895c16dfca37a9eade9e46f9d80422ade3a5f10a303d3c1f523b7aec1738ada0248e4b7421cdf7c5bd  0001-arm64-dts-qcom-add-xiaomi-mi-mix.patch
 439d1ec6ee9751139ad967a48e4cf6385cbda7f461327423e08916b3dc574887b5113f395728acd20480b533f6cca2fa6bc1ee5e7e5a1f2f38e3cf17ce80746c  0002-arm64-dts-qcom-xiaomi-lithium-add-touchscreen.patch
 b16899d3b2c258301586e8f7d5f61cfba6ee50d9c6e342e38587e5e7601039bc9747914e000aeb614d573e1904d49cfbce6914e5531168c8bbec04e27039ce07  0003-drm-panel-arm64-dts-xiaomi-lithium-display.patch
@@ -113,4 +122,13 @@ c2ee8df2f2a28a2ff4591960694ec28c89d68f5b6f63bcf52061082920e4d8d1727de2cc98e632e1
 04cb247e987a547c75c5ffbacb4a3a79258b063cf2e028f8107352bf3722ec1c64480eb03d5e4b8886bd980a08ca74bcdb3c22074c85a7c3535fdaa9d3ec2141  0023-ASoC-qcom-q6asm-dai-close-a-stopped-stream-before-reopening-it.patch
 59a75db50424a110b7125c72074867dabe8eb640c577d0e74d23b312e6f4a041f5d3c75b618ae498de64f6b1bacd3fe55686d24fc4dbf8422b9f44b47a93fbbb  0024-arm64-dts-qcom-xiaomi-lithium-enable-the-internal-microphone.patch
 76f23bcaa04148e945d5c61c71d52f880105ee30166af3cee5e36ddebfd7cb1755726c3ff1f86f809126ee4f5f5b8a8f16b3e451503cb7b00a0e3fa253d89ce0  0025-iio-qcom_smgr-honour-the-requested-sampling-frequency.patch
+1cc7c7d4a0ed3b07f513268058e87ac2b665aa3314f2fa59de502a4ccfbde681ec715215ceb889fafd42ec721fdfe10a3b2dcfae3333bfe2ec642533c0ec16c9  0026-net-add-the-ipa2-lite-driver-for-IPA-v2.x.patch
+06052360d445acc139ac5b891aaa7364f64ff74239002e41df92ea16af658e65874e2234c6622da4d369f0f65e49ca7e4f9af90fa7c72cdbf970e414a57f45b0  0027-arm64-dts-qcom-xiaomi-lithium-enable-the-modem-and-IPA.patch
+e1cf48e789a760354e54421a079708778c50275c57dd7969c4679f4f0e92e8c86e51716777f15883a9eaf7fa4798c180789cba11de0211f261ef09faaa5ff33b  0028-arm64-dts-qcom-xiaomi-lithium-enable-the-front-camera.patch
+48659a2849859f032c9c4a374d7c9f9748a6975c7a9127100b43843f29b20eb12fe6a5e926aeac357b8f7b11c4142b6bec5fc5d8b5889ce608ef0c3ae918cedc  0029-media-i2c-add-an-OmniVision-OV16880-sensor-driver.patch
+56d33f8fd792125c5769620dc9f9f2f6c2236ba90a16346d4489ed35334ca8f5b32bd0152fda3985e86d8697bf469834f8f8518c3fd76b14d36fde3f921ef931  0030-arm64-dts-qcom-xiaomi-lithium-enable-the-rear-camera.patch
+3b64f40a3d47a4cfdb830b2070c145ca93fb271ce58dc2dcea00008ad9f2e250ebb09b91f2764623d2360ae02160adc501706a70400b4abd40711cb4378ea98d  0031-media-i2c-dw9719-accept-the-DW9763.patch
+06a62775c130e9761e4a581ae4ebcb8e916b00039b3ec71e1d21c2a9f87fdb939a284288ffabc6f290606add9d4d99ada8fda39719002f338145e3e71708c546  0032-arm64-dts-qcom-xiaomi-lithium-add-the-rear-camera-focus-motor.patch
+c95fbcbb6f19e7db833e5585f38b3f3e843f8e52eb75fce40e26ab331a2319f2e524c98b9a1a36bb3aabbd1087c3576e3ae8c51f6cd5c31ea2cb2a8ea2e96357  0033-net-ipa2-lite-support-IPA-v2.5-on-MSM8996.patch
+3fcfcf33654de0c92fca540dc7fea7ca273e3dccad89de7c86599df89d53615d9438890ab663b403b3ead365e8657639b70b3aebd66ae006355a8dedbc140400  0034-arm64-dts-qcom-xiaomi-lithium-enable-IPA.patch
 "
