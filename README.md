@@ -22,7 +22,7 @@ This repository is independent of the MediaTek Redmi `flare` project.
 | GPU (Adreno 530) | ✅ | lithium's signed zap shader; GPU_GX supplied from PMI8994 S2; Plasma Mobile (KWin) renders on the GPU |
 | Bluetooth | ✅ | QCA6174 (Rome 3.2) on BLSP1 UART2; address from persist; A2DP audio (AAC) to headphones |
 | Video decode (Venus) | ✅ | H.264/HEVC/VP8/VP9 via V4L2 (`/dev/video0`), lithium's firmware; mpv `hwdec=v4l2m2m-copy` plays 720p60 YouTube at ~10–15 % CPU |
-| Sensors / auto-rotate | 🔧 | all behind the SLPI; registry from persist + Sensor Manager IIO driver needed — [plan](docs/SENSORS_PLAN.md) |
+| Sensors / auto-rotate | ✅ | SLPI (slpi_a4 firmware, registry from persist); accelerometer, gyroscope, magnetometer, barometer as IIO; Plasma auto-rotate works |
 | Microphones | 🔧 | codec capture path present, untested |
 | USB host / OTG | ✅ | automatic via TUSB320L (INT on TLMM 63): devices and unpowered docks get host + 5 V; powered docks only charge (no USB-PD) |
 | Suspend / CPU idle | ✅ | s2idle, wakes on Power key and RTC; PSCI CPU idle (≈ 80 mA less awake with the screen off) |
@@ -39,7 +39,7 @@ Details: [Phase 6 findings](docs/PHASE6_FINDINGS.md) (current), [handoff](docs/H
   battery/charger (0005), audio codec (0006), apq8096 MI2S clocks (0007),
   fuel-gauge current sign (0008), GPU (0009), TFA9891 driver (0010), speaker (0011),
   automatic USB host mode (0012), OTG VBUS guard (0013), Bluetooth (0014), mdp5 resume
-  fix (0015), PCIe power domain kept on in suspend (0016), headphone jack detection (0017), headphones on their own DSP stream (0018), Venus video codec (0019). Every board value is traced to
+  fix (0015), PCIe power domain kept on in suspend (0016), headphone jack detection (0017), headphones on their own DSP stream (0018), Venus video codec (0019), SLPI sensors (0020), a5xx preemption switch (0021, diagnostic). Every board value is traced to
   lithium's stock device tree.
 - **Packages**: [`packaging/pmaports/`](packaging/pmaports) — `linux-postmarketos-qcom-msm8996`,
   `device-xiaomi-lithium` (deviceinfo, UCM, WirePlumber rule, USB-C current, Bluetooth address) and

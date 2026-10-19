@@ -1,0 +1,48 @@
+From: Xiaomi Mi MIX Linux port contributors
+Subject: [PATCH] drm/msm/a5xx: honour msm.enable_preemption=0
+
+A5xx GPUs other than A510 always get four rings and preemption, and the
+enable_preemption module parameter only applies to A7xx. Let
+enable_preemption=0 give A5xx a single ring, i.e. no preemption, so it
+can be ruled in or out when chasing faults.
+
+On the Mi MIX (Adreno 530) GPU translation faults show up only while two
+GPU clients run at once (KWin at high priority with a browser, or during
+a rotation), the faulting addresses being buffers freed shortly before.
+
+---
+--- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
++++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
+@@ -13,6 +13,8 @@
+ #include "msm_mmu.h"
+ #include "a5xx_gpu.h"
+ 
++extern int enable_preemption;
++
+ extern bool hang_debug;
+ static void a5xx_dump(struct msm_gpu *gpu);
+ 
+@@ -1750,7 +1752,11 @@
+ 
+ 	nr_rings = 4;
+ 
+-	if (config->info->revn == 510)
++	/*
++	 * One ring means no preemption: A510 cannot do it, and
++	 * msm.enable_preemption=0 turns it off on the others.
++	 */
++	if (config->info->revn == 510 || enable_preemption == 0)
+ 		nr_rings = 1;
+ 
+ 	ret = adreno_gpu_init(dev, pdev, adreno_gpu, config->info->funcs, nr_rings);
+--- a/drivers/gpu/drm/msm/adreno/adreno_device.c
++++ b/drivers/gpu/drm/msm/adreno/adreno_device.c
+@@ -17,7 +17,7 @@
+ module_param_named(snapshot_debugbus, snapshot_debugbus, bool, 0600);
+ 
+ int enable_preemption = -1;
+-MODULE_PARM_DESC(enable_preemption, "Enable preemption (A7xx only) (1=on , 0=disable, -1=auto (default))");
++MODULE_PARM_DESC(enable_preemption, "Enable preemption (A7xx; 0 also disables it on A5xx) (1=on , 0=disable, -1=auto (default))");
+ module_param(enable_preemption, int, 0600);
+ 
+ bool disable_acd;

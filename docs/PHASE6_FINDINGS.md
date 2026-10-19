@@ -90,6 +90,26 @@ Hardware facts found by testing, where the stock tree is wrong or silent:
   `hwdec=v4l2m2m-copy` plays 720p60 YouTube (H.264 via yt-dlp) at about 10–15 % CPU. A
   Wi-Fi failure seen once while testing was a coincidence on a truncated test image.
 
+## Sensors and the GPU fault hunt (2026-10-18, kernel r26–r28, firmware r2)
+
+- **Sensors work** (patch 0020, firmware r2): the SLPI was simply not enabled. Stock supplies:
+  vdd_px = PM8994 LVS2 (fed from S4), vdd_cx via the power domain. The shared stock NON-HLOS
+  holds slpi_a1/a4/a7; lithium's DT names **a4** (we had packaged a1, never loaded). The
+  in-kernel sensor registry (`qcom_sns_reg`) serves this phone's `persist/sensors/sns.reg`
+  as `qcom/sensors/sns.reg-xiaomi,lithium`; the tree's `qcom_smgr` then exposes
+  `qcom-smgr-accel/gyro/mag/pressure` as IIO devices. iio-sensor-proxy finds the
+  accelerometer and Plasma Mobile shows auto-rotate, which follows the phone. No light or
+  proximity sensor on the SLPI (lithium's proximity is ultrasonic).
+- **GPU translation faults are use-after-free reads**, not overruns: mapping fault addresses
+  across buffer snapshots taken around rotations (`kscreen-doctor`), every address lies in a
+  live buffer in one snapshot and unmapped in the next. Rotation reproduces it reliably
+  (~20 rate-limited faults per 4 rotations). **Not preemption**: with patch 0021 and
+  `msm.enable_preemption=0` (one ring) the count is the same. Next: tell Mesa from the
+  kernel (msm unmap timing) — e.g. keep freed iovas mapped for a grace period, or capture the
+  command stream (FD_RD_DUMP) at a fault.
+- New this boot series, unexplained: two `pclk0_clk_src: rcg didn't update its configuration`
+  warnings while the panel driver loads (screen works).
+
 ## The real display driver and the rest of the day (2026-10-18, kernel r5–r10)
 
 - **Panel** (patch 0003): `panel-xiaomi-lithium-fte716` (lmdpdg tables from stock) on DSI0,

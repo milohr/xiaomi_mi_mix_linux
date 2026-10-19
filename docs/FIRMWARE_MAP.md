@@ -14,7 +14,8 @@ Generic firmware stays owned by the pinned postmarketOS packages listed below.
 | `qcom/msm8996/lithium/a530_zap.mbn` + `.b00`–`.b02` | stock system image `/vendor/firmware/a530_zap.mdt/.b00/.b01/.b02` | Package locally; rename only MDT to the DTS-requested `.mbn`. |
 | `qcom/msm8996/lithium/adsp.mbn` + `adsp.bNN` | `artifacts/firmware-dump/stock/adsp/` | Package locally; rename only `adsp.mdt` to `.mbn`. |
 | `qcom/msm8996/lithium/venus.mbn` + `venus.bNN` | `artifacts/firmware-dump/stock/venus/` (from stock `NON-HLOS.bin` `/image`, via `mcopy`) | Package locally; rename only `venus.mdt` to `.mbn`. Video codec (Venus). |
-| `qcom/msm8996/lithium/slpi.mbn` + `slpi.bNN` | `artifacts/firmware-dump/stock/slpi/slpi_a1.*` | Package locally; normalize the basename to `slpi`; this is the anticipated mainline SLPI path and remains untested. |
+| `qcom/sensors/sns.reg-xiaomi,lithium` | `artifacts/firmware-dump/stock/sensors/sns.reg` (from `persist` `/sensors/sns.reg`, read-only via `debugfs`) | Package locally. Sensor registry served to the SLPI by `qcom_sns_reg`; this unit's calibration. |
+| `qcom/msm8996/lithium/slpi.mbn` + `slpi.bNN` | `artifacts/firmware-dump/stock/slpi_a4/slpi_a4.*` (stock `NON-HLOS.bin` `/image`, via `mcopy`) | Package locally; basename normalized to `slpi`. Stock NON-HLOS holds `slpi_a1`/`a4`/`a7`; lithium's stock DT (`qcom,msm-ssc-sensors`) names **a4**. Tested: SLPI boots, sensors appear. |
 
 `linux-firmware-ath10k`, `linux-firmware-qca`, and `linux-firmware-qcom` are package
 names observed in pinned pmaports commit `dfb010f5b9885d185d089b6e1e493030062f9756`.

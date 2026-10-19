@@ -3,7 +3,7 @@ maintainer="Yassine Oudjana (Tooniis) <y.oudjana@protonmail.com>"
 _flavor="postmarketos-qcom-msm8996"
 pkgname=linux-$_flavor
 pkgver=6.19.5
-pkgrel=26
+pkgrel=28
 pkgdesc="Kernel close to mainline with extra patches for Qualcomm MSM8996 devices"
 arch="aarch64"
 _carch="arm64"
@@ -51,6 +51,8 @@ source="
 	0017-ASoC-wcd9335-headset-detection.patch
 	0018-arm64-dts-qcom-xiaomi-lithium-headphones-on-their-own-stream.patch
 	0019-arm64-dts-qcom-xiaomi-lithium-enable-venus.patch
+	0020-arm64-dts-qcom-xiaomi-lithium-enable-the-slpi-sensors.patch
+	0021-drm-msm-a5xx-honour-enable_preemption-0.patch
 "
 builddir="$srcdir/linux-$_tag"
 
@@ -101,4 +103,6 @@ f3ec0d3aacb1ff62903e242e26658609bacc31ec7b49a58eb1fe6df07a5afe1ab62155925718a890
 97fd1d623a2c1f2eadf3dc4398e3e519c7e2806338dfd47393e3dbfb179737df0f7894f4130b26fdc820e71a137a85f69048eaee353a2e9a7d78b767bde33f02  0017-ASoC-wcd9335-headset-detection.patch
 562e561b980f07a9e642da9bbfcf374b05e53b6708a190011ba2004905a826730738c031ab8180ee9c19c8e0135ef2a482d8d93ca591449eccbd50e2b8eeac70  0018-arm64-dts-qcom-xiaomi-lithium-headphones-on-their-own-stream.patch
 85912544020f784333617082ab8dc3adf5d2fc25e9c1c535edb370b0db10c4682fdf6f6d1fdc626a77205016d6528199cfb4039a67539b58ef4b94d4c44e06c7  0019-arm64-dts-qcom-xiaomi-lithium-enable-venus.patch
+6a4431db6fcbaa0e65cae7b3ad9f3ba173351a67efad7402bc2bc28a8e58a4a92a1cf418cc836f5152db2e68b3da4cc439a85cd81e45cd085c745fc66c0f971f  0020-arm64-dts-qcom-xiaomi-lithium-enable-the-slpi-sensors.patch
+c2ee8df2f2a28a2ff4591960694ec28c89d68f5b6f63bcf52061082920e4d8d1727de2cc98e632e169c46e153625b8bda46074ea71fc4b3a78dcee4af2f00304  0021-drm-msm-a5xx-honour-enable_preemption-0.patch
 "

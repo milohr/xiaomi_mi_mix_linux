@@ -11,14 +11,16 @@ system_img="$root/artifacts/p8/extract/system.raw.img"
 
 [ -f "$stock/wlan/bdwlan30.bin" ]
 [ -f "$stock/adsp/adsp.mdt" ]
-[ -f "$stock/slpi/slpi_a1.mdt" ]
+[ -f "$stock/slpi_a4/slpi_a4.mdt" ]
 [ -f "$stock/venus/venus.mdt" ]
+[ -f "$stock/sensors/sns.reg" ]
 [ -f "$system_img" ]
 command -v debugfs >/dev/null
 
 rm -rf "$stage"
 mkdir -p "$stage/$name/firmware/postmarketos/ath10k/QCA6174/hw3.0"
 mkdir -p "$stage/$name/firmware/qcom/msm8996/lithium"
+mkdir -p "$stage/$name/firmware/qcom/sensors"
 
 install -m644 "$stock/wlan/bdwlan30.bin" \
   "$stage/$name/firmware/postmarketos/ath10k/QCA6174/hw3.0/board.bin"
@@ -30,10 +32,11 @@ install -m644 "$stock/adsp/adsp.mdt" \
 for src in "$stock"/adsp/adsp.b??; do
   install -m644 "$src" "$stage/$name/firmware/qcom/msm8996/lithium/$(basename "$src")"
 done
-install -m644 "$stock/slpi/slpi_a1.mdt" \
+# Stock NON-HLOS holds slpi_a1/a4/a7 builds; lithium's DT (qcom,msm-ssc-sensors) names a4.
+install -m644 "$stock/slpi_a4/slpi_a4.mdt" \
   "$stage/$name/firmware/qcom/msm8996/lithium/slpi.mbn"
-for src in "$stock"/slpi/slpi_a1.b??; do
-  dst=$(basename "$src" | sed 's/^slpi_a1/slpi/')
+for src in "$stock"/slpi_a4/slpi_a4.b??; do
+  dst=$(basename "$src" | sed 's/^slpi_a4/slpi/')
   install -m644 "$src" "$stage/$name/firmware/qcom/msm8996/lithium/$dst"
 done
 
@@ -42,6 +45,10 @@ install -m644 "$stock/venus/venus.mdt" \
 for src in "$stock"/venus/venus.b??; do
   install -m644 "$src" "$stage/$name/firmware/qcom/msm8996/lithium/$(basename "$src")"
 done
+
+# The sensor registry the SLPI asks for (qcom_sns_reg): this phone's own, from persist.
+install -m644 "$stock/sensors/sns.reg" \
+  "$stage/$name/firmware/qcom/sensors/sns.reg-xiaomi,lithium"
 
 for file in a530_zap.mdt a530_zap.b00 a530_zap.b01 a530_zap.b02; do
   tmp="$stage/$file"
