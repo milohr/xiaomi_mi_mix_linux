@@ -3,7 +3,7 @@ maintainer="Yassine Oudjana (Tooniis) <y.oudjana@protonmail.com>"
 _flavor="postmarketos-qcom-msm8996"
 pkgname=linux-$_flavor
 pkgver=6.19.5
-pkgrel=44
+pkgrel=45
 pkgdesc="Kernel close to mainline with extra patches for Qualcomm MSM8996 devices"
 arch="aarch64"
 _carch="arm64"
@@ -75,6 +75,7 @@ source="
 	0041-power-supply-qcom-smbchg-handle-Quick-Charge-2.0-adapters.patch
 	0042-arm64-dts-qcom-xiaomi-lithium-add-the-NFC-controller.patch
 	0043-net-ipa2-lite-free-dropped-TX-packets-tear-down-in-order.patch
+	0044-media-venus-venc-skip-the-H.264-8x8-transform-property-on-HFI-3xx.patch
 "
 builddir="$srcdir/linux-$_tag"
 
@@ -134,7 +135,7 @@ eee11bc26f8eecefea5419ca9d1c4988422dd8ec17b27f20a3887b79889809b3a97fefc0e717b521
 1cc7c7d4a0ed3b07f513268058e87ac2b665aa3314f2fa59de502a4ccfbde681ec715215ceb889fafd42ec721fdfe10a3b2dcfae3333bfe2ec642533c0ec16c9  0026-net-add-the-ipa2-lite-driver-for-IPA-v2.x.patch
 06052360d445acc139ac5b891aaa7364f64ff74239002e41df92ea16af658e65874e2234c6622da4d369f0f65e49ca7e4f9af90fa7c72cdbf970e414a57f45b0  0027-arm64-dts-qcom-xiaomi-lithium-enable-the-modem-and-IPA.patch
 e1cf48e789a760354e54421a079708778c50275c57dd7969c4679f4f0e92e8c86e51716777f15883a9eaf7fa4798c180789cba11de0211f261ef09faaa5ff33b  0028-arm64-dts-qcom-xiaomi-lithium-enable-the-front-camera.patch
-ef867e2a2e87a87dd809619172ef574161875f7f46c72a4653eee814d85f96914c4ac5a85e9b772925c9289a9e0592baf33d3d3d1aa17ee90f6ad6ade568252f  0029-media-i2c-add-an-OmniVision-OV16880-sensor-driver.patch
+9930986a770e3ab000e19ba741a1394424aaa6ae2fcbcf8af2503bd0e83e9fb0927c6a67053dc920e3c24fafb511d0dea5aec80bbb6c5017936f8c93d02fc1c5  0029-media-i2c-add-an-OmniVision-OV16880-sensor-driver.patch
 56d33f8fd792125c5769620dc9f9f2f6c2236ba90a16346d4489ed35334ca8f5b32bd0152fda3985e86d8697bf469834f8f8518c3fd76b14d36fde3f921ef931  0030-arm64-dts-qcom-xiaomi-lithium-enable-the-rear-camera.patch
 3b64f40a3d47a4cfdb830b2070c145ca93fb271ce58dc2dcea00008ad9f2e250ebb09b91f2764623d2360ae02160adc501706a70400b4abd40711cb4378ea98d  0031-media-i2c-dw9719-accept-the-DW9763.patch
 06a62775c130e9761e4a581ae4ebcb8e916b00039b3ec71e1d21c2a9f87fdb939a284288ffabc6f290606add9d4d99ada8fda39719002f338145e3e71708c546  0032-arm64-dts-qcom-xiaomi-lithium-add-the-rear-camera-focus-motor.patch
@@ -149,4 +150,5 @@ ebb4532279949dc4769b8574fd1a0050b55a0e6caebda907a282102a8e240226f752793e9564ba34
 29820282867c7666cb92c5ce8e9b4855a43a07f658029b6a7c3f8d3adbdddfdc4a6ffa161338f4384ffc8c6fa2e4fd7580506804b2775fdc4c642abaf1d1d583  0041-power-supply-qcom-smbchg-handle-Quick-Charge-2.0-adapters.patch
 6f22c18dba6ff651249b6f47e82b730d01ab50a7eddc76c131b791a24a8daafc6b4ebbdfd390945b03fe99cd9b041cefd5877517820e8018a551808806770252  0042-arm64-dts-qcom-xiaomi-lithium-add-the-NFC-controller.patch
 835cd1baaf61add44d8f84a14f283f50a20d46a99da6e6ae239e526fa522186fe0f0f3336367a0ce3df1b0ff57feb0a9059c153605044feb51ec97549b0ef488  0043-net-ipa2-lite-free-dropped-TX-packets-tear-down-in-order.patch
+1c4126af56053b7e04356b6f8b1907f84e0490021069f7ba1f1247a7cb31fb145e44cdb3969c82ef899266006946de8099dea432e935fbef53bdd47426b05e13  0044-media-venus-venc-skip-the-H.264-8x8-transform-property-on-HFI-3xx.patch
 "

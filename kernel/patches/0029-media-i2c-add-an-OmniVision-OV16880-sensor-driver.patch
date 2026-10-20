@@ -48,7 +48,7 @@ diff --git a/drivers/media/i2c/ov16880.c b/drivers/media/i2c/ov16880.c
 new file mode 100644
 --- /dev/null
 +++ b/drivers/media/i2c/ov16880.c
-@@ -0,0 +1,2290 @@
+@@ -0,0 +1,2332 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * OmniVision OV16880 16 MP image sensor driver.
@@ -64,6 +64,7 @@ new file mode 100644
 +#include <linux/i2c.h>
 +#include <linux/module.h>
 +#include <linux/pm_runtime.h>
++#include <linux/property.h>
 +#include <linux/regulator/consumer.h>
 +#include <linux/unaligned.h>
 +#include <media/v4l2-ctrls.h>
@@ -1579,6 +1580,10 @@ new file mode 100644
 +	struct clk *xvclk;
 +	struct gpio_desc *reset_gpio;
 +	struct gpio_desc *powerdown_gpio;
++
++	/* Focus motor from "lens-focus", held powered while the sensor is */
++	struct device *lens;
++	bool lens_on;
 +	struct regulator_bulk_data supplies[OV16880_NUM_SUPPLIES];
 +
 +	struct v4l2_ctrl *link_freq;
@@ -1956,10 +1961,44 @@ new file mode 100644
 +	return ret;
 +}
 +
++/*
++ * The focus motor powers down once nobody holds it open, and its lens then
++ * falls back to the far end: keep it powered while the sensor is, so that a
++ * focus position set by any application holds while streaming.
++ */
++static void ov16880_lens_get(struct ov16880 *ov16880)
++{
++	struct fwnode_handle *fwnode;
++
++	if (!ov16880->lens) {
++		fwnode = fwnode_find_reference(dev_fwnode(ov16880->dev),
++					       "lens-focus", 0);
++		if (IS_ERR(fwnode))
++			return;
++		ov16880->lens = bus_find_device_by_fwnode(&i2c_bus_type, fwnode);
++		fwnode_handle_put(fwnode);
++		if (!ov16880->lens)
++			return;
++	}
++
++	if (device_is_bound(ov16880->lens))
++		ov16880->lens_on = pm_runtime_resume_and_get(ov16880->lens) >= 0;
++}
++
++static void ov16880_lens_put(struct ov16880 *ov16880)
++{
++	if (ov16880->lens_on) {
++		pm_runtime_put(ov16880->lens);
++		ov16880->lens_on = false;
++	}
++}
++
 +static int ov16880_power_off(struct device *dev)
 +{
 +	struct v4l2_subdev *sd = dev_get_drvdata(dev);
 +	struct ov16880 *ov16880 = to_ov16880(sd);
++
++	ov16880_lens_put(ov16880);
 +
 +	gpiod_set_value_cansleep(ov16880->powerdown_gpio, 1);
 +	gpiod_set_value_cansleep(ov16880->reset_gpio, 1);
@@ -1995,6 +2034,8 @@ new file mode 100644
 +
 +	/* 8192 XVCLK cycles prior to the first SCCB transaction */
 +	usleep_range(1000, 1500);
++
++	ov16880_lens_get(ov16880);
 +
 +	return 0;
 +}
@@ -2242,6 +2283,7 @@ new file mode 100644
 +	if (!pm_runtime_status_suspended(ov16880->dev))
 +		ov16880_power_off(ov16880->dev);
 +	pm_runtime_set_suspended(ov16880->dev);
++	put_device(ov16880->lens);
 +}
 +
 +static int ov16880_probe(struct i2c_client *client)

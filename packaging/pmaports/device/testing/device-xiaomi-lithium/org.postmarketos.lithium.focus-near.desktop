@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Camera focus: near
+Comment=Set the rear camera focus to near
+Exec=/usr/bin/lithium-camera-focus near
+Icon=zoom-in
+Categories=Utility;
+NoDisplay=false
+Terminal=false

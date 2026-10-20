@@ -15,3 +15,19 @@ Which fixed-function blocks of the Snapdragon 821 are used, and how to use the r
 
 Order by daily impact: Firefox hardware decode (YouTube on CPU heats the phone) → encoder headers
 + camera recording → camera GPU import / autofocus → Mesa overflow fix → KWin direct scanout check.
+
+## Status 2026-10-19 evening
+
+- FFmpeg 8.1.2-r100 (`packaging/pmaports/temp/ffmpeg`, LibreELEC v4l2-drmprime series) is
+  installed. Firefox still decodes in software: its FFmpeg V4L2 path ("Initialising V4L2-DRM
+  FFmpeg decoder") is never entered, so the gate is earlier (GfxInfo / hardware-decoding
+  support reported as `H264 SWDEC`). Measured with a scripted test: 720p H.264 = 219-250 % of
+  one core in software. Open: find which capability check disables it.
+- Venus H.264 encoder fixed in kernel r45 (patch 0044).
+- Camera: Megapixels config for lithium (`/usr/share/megapixels/config/xiaomi,lithium.conf`,
+  local for now) gives a working preview and QR detection; Megapixels 2.1.0-r100
+  (`packaging/pmaports/temp/megapixels`) fixes tapping a detected code on scaled screens.
+  The rear lens fell back to far focus one second after any focus change (the DW9763 powers
+  down when no one holds it open); patch 0029 now keeps it powered while the sensor is
+  (kernel r45). Megapixels resets focus to 0 when it starts; device r23 adds "Camera focus:
+  near/far" launchers (675 = about 25 cm, 0 = far).

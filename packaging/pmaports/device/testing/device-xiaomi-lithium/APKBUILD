@@ -3,7 +3,7 @@ maintainer="Camilo Higuita <milo.h@aol.com>"
 pkgname=device-xiaomi-lithium
 pkgdesc="Xiaomi Mi MIX"
 pkgver=1
-pkgrel=22
+pkgrel=23
 url="https://postmarketos.org"
 license="MIT"
 arch="aarch64"
@@ -30,6 +30,9 @@ source="
 	lithium-bt-address
 	lithium-bt-address.service
 	90-lithium-mesa.conf
+	lithium-camera-focus
+	org.postmarketos.lithium.focus-near.desktop
+	org.postmarketos.lithium.focus-far.desktop
 	91-lithium-bt-address.rules
 	92-lithium-sensors.rules
 	mpv.conf
@@ -66,6 +69,11 @@ package() {
 		"$pkgdir"/usr/lib/systemd/system/lithium-bt-address.service
 	install -Dm644 "$srcdir"/90-lithium-mesa.conf \
 		"$pkgdir"/usr/lib/environment.d/90-lithium-mesa.conf
+	install -Dm755 "$srcdir"/lithium-camera-focus \
+		"$pkgdir"/usr/bin/lithium-camera-focus
+	install -Dm644 -t "$pkgdir"/usr/share/applications \
+		"$srcdir"/org.postmarketos.lithium.focus-near.desktop \
+		"$srcdir"/org.postmarketos.lithium.focus-far.desktop
 	install -Dm644 "$srcdir"/91-lithium-bt-address.rules \
 		"$pkgdir"/usr/lib/udev/rules.d/91-lithium-bt-address.rules
 	install -Dm644 "$srcdir"/92-lithium-sensors.rules \
@@ -102,6 +110,9 @@ c583d9dcecd12b04a3e79f244e87a47391fb007948fce3c41d1aac8f55e1bdc97da35c5ac0b14bb8
 562036602708bd5fad27ca2a4e49fafee8acf88f17bf68005ded8e979f899a92fdaa59a2036c3767ed457123cc7e48184029e67065dbd9c4a7c9e5758d761ae0  lithium-bt-address
 5ad6a09e54074efb6821e6f713ce477666e1a6809b59efb5ec338543f4d3adfbf1ceaa54854d5e6d87d1ade62f92d396d090c7840af13176908ebf8661e5063a  lithium-bt-address.service
 9210ee8eb55c09511aea202ca17b3670dabcc06fdfac974c107b7d9ddf97100b85b554af84f9fa2efb2d164abf93ce3054e120be3e5992672971120644a2f8ee  90-lithium-mesa.conf
+11676a6f81023217a840619b7778dc9ae0fb3cd97a2fb033cc7c5270b9aca25df2cb0e1d7986ba9f19033bd25a1d2c524d42f5e4d603a19360345461b95ca359  lithium-camera-focus
+ef8969441fb062610df1194fbf7ffef13232c709b52ff3b21ca45d8264b16f9b878ebfb3c9ebb125d2a2ee4dac798c9c89dbb9a5a4a851d54f6b9cbc88017926  org.postmarketos.lithium.focus-near.desktop
+5e4f38d40df0f937c5f0163c05fb5b8c5c1a5891ecc8aaf1fa3a45c762e034afc8911ad29e551c260d18fdf1482e2d2f166c198faba78ee8074669cea8c2a759  org.postmarketos.lithium.focus-far.desktop
 7670ea39761911544bd409b6546b96db54cd42cb820b98ee897b975265413165026b4456d8b3221fbaf32d5b73071ce8c6fd778efe3caf3cdc6442bb3a325b3c  91-lithium-bt-address.rules
 27a9e2b9c3fb7fb07b186f8e22f57318c7729738096da75e663303f2d3ae7d12b020f0c85dbc0c5f1169830632f5d4441edae218d41d6b5823d70d854499bf84  92-lithium-sensors.rules
 98dd625b55022f95bfaddf4bbbcc4d2111329433de73fedc57b15e7e3a842c603196f79da116806375f189fad5263aaa155a692fcff89499b6ca9993395b3d4c  mpv.conf

@@ -1,0 +1,25 @@
+#!/bin/sh
+# Xiaomi Mi MIX (lithium): set the rear camera's focus to near or far.
+# Until libcamera has autofocus for this camera, apps leave the lens where it
+# is; this sets the DW9763 focus motor's position (kept while the camera is on).
+#   lithium-camera-focus near|far
+set -u
+case "${1:-}" in
+near) pos=675 label="near (about 25 cm)" ;;
+far) pos=0 label="far" ;;
+*) echo "usage: $0 near|far" >&2; exit 2 ;;
+esac
+
+dev=
+for s in /sys/class/video4linux/v4l-subdev*; do
+	case "$(cat "$s/name" 2>/dev/null)" in
+	dw9719*) dev=/dev/$(basename "$s") ;;
+	esac
+done
+if [ -z "$dev" ]; then
+	notify-send -a "Camera focus" "Focus motor not found" 2>/dev/null
+	exit 1
+fi
+
+v4l2-ctl -d "$dev" -c focus_absolute="$pos" &&
+	notify-send -t 2000 -a "Camera focus" -i camera-photo "Camera focus: $label" 2>/dev/null

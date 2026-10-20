@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Camera focus: far
+Comment=Set the rear camera focus to far
+Exec=/usr/bin/lithium-camera-focus far
+Icon=zoom-out
+Categories=Utility;
+NoDisplay=false
+Terminal=false
