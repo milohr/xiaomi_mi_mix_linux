@@ -31,3 +31,18 @@ Order by daily impact: Firefox hardware decode (YouTube on CPU heats the phone) 
   down when no one holds it open); patch 0029 now keeps it powered while the sensor is
   (kernel r45). Megapixels resets focus to 0 when it starts; device r23 adds "Camera focus:
   near/far" launchers (675 = about 25 cm, 0 = far).
+
+## Firefox hardware decoding, continued (2026-10-19 night)
+
+- Works with the user's profile once three prefs are set (`user.js` block "lithium: Venus"):
+  `media.hardware-video-decoding.force-enabled`, `widget.dmabuf.force-enabled`,
+  `media.av1.enabled=false` (Venus has no AV1). The RDD log shows "V4L2 FFmpeg init successful",
+  DRM PRIME output, `IsHardwareAccelerated=true`; about:support lists H.264/VP9/VP8/HEVC
+  hardware decoding as supported. Earlier "SWDEC" readings came from fresh test profiles whose
+  WebExtensions first-run work also inflated the CPU numbers.
+- Same profile, same 720p H.264 clip: software 131 % of one core (RDD 47, main 66, tab 17);
+  Venus 102 % (RDD 9, main 1, tab 91). perf on the tab process shows no pixel work, only
+  locks, futexes, task switches and clock reads: a busy video sink.
+- Cause: decoded frames came back with `pts = AV_NOPTS_VALUE`. FFmpeg's v4l2 code rescales with
+  `pkt_timebase`, else `time_base`, and Firefox sets neither (0/0). FFmpeg 8.1.2-r101 adds
+  `v4l2-default-timebase.patch`: with no valid timebase, timestamps pass through in µs.

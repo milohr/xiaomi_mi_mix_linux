@@ -8,7 +8,7 @@
 maintainer="Achill Gilgenast <achill@achill.org>"
 pkgname=ffmpeg
 pkgver=8.1.2
-pkgrel=100
+pkgrel=101
 pkgdesc="Complete and free Internet live audio and video broadcasting solution for Linux/Unix"
 url="https://ffmpeg.org/"
 arch="all"
@@ -85,6 +85,7 @@ source="https://ffmpeg.org/releases/ffmpeg-$pkgver.tar.xz
 	add-av_stream_get_first_dts-for-chromium.patch
 	posix-ioctl.patch
 	ffmpeg-8.1.2-v4l2-drmprime.patch
+	v4l2-default-timebase.patch
 	"
 options="!check" # tests/data/hls-lists.append.m3u8 fails
 
@@ -396,4 +397,5 @@ b3adc16fe426217bb607da01c4137cee0a9788fc08e077874336db185d2b7287746a7dc94cf0181e
 0c2284bc053c92478ce6e3665e03273cb93926534c6f927eb60e060c7770c68dca12724853adbcac03c4a58df81f2de938d54e82f43c7e789d345bed872ffc69  add-av_stream_get_first_dts-for-chromium.patch
 790b3ea796855f0572531eec8bb436f8ae2b894e29ea7fa2bf7fcddbbc1a58da5c403b366bc116729b92da54ca6d74c82df3bb71c5069e41ae8540a38f7151ae  posix-ioctl.patch
 01b836b0ebb83d77d7e9a582e0073df104c8eda31eb6505098ff9c720b7eb68460eea27ba9bdd24777af885ca8a64915c4d6f4b833f681c5e899a5e9f4f3002d  ffmpeg-8.1.2-v4l2-drmprime.patch
+f5b5e85de84b50254346d4bcf0ee216af3fdcc2bdc5a3cf96e883a8198233a29505066ca1912e1cc3610d342f350784868f5cea73046ead9f947c27d5876af13  v4l2-default-timebase.patch
 "

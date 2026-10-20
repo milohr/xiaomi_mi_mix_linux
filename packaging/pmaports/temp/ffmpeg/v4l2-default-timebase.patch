@@ -1,0 +1,24 @@
+v4l2: pass timestamps through when the codec context has no timebase
+
+With neither pkt_timebase nor time_base set, av_rescale_q() with 0/0
+turned every timestamp into AV_NOPTS_VALUE, and decoded frames came back
+without pts (Firefox: frames with no time, a busy-looping video sink).
+Fall back to the V4L2 microsecond timebase instead.
+
+--- a/libavcodec/v4l2_buffers.c
++++ b/libavcodec/v4l2_buffers.c
+@@ -58,9 +58,12 @@
+ {
+     V4L2m2mContext *s = buf_to_m2mctx(avbuf);
+ 
+-    if (s->avctx->pkt_timebase.num)
++    if (s->avctx->pkt_timebase.num && s->avctx->pkt_timebase.den)
+         return s->avctx->pkt_timebase;
+-    return s->avctx->time_base;
++    if (s->avctx->time_base.num && s->avctx->time_base.den)
++        return s->avctx->time_base;
++    /* No timebase set (e.g. Firefox): pass timestamps through unscaled */
++    return v4l2_timebase;
+ }
+ 
+ static inline void v4l2_set_pts(V4L2Buffer *out, int64_t pts)
